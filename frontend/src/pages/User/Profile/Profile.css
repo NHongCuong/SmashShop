@@ -1,0 +1,154 @@
+.profile-container {
+    display: flex;
+    gap: 10px;
+    padding: 0px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+  }
+  
+  .profile-info {
+    flex: 2;
+    min-width: 300px;
+  }
+  
+  .profile-info h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .profile-field label {
+    flex: 1;
+    text-align: right;
+    font-weight: bold;
+    padding-right: 15px;
+
+  }
+  
+  .profile-field span,
+  .profile-field input,
+  .gender-options {
+    flex: 2; 
+    text-align: left;
+  }
+  
+  .profile-field input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+  }
+  
+  .gender-options {
+    display: flex;
+    flex: 2; 
+  }
+
+  .gender-options label {
+    display: flex;
+    align-items: center;
+  }
+
+  .profile-avatar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 200px;
+  }
+  
+  .avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px solid #EAC427;
+    object-fit: cover;
+  }
+  
+  .avatar-container input {
+    margin-top: 10px;
+  }
+  
+  .profile-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .edit-btn,
+  .save-btn {
+    background: #EAC427;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .save-btn {
+    background: #28a745;
+  }
+  
+  .edit-btn:hover,
+  .save-btn:hover {
+    opacity: 0.8;
+  }
+  @media (max-width: 921px) {
+    .profile-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .profile-field {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .profile-avatar {
+      order: -1; /* Avatar nhảy lên đầu */
+      margin-bottom: 20px;
+    }
+    .profile-info {
+      width: 100%;
+      padding: 0 20px;
+      align-items: flex-start;
+    }
+  
+    .profile-field label {
+      text-align: left;
+      padding-right: 0;
+      margin-bottom: 5px;
+    }
+  
+    .gender-options {
+      flex-direction: column;
+      width: 100%;
+    }
+  
+    .profile-actions {
+      justify-content: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+  
+    .edit-btn,
+    .save-btn {
+      width: 200px;
+      text-align: center;
+    }
+  }

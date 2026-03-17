@@ -1,0 +1,69 @@
+/* Mặc định desktop */
+.orders-history {
+  width: 100%;
+}
+
+.orders-history h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #333;
+}
+
+.orders-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.order-header {
+  font-weight: bold;
+  border-bottom: 2px solid #EAC427;
+}
+
+.order-row span {
+  flex: 1;
+  text-align: center;
+  word-break: break-word;
+  padding: 0 5px;
+}
+
+/* Responsive: mobile friendly */
+@media (max-width: 768px) {
+  .order-header {
+    display: none;
+  }
+
+  .order-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid #ddd;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+  }
+
+  .order-row span {
+    text-align: left;
+    padding: 4px 0;
+  }
+
+  .order-row span::before {
+    font-weight: bold;
+    display: inline-block;
+    width: 100px;
+  }
+
+  /* Hiển thị nhãn trước giá trị */
+  .order-row span:nth-child(1)::before { content: "Mã đơn: "; }
+  .order-row span:nth-child(2)::before { content: "Trạng thái: "; }
+  .order-row span:nth-child(3)::before { content: "Ngày: "; }
+  .order-row span:nth-child(4)::before { content: "Tổng tiền: "; }
+}

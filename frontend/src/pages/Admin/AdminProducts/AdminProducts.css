@@ -1,0 +1,168 @@
+
+.admin-products {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+  
+  .admin-products h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .product-table {
+    overflow-x: auto;
+    max-height: 80vh; /* giới hạn hợp lý theo chiều cao màn hình */
+    min-height: 300px; /* để không bị "trống dưới" khi nội dung ít */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+  }
+  .product-table::-webkit-scrollbar {
+    display: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  
+  
+  th, td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+  }
+
+
+.prod-name-cell{
+  max-width: 200px;
+}
+.prod-img-cell{
+  max-width: 100px;
+}
+  .product-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .icon {
+    margin: 0 6px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  
+  .icon.edit {
+    color: #007bff;
+  }
+  
+  .icon.delete {
+    color: #dc3545;
+  }
+thead th {
+    position: sticky;
+    top: 0;
+    background-color: #EAC427;
+    color: white;
+    z-index: 1;
+}
+
+.ad-delprod-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* đảm bảo nằm trên các thành phần khác */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .ad-delprod-modal-content {
+    background: white;
+    padding: 24px 32px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    animation: fadeIn 0.3s ease-in-out;
+    justify-content: space-between;
+    text-align: center;
+  }
+  
+  .ad-delprod-modal-content h2 {
+    margin-bottom: 16px;
+  }
+  
+  .ad-delprod-modal-content button {
+    margin: 0 8px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .btn-ad-delprod {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .btn-ad-cancelprod  {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (max-width: 768px) {
+    .admin-products {
+      padding: 10px;
+    }
+  
+    .admin-products h1 {
+      font-size: 20px;
+    }
+  
+    th, td {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+  
+    .prod-name-cell {
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    .product-img {
+      width: 50px;
+      height: 50px;
+    }
+  
+    /* Ẩn bớt cột trên màn nhỏ nếu cần thiết */
+    th:nth-child(3),
+    td:nth-child(3),
+    th:nth-child(4), 
+    td:nth-child(4) {
+      display: none;
+    }
+  
+    .icon {
+      font-size: 16px;
+      margin: 0 4px;
+    }
+  }

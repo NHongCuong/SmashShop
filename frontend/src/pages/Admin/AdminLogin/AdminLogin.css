@@ -1,0 +1,77 @@
+
+.ad-auth-container {
+    background-color: #fff;
+    padding: 40px;
+    margin: 100px auto;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    
+  }
+  .ad-title {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color:#eac427;
+    font-weight: bold;
+  }
+  
+  .ad-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .ad-input {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    outline: none;
+  }
+  
+  .ad-input:focus {
+    border-color: #eac427;
+    background-color: #fff;
+  }
+  
+  .ad-button {
+    background-color: #eac427;
+    color: #fff;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .ad-button:hover {
+    background-color: #d4ac23;
+  }
+  
+  .ad-footer {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .ad-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .ad-link:hover {
+    text-decoration: underline;
+  }
+  

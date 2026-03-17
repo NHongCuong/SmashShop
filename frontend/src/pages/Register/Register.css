@@ -1,0 +1,70 @@
+/* Định dạng toàn bộ trang đăng ký */
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: url("../../assets/register.png") no-repeat center center/cover;
+  }
+  
+  /* Hộp đăng ký */
+  .register-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    text-align: center;
+  }
+  
+  /* Tiêu đề */
+  .register-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #EAC427;
+  }
+  
+  /* Các ô input */
+  .register-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  /* Nút đăng ký */
+  .register-btn {
+    width: 100%;
+    padding: 10px;
+    background: #EAC427;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+  }
+  
+  .register-btn:hover {
+    background: #d1ad1b;
+  }
+  
+  /* Liên kết đăng nhập */
+  .login-link {
+    margin-top: 15px;
+    font-size: 14px;
+  }
+  
+  .login-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+  

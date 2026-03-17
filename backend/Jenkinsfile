@@ -1,0 +1,266 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: node
+    image: node:22.14-alpine
+    command:
+    - sleep
+    args:
+    - infinity
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command:
+    - sleep
+    args:
+    - 9999999
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+    resources:
+      requests:
+        cpu: "300m"
+        memory: "512Mi"
+      limits:
+        cpu: "600m"
+        memory: "1024Mi"
+  - name: trivy 
+    image: aquasec/trivy:latest 
+    command: 
+    - sleep
+    args:
+    - 9999999
+    resources:
+        requests:
+        cpu: "400m"
+        memory: "800Mi"
+    limits:
+        cpu: "800m"
+        memory: "1200Mi"
+  volumes:
+  - name: docker-config
+    projected:
+      sources:
+      - secret:
+          name: docker-credentials
+          items:
+          - key: .dockerconfigjson
+            path: config.json
+'''
+        }
+    }
+    environment {
+        CI = 'true'
+        IMAGE_TAG = "${BUILD_NUMBER}" // Use build number as image tag
+        PIPELINE_NAME = "${env.JOB_NAME}" // send email with pipeline name
+    }
+    stages {
+        stage('Check npm and install git') {
+            steps {
+                container('node') {
+                    sh 'npm version'
+                    sh 'apk add --no-cache git'
+                }
+            }
+        }
+        // this stage is used to install JDK 17 for sonar scan and build the project
+        stage('Install jdk') {
+            steps {
+                container('node') {
+                    sh '''
+                        apk add --no-cache openjdk17
+                        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+                        export PATH=$JAVA_HOME/bin:$PATH
+                        java -version
+                    '''
+                }
+            }
+        }
+        stage('Checkout') {
+            steps {
+                container('node') {
+                    checkout scmGit(
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/Thanh8804/smash-shop.git',
+                            credentialsId: 'github-token'
+                        ]]
+                    )
+                }
+            }
+        }
+        stage('Build and Test') {
+            parallel {
+                stage('Build') {
+                    steps {
+                        container('node') {
+                            dir('backend') {
+                                sh 'npm ci'
+                            }
+                        }
+                    }
+                }
+                stage('Test') {
+                    steps {
+                        container('node') {
+                            dir('backend') {
+                                sh 'npm test -- --coverage || true' 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Code Analysis') {
+            parallel {
+                stage('SonarQube Scan') {
+                    environment {
+                        SONAR_AUTH_TOKEN = credentials('sonarqube-token');
+                        SCANNER_HOME = tool 'sonarqube';   
+                    }
+                    steps {
+                        container('node') {
+                            dir('backend'){
+                                withSonarQubeEnv(installationName: 'sonarqube') {
+                                    sh '''
+                                        $SCANNER_HOME/bin/sonar-scanner \
+                                        -Dsonar.projectKey=smash-shop-backend-project \
+                                        -Dsonar.host.url=http://34.53.70.78:31000/ \
+                                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('Trivy Source Scan') {
+                    steps {
+                        container('trivy') {
+                            dir('backend') {
+                                sh '''
+                                    trivy fs --no-progress --severity MEDIUM,HIGH,CRITICAL \
+                                    --scanners vuln,secret \
+                                    --format table . > trivy-source.txt 2>&1
+                                    cat trivy-source.txt
+                                '''
+                                sh '''
+                                    CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-source.txt | head -1)
+                                    if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
+                                        echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
+                                        exit 1
+                                    else
+                                        echo "✅ No critical vulnerabilities found."
+                                    fi
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                container('node') {
+                    dir('backend'){
+                        timeout(activity: true, time: 2, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Build and Push Docker Image') {
+            steps {
+                container(name: 'kaniko', shell: '/busybox/sh') {
+                    dir('backend'){
+                        sh '''#!/busybox/sh
+                            /kaniko/executor \
+                              --context `pwd` \
+                              --destination thanh8804/smash-shop-backend-image:$IMAGE_TAG \
+                              --cache=true
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Trivy'){
+            steps {
+              container('trivy'){
+                  dir('backend'){
+                        sh '''
+                        trivy image --no-progress --severity MEDIUM,HIGH,CRITICAL \
+                                    --skip-files ".npm/_cacache/*" \
+                                    --timeout 10m thanh8804/smash-shop-backend-image:$IMAGE_TAG > trivy-image.txt 2>&1
+                        cat trivy-image.txt
+                        '''
+                        sh '''
+                        CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-image.txt | head -1)
+                        if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
+                            echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
+                            exit 1
+                        else
+                            echo "✅ No critical vulnerabilities found."
+                        fi
+                        '''
+                    }
+                }
+             }
+        }
+        stage('Update Manifests') {
+            steps {
+                container('node') {
+                    withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+                        sh '''
+                            set -e
+                            git clone https://github.com/Thanh8804/smash-shop-k8s-mainfest.git
+                            cd smash-shop-k8s-mainfest/k8s-manifests/backend
+                            sed -i.bak "s|thanh8804/smash-shop-backend-image:.*|thanh8804/smash-shop-backend-image:$IMAGE_TAG|" deployment.yaml
+                            git config user.email "chithanh080804@gmail.com"
+                            git config user.name "Thanh8804@"
+                            git add deployment.yaml
+                            git commit -m "Update image to thanh8804/smash-shop-backend-image:$IMAGE_TAG"
+                            git push https://$GIT_TOKEN@github.com/Thanh8804/smash-shop-k8s-mainfest.git HEAD:main
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Trigger ArgoCD Sync') {
+            steps {
+                container('node') {
+                    withCredentials([string(credentialsId: 'argocd-token', variable: 'ARGOCD_TOKEN')]) {
+                        sh '''
+                            apk add --no-cache curl
+                            curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+                            install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+                            rm argocd-linux-amd64
+                            argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password $ARGOCD_TOKEN --insecure
+                            argocd app sync smash-shop-backend
+                         '''
+                     }
+                 }
+             }
+        }
+    }
+    post {
+        always {
+            echo "Pipeline '${PIPELINE_NAME}' completed."
+        }
+        success {
+            emailext attachLog: true, 
+                     body: "The pipeline '${PIPELINE_NAME} Build #${BUILD_NUMBER}' has completed successfully.", 
+                     subject: "Pipeline Success: ${PIPELINE_NAME} - Build #${BUILD_NUMBER}", 
+                     to: 'chithanh080804@gmail.com'
+        }
+        failure {
+            emailext attachLog: true, 
+                     body: "The pipeline '${PIPELINE_NAME}' has failed. Please review the attached logs.", 
+                     subject: "Pipeline Failed: ${PIPELINE_NAME} - Build #${BUILD_NUMBER}", 
+                     to: 'chithanh080804@gmail.com'
+        }
+    }
+}

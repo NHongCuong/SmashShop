@@ -1,0 +1,30 @@
+.status-label{
+    padding: 2px 6px;
+    border-radius: 5px;
+    display: block;
+    text-align: center;
+    width: 70%;
+}
+.succeeded{
+    color: rgb(35, 157, 35);
+    border: 1px solid rgb(35, 157, 35);
+    background-color: rgb(195, 235, 195);
+}
+
+.cancelled{
+    color: red;
+    border: 1px solid red;
+    background-color: rgb(255, 233, 233);
+}
+
+.processing{
+    color: rgb(54, 158, 255);
+    border: 1px solid rgb(54, 158, 255);
+    background-color: rgb(198, 229, 255);
+}
+
+.pending{
+    color: rgb(231, 158, 0);
+    border: 1px solid rgb(231, 158, 0);
+    background-color: rgb(252, 243, 224);
+}

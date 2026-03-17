@@ -1,0 +1,143 @@
+.cart-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  
+  .cart-table {
+    margin-top: 10px;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 0 5px #ccc;
+    padding: 15px;
+    overflow-x: auto;
+  }
+  
+  .cart-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    font-weight: bold;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+    margin-right: 30px;
+  }
+  
+  .cart-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .product-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .product-info img {
+    width: 80px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 5px;
+  }
+  
+  .quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .quantity-control button {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .delete-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .total-price {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    color: red;
+    padding-top: 10px;
+  }
+  
+  .bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  
+.summary-box {
+    width: 46%;
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 4px #ccc;
+  }
+  .discount-box {
+    width: 46%;
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 4px #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .discount-box input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  
+  .checkout-button, .discount-box button{
+    background-color: #eac427;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  
+  /* RESPONSIVE */
+@media (max-width: 768px) {
+  .cart-header {
+    display: none; /* Ẩn header để đỡ chiếm chỗ */
+  }
+
+  .cart-item {
+    grid-template-columns: 1fr; /* Các phần tử xếp dọc xuống */
+    line-height: 25px;
+    align-items: flex-start;
+    padding: 10px 0;
+  }
+
+  .product-info {
+    margin-bottom: 10px;
+  }
+
+  .quantity-control, .delete-button, .total-price {
+    margin-top: 5px;
+  }
+
+  .summary-box, .discount-box {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

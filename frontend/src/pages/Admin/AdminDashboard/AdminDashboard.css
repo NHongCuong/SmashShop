@@ -1,0 +1,123 @@
+.ad-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.ad-header {
+  background-color: #ffffff;
+  padding: 10px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.ad-menu-btn {
+  position: absolute;
+  left: 15px;
+  top: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  display: none; /* Ẩn mặc định */
+}
+
+.ad-body {
+  display: flex;
+  flex: 1;
+}
+
+.ad-sidebar {
+  width: 220px;
+  height: 94%;
+  background-color: #f9f9f9;
+  padding: 20px 0;
+  border-right: 1px solid #e0e0e0;
+  transition: transform 0.3s ease-in-out;
+
+  position: sticky;
+  top: 0px;
+  align-self: flex-start; 
+  z-index: 10;
+}
+
+.ad-logo {
+  font-weight: bold;
+  font-size: 24px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.ad-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.ad-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  gap: 10px;
+}
+.ad-nav-item-logout{
+  background-color: #f9f9f9;
+  font-size: 16px;
+  border: none;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  gap: 10px;
+}
+.ad-nav-item:hover, .ad-nav-item-logout:hover {
+  background-color: #e4e4e4af;
+  border-radius: 20px;
+}
+
+.ad-nav-item.active {
+  background-color: #EAC427;
+  color: white;
+  border-radius: 20px;
+}
+
+.ad-main {
+  flex: 1;
+  padding: 0px 10px;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .ad-menu-btn {
+    display: block;
+  }
+
+  .ad-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 220px;
+    height: 100%;
+    background-color: #fff;
+    z-index: 1000;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    margin-top: 60px; 
+  }
+
+  .ad-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .ad-main {
+    padding: 10px;
+  }
+}

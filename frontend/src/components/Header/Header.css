@@ -1,0 +1,343 @@
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #F9F9F9;
+  gap: 20px;
+  overflow: visible; /* ❌ Bỏ overflow: hidden đi */
+  flex-wrap: nowrap;
+  min-width: 0;
+  position: relative; /* 🧠 Thêm cái này để các dropdown position tuyệt đối bên trong */
+}
+
+/* Cố định tỷ lệ các khối */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.logo {
+  font-weight: bold;
+  text-decoration: none;
+  color: black;
+  white-space: nowrap; 
+  font-size: clamp(20px, 5vw, 35px); 
+}
+  
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+  .nav-link {
+    text-decoration: none;
+    width: 100%;
+    color: gray;
+    transition: color 0.3s;
+  }
+  
+  .nav-link:hover {
+    color: black;
+  }
+
+
+ .dropdown-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: gray;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+ 
+
+   /* Nav Links */
+.nav-link, .dropdown-btn {
+  text-decoration: none;
+  color: gray;
+  font-size: 16px;
+  white-space: nowrap; /* Không cho xuống dòng */
+  transition: color 0.3s;
+}
+
+.nav-link:hover, .dropdown-btn:hover {
+  color: black;
+}
+
+.nav-dropdown {
+  position: relative; 
+}
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+  }
+  
+
+  .dropdown-item {
+    transition: background 0.3s;
+    color: black;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    z-index: 999;
+  }
+  
+  .dropdown-item:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Search bar */
+  .search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    padding: 8px;
+    flex: 1 1 auto;
+    min-width: 300px; /* Search bar không quá bé */
+  }
+  
+  .search-bar-input {
+    margin: 0px auto;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0px; /* Tăng padding để text nằm giữa */
+    font-size: 14px;
+  }
+  
+  
+  .search-icon {
+    position: absolute;
+    cursor: pointer;
+    right: 4px;
+    color: white;
+    background-color: #EAC427;
+    padding: 5px;
+    border-radius: 3px;
+  }
+
+  /* Search dropdown */
+  .search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 999;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+
+  
+  .search-product-image {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .search-product-name {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f2f2f2;
+  }
+  /* Icons */
+  .header-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 0 1 auto; 
+    min-width: 0; /* Bắt icon phải tự thu nhỏ */
+    justify-content: flex-end;
+  }
+  .icon {
+    font-size: 20px;
+    color: gray;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .icon:hover {
+    color: black;
+  }
+  
+  .cart-link {
+    position: relative;
+    border: none;
+    background-color: #F9F9F9;
+  }
+  .cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: red;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* User Menu */
+  .user-menu {
+    position: relative;
+    margin-left: 30px;
+  }
+  
+  /* Dropdown menu */
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0; /* Căn chỉnh thẳng lề phải với icon user */
+    transform: translateX(-80%);
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    width: 160px; 
+    z-index: 10000;
+  }
+  
+  .user-dropdown .dropdown-item {
+    display: block;
+    padding: 10px;
+    text-align: left;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  
+  .user-dropdown .dropdown-item:hover {
+    background: #f0f0f0;
+  }
+  
+  .logout-btn {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    font-size: 16px;
+  }
+  
+  /* --- MOBILE MENU --- */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .header-center {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    transform: translateY(-200%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 9;
+  }
+
+  .header-center.active {
+    transform: translateY(0);
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .dropdown-menu:not(.user-dropdown) {
+    position: static;
+    width: 100%;
+    margin-top: 10px; /* cách 1 chút cho đẹp */
+    box-shadow: none; /* tuỳ chỉnh nếu muốn bỏ đổ bóng */
+    border: none;
+  }
+}
+
+/* MODAL CART -> LOGIN */
+.modal-backdrop {
+  z-index: 100000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-buttons button {
+  margin: 10px;
+  padding: 8px 16px;
+}
+.modal-button-login{
+  background-color: #EAC427;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+.modal-button-cancel{
+  background-color: #cdcdcd;
+  color: black;
+  border: none;
+  border-radius: 5px;
+}

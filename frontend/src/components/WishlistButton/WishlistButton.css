@@ -1,0 +1,42 @@
+.wishlist-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.2);
+}
+
+.wishlist-btn:active {
+  transform: scale(0.95);
+}
+
+.wishlist-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Size variants */
+.wishlist-btn.normal {
+  font-size: 24px;
+}
+
+.wishlist-btn.small {
+  font-size: 18px;
+}
+
+/* Active animation */
+.wishlist-btn.active {
+  animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
