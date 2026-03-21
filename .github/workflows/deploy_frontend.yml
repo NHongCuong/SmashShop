@@ -25,7 +25,7 @@ jobs:
           file: ./frontend/Dockerfile
           push: true 
           tags: | 
-            doanlam2704/ie213-frontend:latest
+            nhongcuong/ie213-frontend:latest
           platforms: linux/amd64
           build-args: |
             REACT_APP_BACKEND_URL=${{ secrets.REACT_APP_API_URL }}
