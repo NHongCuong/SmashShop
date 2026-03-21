@@ -50,7 +50,7 @@ spec:
         CI = 'true'
         IMAGE_TAG = "${BUILD_NUMBER}"
         PIPELINE_NAME = "${env.JOB_NAME}"
-        REACT_APP_API_URL = 'http://34.53.70.78:30002'
+        REACT_APP_API_URL = 'http://192.168.88.133:30002'
     }
     stages {
         stage('Check npm and install git') {
@@ -79,7 +79,7 @@ spec:
                     checkout scmGit(
                         branches: [[name: '*/main']],
                         userRemoteConfigs: [[
-                            url: 'https://github.com/Thanh8804/smash-shop.git',
+                            url: 'https://github.com/NHongCuong/SmashShop.git',
                             credentialsId: 'github-token'
                         ]]
                     )
@@ -122,7 +122,7 @@ spec:
                                     sh '''
                                         $SCANNER_HOME/bin/sonar-scanner \
                                         -Dsonar.projectKey=smash-shop-frontend-project \
-                                        -Dsonar.host.url=http://34.53.70.78:31000/ \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
                                         -Dsonar.login=$SONAR_AUTH_TOKEN
                                     '''
                                 }
@@ -173,7 +173,7 @@ spec:
                         sh '''#!/busybox/sh
                             /kaniko/executor \
                               --context `pwd` \
-                              --destination thanh8804/smash-shop-frontend-image:$IMAGE_TAG \
+                              --destination nhongcuong/smash-shop-frontend-image:$IMAGE_TAG \
                               --build-arg REACT_APP_API_URL=$REACT_APP_API_URL \
                               --cache=true
                         '''
@@ -190,7 +190,7 @@ spec:
                             trivy image --no-progress --severity MEDIUM,HIGH,CRITICAL \
                                         --scanners vuln,secret \
                                         --skip-files ".npm/_cacache" \
-                                        --timeout 10m thanh8804/smash-shop-frontend-image:$IMAGE_TAG > trivy-image.txt
+                                        --timeout 10m nhongcuong/smash-shop-frontend-image:$IMAGE_TAG > trivy-image.txt
                             cat trivy-image.txt
                         '''
                         sh '''
@@ -213,14 +213,14 @@ spec:
                     withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
                         sh '''
                             set -e
-                            git clone https://github.com/Thanh8804/smash-shop-k8s-mainfest.git
+                            git clone https://github.com/NHongCuong/smash-shop-k8s-mainfest.git
                             cd smash-shop-k8s-mainfest/k8s-manifests/frontend
-                            sed -i.bak "s|thanh8804/smash-shop-frontend-image:.*|thanh8804/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
-                            git config user.email "chithanh080804@gmail.com"
-                            git config user.name "Thanh8804@"
+                            sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
+                            git config user.email "nguyenhongcuonga1@gmail.com"
+                            git config user.name "NHongCuong"
                             git add deployment.yaml
-                            git commit -m "Update image to thanh8804/smash-shop-frontend:$IMAGE_TAG"
-                            git push https://$GIT_TOKEN@github.com/Thanh8804/smash-shop-k8s-mainfest.git HEAD:main
+                            git commit -m "Update image to nhongcuong/smash-shop-frontend:$IMAGE_TAG"
+                            git push https://$GIT_TOKEN@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
                         '''
                     }
                 }
@@ -251,13 +251,13 @@ spec:
             emailext attachLog: true, 
                      body: "The pipeline '${PIPELINE_NAME} Build #${BUILD_NUMBER}' has completed successfully.", 
                      subject: "Pipeline Success: ${PIPELINE_NAME} - Build #${BUILD_NUMBER}", 
-                     to: 'chithanh080804@gmail.com'
+                     to: 'testkunnguyen@gmail.com'
         }
         failure {
             emailext attachLog: true, 
                      body: "The pipeline '${PIPELINE_NAME}' has failed. Please review the attached logs.", 
                      subject: "Pipeline Failed: ${PIPELINE_NAME} - Build #${BUILD_NUMBER}", 
-                     to: 'chithanh080804@gmail.com'
+                     to: 'testkunnguyen@gmail.com'
         }
     }
 }
