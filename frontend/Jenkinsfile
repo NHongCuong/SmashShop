@@ -153,13 +153,11 @@ spec:
                             // Sử dụng withCredentials để ép Jenkins phải nạp Token vào biến
                                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'TOKEN')]) {
                                         withSonarQubeEnv(installationName: 'sonarqube') {
-                                            sh """
-                                                ${scannerHome}/bin/sonar-scanner \
+                                            sh "${scannerHome}/bin/sonar-scanner \
                                                 -Dsonar.projectKey=smash-shop-frontend-project \
                                                 -Dsonar.sources=. \
                                                 -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                                -Dsonar.login=${TOKEN}
-                                            """
+                                                -Dsonar.login=${TOKEN}"
                                         }
                                     }
                                 }
