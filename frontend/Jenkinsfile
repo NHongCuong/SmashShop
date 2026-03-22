@@ -73,19 +73,19 @@ spec:
                 }
             }
         }
-        // stage('Checkout') {
-        //     steps {
-        //         container('node') {
-        //             checkout scmGit(
-        //                 branches: [[name: '*/main']],
-        //                 userRemoteConfigs: [[
-        //                     url: 'https://github.com/NHongCuong/SmashShop.git',
-        //                     credentialsId: 'githubtoken'
-        //                 ]]
-        //             )
-        //         }
-        //     }
-        // }
+        stage('Checkout') {
+            steps {
+                container('node') {
+                    checkout scmGit(
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/NHongCuong/SmashShop.git',
+                            credentialsId: 'githubtoken'
+                        ]]
+                    )
+                }
+            }
+        }
         // stage('Checkout') {
         //     steps {
         // // Đưa ra ngoài container block để Jenkins xử lý mặc định
@@ -98,21 +98,7 @@ spec:
         //         )
         //     }
         // }
-        stage('Checkout') {
-            steps {
-                container('node') {
-                    withCredentials([string(credentialsId: 'githubtoken', variable: 'TOKEN')]) {
-                        sh """
-                        # Xóa code cũ để tránh xung đột
-                            rm -rf .git
-                            # Clone trực tiếp bằng URL có chứa Token
-                            git clone https://x-token-auth:${TOKEN}@github.com/NHongCuong/SmashShop.git
-                            git checkout main
-                        """
-                    }
-                }
-            }
-        }
+
         stage('Build and Test') {
             parallel {
                 stage('Build') {
