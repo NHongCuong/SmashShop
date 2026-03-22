@@ -73,31 +73,31 @@ spec:
                 }
             }
         }
-        stage('Checkout') {
-            steps {
-                container('node') {
-                    checkout scmGit(
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/NHongCuong/SmashShop.git',
-                            credentialsId: 'githubtoken'
-                        ]]
-                    )
-                }
-            }
-        }
         // stage('Checkout') {
         //     steps {
-        // // Đưa ra ngoài container block để Jenkins xử lý mặc định
-        //         checkout scmGit(
-        //             branches: [[name: '*/main']],
-        //             userRemoteConfigs: [[
-        //                 url: 'https://github.com/NHongCuong/SmashShop.git',
-        //                 credentialsId: 'githubtoken' 
-        //             ]]
-        //         )
+        //         container('node') {
+        //             checkout scmGit(
+        //                 branches: [[name: '*/main']],
+        //                 userRemoteConfigs: [[
+        //                     url: 'https://github.com/NHongCuong/SmashShop.git',
+        //                     credentialsId: 'githubtoken'
+        //                 ]]
+        //             )
+        //         }
         //     }
         // }
+        stage('Checkout') {
+            steps {
+        // Đưa ra ngoài container block để Jenkins xử lý mặc định
+                checkout scmGit(
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/NHongCuong/SmashShop.git',
+                        credentialsId: 'githubtoken' 
+                    ]]
+                )
+            }
+        }
 
         stage('Build and Test') {
             parallel {
