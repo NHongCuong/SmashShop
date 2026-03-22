@@ -106,7 +106,7 @@ spec:
                         # Xóa code cũ để tránh xung đột
                             rm -rf .git
                             # Clone trực tiếp bằng URL có chứa Token
-                            git clone https://x-token-auth:${TOKEN}@github.com/NHongCuong/SmashShop.git .
+                            git clone https://x-token-auth:${TOKEN}@github.com/NHongCuong/SmashShop.git
                             git checkout main
                         """
                     }
