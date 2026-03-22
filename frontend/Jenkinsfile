@@ -145,6 +145,7 @@ spec:
                 stage('SonarQube Scan') {
                     environment {
                     // Chỉ cần lấy SCANNER_HOME, bỏ SONAR_AUTH_TOKEN ở đây nếu đã cấu hình trong System
+                        SONAR_TOKEN = credentials('sonarqube-token')
                         SCANNER_HOME = tool 'sonarqube'   
                     }
                     steps {
@@ -153,9 +154,11 @@ spec:
                             // installationName phải khớp chính xác với tên trong Manage Jenkins > System
                                 withSonarQubeEnv(installationName: 'sonarqube') {
                                     sh """
-                                        $SCANNER_HOME/bin/sonar-scanner \
+                                        ${SCANNER_HOME}/bin/sonar-scanner \
                                         -Dsonar.projectKey=smash-shop-frontend-project \
-                                        -Dsonar.sources=.
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                        -Dsonar.login=${SONAR_TOKEN}
                                      """
                                 }
                             }
