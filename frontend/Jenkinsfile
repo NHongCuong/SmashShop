@@ -7,7 +7,7 @@ kind: Pod
 spec:
   containers:
   - name: node
-    image: node:22.14-slim
+    image: node:22.14-alpine
     command:
     - sleep
     args:
