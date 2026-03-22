@@ -239,22 +239,60 @@ spec:
                 }
              }
         }
+        // stage('Update Manifests') {
+        //     steps {
+        //         container('node') {
+        //             withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+        //                 sh '''
+        //                     set -e
+        //                     rm -rf smash-shop-k8s-mainfest
+        //                     git clone https://github.com/NHongCuong/smash-shop-k8s-mainfest.git
+        //                     cd smash-shop-k8s-mainfest/k8s-manifests/frontend
+        //                     sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
+        //                     git config user.email "nguyenhongcuonga1@gmail.com"
+        //                     git config user.name "NHongCuong"
+        //                     git add deployment.yaml
+        //                     git commit -m "Update image to nhongcuong/smash-shop-frontend:$IMAGE_TAG"
+        //                     git push https://$GIT_TOKEN@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
         stage('Update Manifests') {
             steps {
                 container('node') {
+                    // Đảm bảo ID này chính xác 100% với ID bạn tạo trong Manage Jenkins > Credentials
                     withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
-                        sh '''
+                        sh """
                             set -e
+                            # 1. Đảm bảo có git (dành cho môi trường Alpine)
+                            if ! command -v git >/dev/null; then apk add --no-cache git; fi
+                            
+                            # 2. Xóa thư mục cũ để tránh lỗi 'already exists' khi clone
                             rm -rf smash-shop-k8s-mainfest
+                            
+                            # 3. Clone repo manifest
                             git clone https://github.com/NHongCuong/smash-shop-k8s-mainfest.git
                             cd smash-shop-k8s-mainfest/k8s-manifests/frontend
-                            sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
+                            
+                            # 4. Cập nhật image tag (Dùng nháy kép để truyền biến IMAGE_TAG từ Jenkins vào)
+                            sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:${IMAGE_TAG}|" deployment.yaml
+                            
+                            # 5. Cấu hình Git
                             git config user.email "nguyenhongcuonga1@gmail.com"
                             git config user.name "NHongCuong"
+                            
+                            # 6. Kiểm tra xem có thay đổi thực sự không trước khi commit
                             git add deployment.yaml
-                            git commit -m "Update image to nhongcuong/smash-shop-frontend:$IMAGE_TAG"
-                            git push https://$GIT_TOKEN@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
-                        '''
+                            if git diff --cached --quiet; then
+                                echo "Không có thay đổi về Image Tag. Bỏ qua commit."
+                            else
+                                git commit -m "Update image to version ${IMAGE_TAG}"
+                                # Push dùng Token đã lấy từ Credentials
+                                git push https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
+                            fi
+                        """
                     }
                 }
             }
