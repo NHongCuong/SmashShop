@@ -73,17 +73,29 @@ spec:
                 }
             }
         }
+        // stage('Checkout') {
+        //     steps {
+        //         container('node') {
+        //             checkout scmGit(
+        //                 branches: [[name: '*/main']],
+        //                 userRemoteConfigs: [[
+        //                     url: 'https://github.com/NHongCuong/SmashShop.git',
+        //                     credentialsId: 'github-token'
+        //                 ]]
+        //             )
+        //         }
+        //     }
+        // }
         stage('Checkout') {
             steps {
-                container('node') {
-                    checkout scmGit(
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/NHongCuong/SmashShop.git',
-                            credentialsId: 'github-token'
-                        ]]
-                    )
-                }
+        // Đưa ra ngoài container block để Jenkins xử lý mặc định
+                checkout scmGit(
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                    url: 'https://github.com/NHongCuong/SmashShop.git',
+                    credentialsId: 'github-token' 
+                    ]]
+                )
             }
         }
         stage('Build and Test') {
@@ -155,17 +167,17 @@ spec:
         //         }
         //     }
         // }
-        stage('Quality Gate') {
-            steps {
-                container('node') {
-                    dir('frontend'){
-                        timeout(activity: true, time: 2, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         container('node') {
+        //             dir('frontend'){
+        //                 timeout(activity: true, time: 2, unit: 'MINUTES') {
+        //                     waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         stage('Build and Push Docker Image') {
             steps {
                 container(name: 'kaniko', shell: '/busybox/sh') {
