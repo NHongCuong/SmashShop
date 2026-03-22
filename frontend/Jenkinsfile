@@ -97,7 +97,7 @@ spec:
                     ]]
                 )
             }
-        }
+            }
         stage('Build and Test') {
             parallel {
                 stage('Build') {
@@ -122,26 +122,46 @@ spec:
         }
         stage('Code Analysis') {
             parallel {
+                // stage('SonarQube Scan') {
+                //     environment {
+                //         SONAR_AUTH_TOKEN = credentials('sonarqube-token');
+                //         SCANNER_HOME = tool 'sonarqube';   
+                //     }
+                //     steps {
+                //         container('node') {
+                //             dir('frontend'){
+                //                 withSonarQubeEnv(installationName: 'sonarqube') {
+                //                     sh '''
+                //                         $SCANNER_HOME/bin/sonar-scanner \
+                //                         -Dsonar.projectKey=smash-shop-frontend-project \
+                //                         -Dsonar.host.url=http://192.168.88.133:31000/ \
+                //                         -Dsonar.login=$SONAR_AUTH_TOKEN
+                //                     '''
+                //                 }
+                //             }
+                //         }
+                //     }
+                // } 
                 stage('SonarQube Scan') {
                     environment {
-                        SONAR_AUTH_TOKEN = credentials('sonarqube-token');
-                        SCANNER_HOME = tool 'sonarqube';   
+                    // Chỉ cần lấy SCANNER_HOME, bỏ SONAR_AUTH_TOKEN ở đây nếu đã cấu hình trong System
+                        SCANNER_HOME = tool 'sonarqube'   
                     }
                     steps {
                         container('node') {
                             dir('frontend'){
+                            // installationName phải khớp chính xác với tên trong Manage Jenkins > System
                                 withSonarQubeEnv(installationName: 'sonarqube') {
-                                    sh '''
+                                    sh """
                                         $SCANNER_HOME/bin/sonar-scanner \
                                         -Dsonar.projectKey=smash-shop-frontend-project \
-                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    '''
+                                        -Dsonar.sources=.
+                                     """
                                 }
                             }
                         }
                     }
-                }   
+                }  
                 stage('Trivy Source Scan') {
                     steps {
                         container('trivy') {
