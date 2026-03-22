@@ -1,0 +1,104 @@
+stage('Checkout') {
+    steps {
+        container('node') {
+            withCredentials([string(credentialsId: 'githubtoken', variable: 'TOKEN')]) {
+                sh """
+                    # Xóa code cũ để tránh xung đột
+                    rm -rf .git
+                    # Clone trực tiếp bằng URL có chứa Token
+                    git clone https://x-token-auth:${TOKEN}@github.com/NHongCuong/SmashShop.git .
+                    git checkout main
+                """
+            }
+        }
+    }
+}
+
+stage('Update Manifests') {
+    steps {
+        container('node') {
+            script {
+                // Kiểm tra xem Jenkins có thực sự lấy được Credential không
+                try {
+                    withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+                        sh """
+                            set -e
+                            # Cài đặt git nếu là Alpine
+                            if ! command -v git >/dev/null; then apk add --no-cache git; fi
+                            
+                            rm -rf smash-shop-k8s-mainfest
+                            git clone https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
+                            cd smash-shop-k8s-mainfest/k8s-manifests/frontend
+                            
+                            # Cập nhật tag image
+                            sed -i "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:${IMAGE_TAG}|" deployment.yaml
+                            
+                            git config user.email "nguyenhongcuonga1@gmail.com"
+                            git config user.name "NHongCuong"
+                            git add deployment.yaml
+                            
+                            if git diff --cached --quiet; then
+                                echo "No changes to commit"
+                            else
+                                git commit -m "Update image to version ${IMAGE_TAG}"
+                                git push origin main
+                            fi
+                        """
+                    }
+                } catch (Exception e) {
+                    error "Lỗi Credentials: Không tìm thấy ID 'githubtoken' trong Jenkins. Vui lòng kiểm tra lại Manage Jenkins > Credentials."
+                }
+            }
+        }
+    }
+}
+
+
+stage('SonarQube Scan') {
+    steps {
+        container('node') {
+            // Gọi tool bên ngoài block sh để lấy đường dẫn
+            script {
+                def scannerHome = tool 'sonarqube'
+                dir('frontend') {
+                    // Sử dụng withCredentials để ép Jenkins phải nạp Token vào biến
+                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'TOKEN')]) {
+                        withSonarQubeEnv(installationName: 'sonarqube') {
+                            sh "${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=smash-shop-frontend-project \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                -Dsonar.login=${TOKEN}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+stage('SonarQube Scan') {
+                    environment {
+                    // Chỉ cần lấy SCANNER_HOME, bỏ SONAR_AUTH_TOKEN ở đây nếu đã cấu hình trong System
+                        SONAR_TOKEN = credentials('sonarqube-token')
+                        SCANNER_HOME = tool 'sonarqube'   
+                    }
+                    steps {
+                        container('node') {
+                            dir('frontend'){
+                            // installationName phải khớp chính xác với tên trong Manage Jenkins > System
+                                withSonarQubeEnv(installationName: 'sonarqube') {
+                                    sh """
+                                        ${SCANNER_HOME}/bin/sonar-scanner \
+                                        -Dsonar.projectKey=smash-shop-frontend-project \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                        -Dsonar.login=${SONAR_TOKEN}
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }  
