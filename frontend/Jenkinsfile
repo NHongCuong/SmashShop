@@ -80,7 +80,7 @@ spec:
         //                 branches: [[name: '*/main']],
         //                 userRemoteConfigs: [[
         //                     url: 'https://github.com/NHongCuong/SmashShop.git',
-        //                     credentialsId: 'github-token'
+        //                     credentialsId: 'githubtoken'
         //                 ]]
         //             )
         //         }
@@ -92,8 +92,8 @@ spec:
                 checkout scmGit(
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
-                    url: 'https://github.com/NHongCuong/SmashShop.git',
-                    credentialsId: 'github-token' 
+                        url: 'https://github.com/NHongCuong/SmashShop.git',
+                        credentialsId: 'githubtoken' 
                     ]]
                 )
             }
@@ -120,64 +120,64 @@ spec:
                 }
             }
         }
-        // stage('Code Analysis') {
-        //     parallel {
-        //         stage('SonarQube Scan') {
-        //             environment {
-        //                 SONAR_AUTH_TOKEN = credentials('sonarqube-token');
-        //                 SCANNER_HOME = tool 'sonarqube';   
-        //             }
-        //             steps {
-        //                 container('node') {
-        //                     dir('frontend'){
-        //                         withSonarQubeEnv(installationName: 'sonarqube') {
-        //                             sh '''
-        //                                 $SCANNER_HOME/bin/sonar-scanner \
-        //                                 -Dsonar.projectKey=smash-shop-frontend-project \
-        //                                 -Dsonar.host.url=http://192.168.88.133:31000/ \
-        //                                 -Dsonar.login=$SONAR_AUTH_TOKEN
-        //                             '''
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }   
-        //         stage('Trivy Source Scan') {
-        //             steps {
-        //                 container('trivy') {
-        //                     dir('frontend') {
-        //                         sh '''
-        //                             trivy fs --no-progress --severity MEDIUM,HIGH,CRITICAL \
-        //                             --scanners vuln,secret \
-        //                             --format table . > trivy-source.txt 2>&1
-        //                             cat trivy-source.txt
-        //                         '''
-        //                         sh '''
-        //                             CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-source.txt | head -1)
-        //                             if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
-        //                                 echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
-        //                                 exit 1
-        //                             else
-        //                                 echo "✅ No critical vulnerabilities found."
-        //                             fi
-        //                         '''
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Quality Gate') {
-        //     steps {
-        //         container('node') {
-        //             dir('frontend'){
-        //                 timeout(activity: true, time: 2, unit: 'MINUTES') {
-        //                     waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Code Analysis') {
+            parallel {
+                stage('SonarQube Scan') {
+                    environment {
+                        SONAR_AUTH_TOKEN = credentials('sonarqube-token');
+                        SCANNER_HOME = tool 'sonarqube';   
+                    }
+                    steps {
+                        container('node') {
+                            dir('frontend'){
+                                withSonarQubeEnv(installationName: 'sonarqube') {
+                                    sh '''
+                                        $SCANNER_HOME/bin/sonar-scanner \
+                                        -Dsonar.projectKey=smash-shop-frontend-project \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }   
+                stage('Trivy Source Scan') {
+                    steps {
+                        container('trivy') {
+                            dir('frontend') {
+                                sh '''
+                                    trivy fs --no-progress --severity MEDIUM,HIGH,CRITICAL \
+                                    --scanners vuln,secret \
+                                    --format table . > trivy-source.txt 2>&1
+                                    cat trivy-source.txt
+                                '''
+                                sh '''
+                                    CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-source.txt | head -1)
+                                    if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
+                                        echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
+                                        exit 1
+                                    else
+                                        echo "✅ No critical vulnerabilities found."
+                                    fi
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                container('node') {
+                    dir('frontend'){
+                        timeout(activity: true, time: 2, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
+                        }
+                    }
+                }
+            }
+        }
         stage('Build and Push Docker Image') {
             steps {
                 container(name: 'kaniko', shell: '/busybox/sh') {
@@ -222,9 +222,10 @@ spec:
         stage('Update Manifests') {
             steps {
                 container('node') {
-                    withCredentials([string(credentialsId: 'github-token', variable: 'GIT_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
                         sh '''
                             set -e
+                            rm -rf smash-shop-k8s-mainfest
                             git clone https://github.com/NHongCuong/smash-shop-k8s-mainfest.git
                             cd smash-shop-k8s-mainfest/k8s-manifests/frontend
                             sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
