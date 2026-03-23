@@ -144,27 +144,50 @@ spec:
                 //     }
                 // } 
                 stage('SonarQube Scan') {
+                    environment {
+                        // Lấy Token từ Credentials (loại Secret Text)
+                        SONAR_TOKEN = credentials('sonarqube-token') 
+                        SCANNER_HOME = tool 'sonarqube'
+                    }
                     steps {
                         container('node') {
-                        // Gọi tool bên ngoài block sh để lấy đường dẫn
-                            script {
-                                def scannerHome = tool 'sonarqube'
-                                dir('frontend') {
-                            // Sử dụng withCredentials để ép Jenkins phải nạp Token vào biến
-                                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'TOKEN')]) {
-                                        withSonarQubeEnv(installationName: 'sonarqube') {
-                                            sh "${scannerHome}/bin/sonar-scanner \
-                                                -Dsonar.projectKey=smash-shop-frontend-project \
-                                                -Dsonar.sources=. \
-                                                -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                                -Dsonar.login=${TOKEN}"
-                                        }
-                                    }
+                            dir('frontend'){
+                                // installationName phải khớp với tên bạn đặt trong Manage Jenkins > Tools
+                                withSonarQubeEnv(installationName: 'sonarqube') {
+                                    sh """
+                                        ${SCANNER_HOME}/bin/sonar-scanner \
+                                        -Dsonar.projectKey=smash-shop-frontend-project \
+                                        -Dsonar.sources=. \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                        -Dsonar.login=${SONAR_TOKEN}
+                                    """
                                 }
                             }
                         }
                     }
                 }
+                // stage('SonarQube Scan') {
+                //     steps {
+                //         container('node') {
+                //         // Gọi tool bên ngoài block sh để lấy đường dẫn
+                //             script {
+                //                 def scannerHome = tool 'sonarqube'
+                //                 dir('frontend') {
+                //             // Sử dụng withCredentials để ép Jenkins phải nạp Token vào biến
+                //                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'TOKEN')]) {
+                //                         withSonarQubeEnv(installationName: 'sonarqube') {
+                //                             sh "${scannerHome}/bin/sonar-scanner \
+                //                                 -Dsonar.projectKey=smash-shop-frontend-project \
+                //                                 -Dsonar.sources=. \
+                //                                 -Dsonar.host.url=http://192.168.88.133:31000/ \
+                //                                 -Dsonar.login=${TOKEN}"
+                //                         }
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
 
                 stage('Trivy Source Scan') {
                     steps {
