@@ -52,7 +52,6 @@ spec:
         IMAGE_TAG = "${BUILD_NUMBER}"
         PIPELINE_NAME = "${env.JOB_NAME}"
         REACT_APP_API_URL = 'http://192.168.88.133:30002'
-        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
     }
     stages {
         stage('Check npm and install git') {
