@@ -25,5 +25,5 @@ jobs:
           file: ./backend/Dockerfile
           push: true 
           tags: |
-            doanlam2704/ie213-backend:latest
+            nhongcuong/smash-shop-backend-image:latest
           platforms: linux/amd64
