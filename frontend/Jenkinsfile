@@ -144,26 +144,58 @@ spec:
                 //         }
                 //     }
                 // }
+                // stage('SonarQube Scan') {
+                //     steps {
+                //         // Thêm retry để nếu timeout do mạng thì sẽ thử lại
+                //         retry(2) {
+                //             container('node') {
+                //                 script {
+                //                     def scannerHome = tool 'sonarqube'
+                //                     dir('frontend') {
+                //                         withSonarQubeEnv(installationName: 'sonarqube') {
+                //                             sh "${scannerHome}/bin/sonar-scanner \
+                //                                 -Dsonar.projectKey=smash-shop-frontend-project \
+                //                                 -Dsonar.sources=. \
+                //                                 -Dsonar.host.url=http://192.168.88.133:31000/"
+                //                         }
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
                 stage('SonarQube Scan') {
                     steps {
-                        // Thêm retry để nếu timeout do mạng thì sẽ thử lại
                         retry(2) {
                             container('node') {
-                                script {
-                                    def scannerHome = tool 'sonarqube'
-                                    dir('frontend') {
-                                        withSonarQubeEnv(installationName: 'sonarqube') {
-                                            sh "${scannerHome}/bin/sonar-scanner \
-                                                -Dsonar.projectKey=smash-shop-frontend-project \
-                                                -Dsonar.sources=. \
-                                                -Dsonar.host.url=http://192.168.88.133:31000/"
+                                dir('frontend') {
+                                    script {
+                                        // 1. Lấy đường dẫn Scanner tool
+                                        def scannerHome = tool 'sonarqube'
+                                        
+                                        // 2. Ép Jenkins nạp Token vào biến môi trường 'SONAR_TOKEN'
+                                        // ID 'sonarqube-token' phải là loại "Secret Text" trong Jenkins Credentials
+                                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                                            
+                                            // 3. Kết nối tới Server cấu hình trong System
+                                            withSonarQubeEnv(installationName: 'sonarqube') {
+                                                
+                                                // Dùng nháy kép để truyền biến ${SONAR_TOKEN} vào lệnh sh
+                                                sh """
+                                                    ${scannerHome}/bin/sonar-scanner \
+                                                    -Dsonar.projectKey=smash-shop-frontend-project \
+                                                    -Dsonar.sources=. \
+                                                    -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                                    -Dsonar.login=${SONAR_TOKEN}
+                                                """
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                } 
+                }
                 // stage('SonarQube Scan') {
                 //     steps {
                 //         container('node') {
