@@ -30,7 +30,6 @@ spec:
         memory: "1024Mi"
   - name: trivy 
     image: aquasec/trivy:latest
-    imagePullPolicy: IfNotPresent
     command: 
     - sleep
     args:
@@ -56,7 +55,7 @@ spec:
     }
     environment {
         CI = 'true'
-        IMAGE_TAG = "${BUILD_NUMBER}" // Use build number as image tag
+        IMAGE_TAG = "${BUILD_NUMBER}"    // Use build number as image tag
         PIPELINE_NAME = "${env.JOB_NAME}" // send email with pipeline name
     }
     stages {
@@ -88,7 +87,7 @@ spec:
                         branches: [[name: '*/main']],
                         userRemoteConfigs: [[
                             url: 'https://github.com/NHongCuong/SmashShop.git',
-                            credentialsId: 'github-token'
+                            credentialsId: 'githubtoken'
                         ]]
                     )
                 }
