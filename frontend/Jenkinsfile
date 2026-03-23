@@ -144,48 +144,25 @@ spec:
                 //         }
                 //     }
                 // }
-                // stage('SonarQube Scan') {
-                //     steps {
-                //         // Thêm retry để nếu timeout do mạng thì sẽ thử lại
-                //         retry(2) {
-                //             container('node') {
-                //                 script {
-                //                     def scannerHome = tool 'sonarqube'
-                //                     dir('frontend') {
-                //                         withSonarQubeEnv(installationName: 'sonarqube') {
-                //                             sh "${scannerHome}/bin/sonar-scanner \
-                //                                 -Dsonar.projectKey=smash-shop-frontend-project \
-                //                                 -Dsonar.sources=. \
-                //                                 -Dsonar.host.url=http://192.168.88.133:31000/"
-                //                         }
-                //                     }
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
                 stage('SonarQube Scan') {
+                     environment {
+                        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+                    }
                     steps {
+                        // Thêm retry để nếu timeout do mạng thì sẽ thử lại
                         retry(2) {
                             container('node') {
-                                dir('frontend') {
-                                    script {
-                                        def scannerHome = tool 'sonarqube'
-                                        // Sử dụng try-catch để xem lỗi cụ thể là gì
-                                        try {
-                                            withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                                                withSonarQubeEnv(installationName: 'sonarqube') {
-                                                    sh """
-                                                        ${scannerHome}/bin/sonar-scanner \
-                                                        -Dsonar.projectKey=smash-shop-frontend-project \
-                                                        -Dsonar.sources=. \
-                                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                                        -Dsonar.login=${SONAR_TOKEN}
-                                                    """
-                                                }
-                                            }
-                                        } catch (Exception e) {
-                                            error "KHÔNG TÌM THẤY CREDENTIAL: Hãy đảm bảo ID 'sonarqube-token' là loại SECRET TEXT và có Scope là GLOBAL."
+                                script {
+                                    def scannerHome = tool 'sonarqube'
+                                    dir('frontend') {
+                                        withSonarQubeEnv(installationName: 'sonarqube') {
+                                            sh """
+                                                ${scannerHome}/bin/sonar-scanner \
+                                                -Dsonar.projectKey=smash-shop-frontend-project \
+                                                -Dsonar.sources=. \
+                                                -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                                -Dsonar.login=$SONAR_AUTH_TOKEN
+                                            """
                                         }
                                     }
                                 }
@@ -193,29 +170,7 @@ spec:
                         }
                     }
                 }
-                // stage('SonarQube Scan') {
-                //     steps {
-                //         container('node') {
-                //             dir('frontend') {
-                //                 // Sử dụng Tool installation đã cấu hình
-                //                 script {
-                //                     def scannerHome = tool 'sonarqube'
-                                    
-                //                     // withSonarQubeEnv sẽ tự động lấy Token từ cấu hình hệ thống
-                //                     // và nạp vào môi trường cho sonar-scanner
-                //                     withSonarQubeEnv(installationName: 'sonarqube') {
-                //                         sh """
-                //                             ${scannerHome}/bin/sonar-scanner \
-                //                             -Dsonar.projectKey=smash-shop-frontend-project \
-                //                             -Dsonar.sources=. \
-                //                             -Dsonar.host.url=http://192.168.88.133:31000/
-                //                         """
-                //                     }
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
+
                 stage('Trivy Source Scan') {
                     steps {
                         container('trivy') {

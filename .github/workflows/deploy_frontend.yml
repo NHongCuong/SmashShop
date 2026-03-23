@@ -24,7 +24,7 @@ jobs:
           context: ./frontend 
           file: ./frontend/Dockerfile
           push: true 
-          tags: | 
+          tags: |
             nhongcuong/ie213-frontend:latest
           platforms: linux/amd64
           build-args: |

@@ -24,6 +24,6 @@ jobs:
           context: ./backend 
           file: ./backend/Dockerfile
           push: true 
-          tags: | 
+          tags: |
             doanlam2704/ie213-backend:latest
           platforms: linux/amd64
