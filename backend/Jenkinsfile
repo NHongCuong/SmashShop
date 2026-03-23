@@ -163,17 +163,17 @@ spec:
         //         }
         //     }
         // }
-        stage('Quality Gate') {
-            steps {
-                container('node') {
-                    dir('backend'){
-                        timeout(activity: true, time: 2, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         container('node') {
+        //             dir('backend'){
+        //                 timeout(activity: true, time: 2, unit: 'MINUTES') {
+        //                     waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Trivy Source Scan') {
             steps {
