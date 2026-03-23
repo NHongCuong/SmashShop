@@ -119,8 +119,8 @@ spec:
             parallel {
                 stage('SonarQube Scan') {
                     environment {
-                        SONAR_AUTH_TOKEN = credentials('sonarqube-token');
-                        SCANNER_HOME = tool 'sonarqube';   
+                        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+                        SCANNER_HOME = tool 'sonarqube'
                     }
                     steps {
                         container('node') {

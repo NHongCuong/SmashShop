@@ -30,11 +30,11 @@ spec:
     - 9999999
     resources:
         requests:
-        cpu: "400m"
-        memory: "800Mi"
+        cpu: "500m"
+        memory: "1024Mi"
     limits:
-        cpu: "800m"
-        memory: "1200Mi"
+        cpu: "1000m"
+        memory: "2048Mi"
   volumes:
   - name: docker-config
     projected:
@@ -124,21 +124,41 @@ spec:
         }
         stage('Code Analysis') {
             parallel {
+                // stage('SonarQube Scan') {
+                //     environment {
+                //         SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+                //         SCANNER_HOME = tool 'sonarqube'
+                //     }
+                //     steps {
+                //         container('node') {
+                //             dir('frontend'){
+                //                 withSonarQubeEnv(installationName: 'sonarqube') {
+                //                     sh """
+                //                         $SCANNER_HOME/bin/sonar-scanner \
+                //                         -Dsonar.projectKey=smash-shop-frontend-project \
+                //                         -Dsonar.host.url=http://192.168.88.133:31000/ \
+                //                         -Dsonar.login=$SONAR_AUTH_TOKEN
+                //                     """
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
                 stage('SonarQube Scan') {
-                    environment {
-                        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
-                        SCANNER_HOME = tool 'sonarqube'
-                    }
                     steps {
-                        container('node') {
-                            dir('frontend'){
-                                withSonarQubeEnv(installationName: 'sonarqube') {
-                                    sh """
-                                        $SCANNER_HOME/bin/sonar-scanner \
-                                        -Dsonar.projectKey=smash-shop-frontend-project \
-                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
+                        // Thêm retry để nếu timeout do mạng thì sẽ thử lại
+                        retry(2) {
+                            container('node') {
+                                script {
+                                    def scannerHome = tool 'sonarqube'
+                                    dir('frontend') {
+                                        withSonarQubeEnv(installationName: 'sonarqube') {
+                                            sh "${scannerHome}/bin/sonar-scanner \
+                                                -Dsonar.projectKey=smash-shop-frontend-project \
+                                                -Dsonar.sources=. \
+                                                -Dsonar.host.url=http://192.168.88.133:31000/"
+                                        }
+                                    }
                                 }
                             }
                         }
