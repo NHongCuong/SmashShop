@@ -30,17 +30,18 @@ spec:
         memory: "1024Mi"
   - name: trivy 
     image: aquasec/trivy:latest
+    imagePullPolicy: IfNotPresent
     command: 
     - sleep
     args:
     - 9999999
     resources:
         requests:
-        cpu: "500m"
-        memory: "1024Mi"
+        cpu: "400m"
+        memory: "800Mi"
     limits:
-        cpu: "1000m"
-        memory: "2048Mi"
+        cpu: "800m"
+        memory: "1200Mi"
   volumes:
   - name: docker-config
     projected:
