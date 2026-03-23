@@ -124,27 +124,49 @@ spec:
         }
         stage('Code Analysis') {
             parallel {
+                // stage('SonarQube Scan') {
+                //     environment {
+                //         SONAR_AUTH_TOKEN = credentials('sonarqube-token');
+                //         SCANNER_HOME = tool 'sonarqube';   
+                //     }
+                //     steps {
+                //         container('node') {
+                //             dir('frontend'){
+                //                 withSonarQubeEnv(installationName: 'sonarqube') {
+                //                     sh """
+                //                         $SCANNER_HOME/bin/sonar-scanner \
+                //                         -Dsonar.projectKey=smash-shop-frontend-project \
+                //                         -Dsonar.host.url=http://192.168.88.133:31000/ \
+                //                         -Dsonar.login=$SONAR_AUTH_TOKEN
+                //                     """
+                //                 }
+                //             }
+                //         }
+                //     }
+                // } 
                 stage('SonarQube Scan') {
-                    environment {
-                        SONAR_AUTH_TOKEN = credentials('sonarqube-token');
-                        SCANNER_HOME = tool 'sonarqube';   
-                    }
                     steps {
                         container('node') {
-                            dir('frontend'){
-                                withSonarQubeEnv(installationName: 'sonarqube') {
-                                    sh """
-                                        $SCANNER_HOME/bin/sonar-scanner \
-                                        -Dsonar.projectKey=smash-shop-frontend-project \
-                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                                    """
+                            dir('frontend') {
+                                // Sử dụng Tool installation đã cấu hình
+                                script {
+                                    def scannerHome = tool 'sonarqube'
+                                    
+                                    // withSonarQubeEnv sẽ tự động lấy Token từ cấu hình hệ thống
+                                    // và nạp vào môi trường cho sonar-scanner
+                                    withSonarQubeEnv(installationName: 'sonarqube') {
+                                        sh """
+                                            ${scannerHome}/bin/sonar-scanner \
+                                            -Dsonar.projectKey=smash-shop-frontend-project \
+                                            -Dsonar.sources=. \
+                                            -Dsonar.host.url=http://192.168.88.133:31000/
+                                        """
+                                    }
                                 }
                             }
                         }
                     }
-                } 
-
+                }
                 stage('Trivy Source Scan') {
                     steps {
                         container('trivy') {
