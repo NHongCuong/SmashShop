@@ -191,21 +191,52 @@ spec:
                 //         }
                 //     }
                 // }
+                // stage('SonarQube Scan') {
+                //     steps {
+                //         container('node') {
+                //             script {
+                //                 def scannerHome = tool 'sonarqube'
+                //                 // Sử dụng hàm nạp biến môi trường khác:
+                //                 withEnv(["TOKEN_VALUE=${credentials('sonarqube-token')}"]) {
+                //                     withSonarQubeEnv(installationName: 'sonarqube') {
+                //                         sh """
+                //                             ${scannerHome}/bin/sonar-scanner \
+                //                             -Dsonar.projectKey=smash-shop-frontend-project \
+                //                             -Dsonar.sources=. \
+                //                             -Dsonar.token=${TOKEN_VALUE}
+                //                         """
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+
                 stage('SonarQube Scan') {
+                    environment {
+                        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+                        // Thử trỏ trực tiếp nếu đã cài ở stage Install JDK
+                        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk'
+                        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+                    }
                     steps {
                         container('node') {
-                            script {
-                                def scannerHome = tool 'sonarqube'
-                                // Sử dụng hàm nạp biến môi trường khác:
-                                withEnv(["TOKEN_VALUE=${credentials('sonarqube-token')}"]) {
-                                    withSonarQubeEnv(installationName: 'sonarqube') {
-                                        sh """
-                                            ${scannerHome}/bin/sonar-scanner \
-                                            -Dsonar.projectKey=smash-shop-frontend-project \
-                                            -Dsonar.sources=. \
-                                            -Dsonar.token=${TOKEN_VALUE}
-                                        """
-                                    }
+                            dir('frontend') {
+                                script {
+                                    // Cài đặt scanner nhanh nếu 'tool' không hoạt động ổn định trong Pod
+                                    sh '''
+                                        if [ ! -d "sonar-scanner" ]; then
+                                            apk add --no-cache curl unzip
+                                            curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o scanner.zip
+                                            unzip scanner.zip && mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+                                        fi
+                                        
+                                        ./sonar-scanner/bin/sonar-scanner \
+                                        -Dsonar.projectKey=smash-shop-frontend-project \
+                                        -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                                        -Dsonar.javascript.node.maxspace=4096
+                                    '''
                                 }
                             }
                         }
