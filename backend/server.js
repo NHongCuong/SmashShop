@@ -45,7 +45,7 @@ app.use(passport.session());
 
 // Middleware
 app.use(cors({
-    origin: "http://localhost:3000", // KHÔNG được dùng '*'
+    origin: "http://192.168.88.133:30002", // KHÔNG được dùng '*'
     credentials: true               // Cho phép gửi cookie
 }));
 
@@ -84,6 +84,6 @@ app.use('*', (req, res) => {
 });
 
 
-app.listen(PORT, () => console.log(`Server started at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server started at http://192.168.88.133:${PORT}`));
 
 export default app;
