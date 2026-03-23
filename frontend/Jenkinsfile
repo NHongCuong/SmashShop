@@ -52,6 +52,7 @@ spec:
         IMAGE_TAG = "${BUILD_NUMBER}"
         PIPELINE_NAME = "${env.JOB_NAME}"
         REACT_APP_API_URL = 'http://192.168.88.133:30002'
+        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
     }
     stages {
         stage('Check npm and install git') {
@@ -145,9 +146,6 @@ spec:
                 //     }
                 // }
                 stage('SonarQube Scan') {
-                     environment {
-                        SONAR_AUTH_TOKEN = credentials('sonarqube-token')
-                    }
                     steps {
                         // Thêm retry để nếu timeout do mạng thì sẽ thử lại
                         retry(2) {
