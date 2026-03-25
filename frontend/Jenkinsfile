@@ -124,48 +124,48 @@ spec:
         }
         // stage('Code Analysis') {
         //     parallel {
-        //         // stage('SonarQube Scan') {
-        //         //     environment {
-        //         //         SONAR_AUTH_TOKEN = credentials('sonarqube-token')
-        //         //         SCANNER_HOME = tool 'sonarqube'
-        //         //     }
-        //         //     steps {
-        //         //         container('node') {
-        //         //             dir('frontend'){
-        //         //                 withSonarQubeEnv(installationName: 'sonarqube') {
-        //         //                     sh """
-        //         //                         $SCANNER_HOME/bin/sonar-scanner \
-        //         //                         -Dsonar.projectKey=smash-shop-frontend-project \
-        //         //                         -Dsonar.host.url=http://192.168.88.133:31000/ \
-        //         //                         -Dsonar.login=$SONAR_AUTH_TOKEN
-        //         //                     """
-        //         //                 }
-        //         //             }
-        //         //         }
-        //         //     }
-        //         // }
-        //         stage('SonarQube Scan') {
-        //             steps {
-        //                 // Thêm retry để nếu timeout do mạng thì sẽ thử lại
-        //                 retry(2) {
-        //                     container('node') {
-        //                         script {
-        //                             def scannerHome = tool 'sonarqube'
-        //                             dir('frontend') {
-        //                                 withSonarQubeEnv(installationName: 'sonarqube') {
-        //                                     sh """
-        //                                         ${scannerHome}/bin/sonar-scanner \
-        //                                         -Dsonar.projectKey=smash-shop-frontend-project \
-        //                                         -Dsonar.sources=. \
-        //                                         -Dsonar.host.url=http://192.168.88.133:31000/ \
-        //                                     """
-        //                                 }
-        //                             }
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
+                // stage('SonarQube Scan') {
+                //     environment {
+                //         SONAR_AUTH_TOKEN = credentials('sonarqube-token')
+                //         SCANNER_HOME = tool 'sonarqube'
+                //     }
+                //     steps {
+                //         container('node') {
+                //             dir('frontend'){
+                //                 withSonarQubeEnv(installationName: 'sonarqube') {
+                //                     sh """
+                //                         $SCANNER_HOME/bin/sonar-scanner \
+                //                         -Dsonar.projectKey=smash-shop-frontend-project \
+                //                         -Dsonar.host.url=http://192.168.88.133:31000/ \
+                //                         -Dsonar.login=$SONAR_AUTH_TOKEN
+                //                     """
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                stage('SonarQube Scan') {
+                    steps {
+                        // Thêm retry để nếu timeout do mạng thì sẽ thử lại
+                        retry(2) {
+                            container('node') {
+                                script {
+                                    def scannerHome = tool 'sonarqube'
+                                    dir('frontend') {
+                                        withSonarQubeEnv(credentialsId: 'sonarqube-token',installationName: 'sonarqube') {
+                                            sh """
+                                                ${scannerHome}/bin/sonar-scanner \
+                                                -Dsonar.projectKey=smash-shop-frontend-project \
+                                                -Dsonar.sources=. \
+                                                -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                            """
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
         //         stage('Trivy Source Scan') {
         //             steps {
@@ -291,16 +291,18 @@ spec:
             steps {
                 container('node') {
                     script {
+                        def githubCredId = 'githubtoken' 
                 // Kiểm tra xem Jenkins có thực sự lấy được Credential không
                         try {
-                            withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+                            withSonarQubeEnv(credentialsId: githubCredId) {
+                            //withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
                                 sh """
                                     set -e
                                     # Cài đặt git nếu là Alpine
                                     if ! command -v git >/dev/null; then apk add --no-cache git; fi
 
                                     rm -rf smash-shop-k8s-mainfest
-                                    git clone https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
+                                    git clone https://${githubCredId}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
                                     cd smash-shop-k8s-mainfest/k8s-manifests/frontend
 
                                     # Cập nhật tag image
