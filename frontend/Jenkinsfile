@@ -122,8 +122,8 @@ spec:
                 }
             }
         }
-        // stage('Code Analysis') {
-        //     parallel {
+        stage('Code Analysis') {
+            parallel {
                 // stage('SonarQube Scan') {
                 //     environment {
                 //         SONAR_AUTH_TOKEN = credentials('sonarqube-token')
@@ -167,42 +167,42 @@ spec:
                     }
                 }
 
-        //         stage('Trivy Source Scan') {
-        //             steps {
-        //                 container('trivy') {
-        //                     dir('frontend') {
-        //                         sh '''
-        //                             trivy fs --no-progress --severity MEDIUM,HIGH,CRITICAL \
-        //                             --scanners vuln,secret \
-        //                             --format table . > trivy-source.txt 2>&1
-        //                             cat trivy-source.txt
-        //                         '''
-        //                         sh '''
-        //                             CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-source.txt | head -1)
-        //                             if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
-        //                                 echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
-        //                                 exit 1
-        //                             else
-        //                                 echo "✅ No critical vulnerabilities found."
-        //                             fi
-        //                         '''
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Quality Gate') {
-        //     steps {
-        //         container('node') {
-        //             dir('frontend'){
-        //                 timeout(activity: true, time: 2, unit: 'MINUTES') {
-        //                     waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+                stage('Trivy Source Scan') {
+                    steps {
+                        container('trivy') {
+                            dir('frontend') {
+                                sh '''
+                                    trivy fs --no-progress --severity MEDIUM,HIGH,CRITICAL \
+                                    --scanners vuln,secret \
+                                    --format table . > trivy-source.txt 2>&1
+                                    cat trivy-source.txt
+                                '''
+                                sh '''
+                                    CRITICAL_COUNT=$(grep -oP 'CRITICAL: \\K[0-9]+' trivy-source.txt | head -1)
+                                    if [ "$CRITICAL_COUNT" != "" ] && [ "$CRITICAL_COUNT" -gt 0 ]; then
+                                        echo "❌ Critical vulnerabilities found in source scan ($CRITICAL_COUNT), failing pipeline"
+                                        exit 1
+                                    else
+                                        echo "✅ No critical vulnerabilities found."
+                                    fi
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                container('node') {
+                    dir('frontend'){
+                        timeout(activity: true, time: 2, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true, credentialsId: 'sonarqube-token'
+                        }
+                    }
+                }
+            }
+        }
         stage('Trivy Source Scan') {
             steps {
                 container('trivy') {
