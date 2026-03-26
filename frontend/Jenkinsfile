@@ -291,11 +291,9 @@ spec:
             steps {
                 container('node') {
                     script {
-                        def githubCredId = 'githubtoken' 
-                // Kiểm tra xem Jenkins có thực sự lấy được Credential không
+                        // Kiểm tra xem Jenkins có thực sự lấy được Credential không
                         try {
-                            withSonarQubeEnv(credentialsId: githubCredId) {
-                            //withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
+                            withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
                                 sh """
                                     set -e
                                     # Cài đặt git nếu là Alpine
