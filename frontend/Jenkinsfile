@@ -23,6 +23,7 @@ spec:
       mountPath: /kaniko/.docker
   - name: trivy 
     image: aquasec/trivy:latest
+    imagePullPolicy: IfNotPresent
     command: 
     - sleep
     args:
