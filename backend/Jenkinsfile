@@ -30,7 +30,6 @@ spec:
         memory: "1024Mi"
   - name: trivy 
     image: aquasec/trivy:latest
-    imagePullPolicy: IfNotPresent
     command: 
     - sleep
     args:

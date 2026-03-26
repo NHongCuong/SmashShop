@@ -23,7 +23,6 @@ spec:
       mountPath: /kaniko/.docker
   - name: trivy 
     image: aquasec/trivy:latest
-    imagePullPolicy: IfNotPresent
     command: 
     - sleep
     args:
@@ -300,7 +299,7 @@ spec:
                                     if ! command -v git >/dev/null; then apk add --no-cache git; fi
 
                                     rm -rf smash-shop-k8s-mainfest
-                                    git clone https://${githubCredId}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
+                                    git clone https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
                                     cd smash-shop-k8s-mainfest/k8s-manifests/frontend
 
                                     # Cập nhật tag image
