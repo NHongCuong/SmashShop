@@ -88,7 +88,7 @@ spec:
                         branches: [[name: '*/main']],
                         userRemoteConfigs: [[
                             url: 'https://github.com/NHongCuong/SmashShop.git',
-                            credentialsId: 'githubtoken'
+                            credentialsId: 'github-token'
                         ]]
                     )
                 }
@@ -285,8 +285,12 @@ spec:
                             curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
                             install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
                             rm argocd-linux-amd64
-                            argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password '${ARGOCD_TOKEN}' --insecure
-                            argocd app sync smash-shop-backend
+                            # argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password '${ARGOCD_TOKEN}' --insecure
+                            # argocd app sync smash-shop-backend
+                            argocd app sync smash-shop-backend \
+                                --server argocd-server.argocd.svc.cluster.local:443 \
+                                --auth-token ${ARGOCD_TOKEN} \
+                                --insecure
                          '''
                      }
                  }
