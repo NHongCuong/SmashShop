@@ -94,7 +94,7 @@ spec:
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/NHongCuong/SmashShop.git',
-                        credentialsId: 'githubtoken' 
+                        credentialsId: 'github-token' 
                     ]]
                 )
             }
@@ -300,11 +300,12 @@ spec:
                                     if ! command -v git >/dev/null; then apk add --no-cache git; fi
 
                                     rm -rf smash-shop-k8s-mainfest
-                                    git clone https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
+                                    #git clone https://${GIT_TOKEN}@github.com/NHongCuong/smash-shop-k8s-mainfest.git
+                                    git clone https://github.com/NHongCuong/smash-shop-k8s-mainfest.git
                                     cd smash-shop-k8s-mainfest/k8s-manifests/frontend
 
                                     # Cập nhật tag image
-                                    sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:${IMAGE_TAG}|" deployment.yaml
+                                    sed -i.bak "s|nhongcuong/smash-shop-frontend-image:.*|nhongcuong/smash-shop-frontend-image:$IMAGE_TAG|" deployment.yaml
 
                                     git config user.email "nguyenhongcuonga1@gmail.com"
                                     git config user.name "NHongCuong"
@@ -313,8 +314,10 @@ spec:
                                     if git diff --cached --quiet; then
                                         echo "No changes to commit"
                                     else
-                                        git commit -m "Update image to version ${IMAGE_TAG}"
-                                        git push origin main
+                                        #git commit -m "Update image to version ${IMAGE_TAG}"
+                                        #git push origin main
+                                        git commit -m "Update image to nhongcuong/smash-shop-frontend:$IMAGE_TAG"
+                                        git push https://$GIT_TOKEN@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
                                     fi
                                 """
                             }

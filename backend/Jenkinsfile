@@ -290,7 +290,8 @@ spec:
                             argocd app sync smash-shop-backend \
                                 --server argocd-server.argocd.svc.cluster.local:443 \
                                 --auth-token ${ARGOCD_TOKEN} \
-                                --insecure
+                                --insecure \
+                                --prune
                          '''
                      }
                  }
