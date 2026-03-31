@@ -294,7 +294,7 @@ spec:
                         // Kiểm tra xem Jenkins có thực sự lấy được Credential không
                         try {
                             withCredentials([string(credentialsId: 'githubtoken', variable: 'GIT_TOKEN')]) {
-                                sh """
+                                sh '''
                                     set -e
                                     # Cài đặt git nếu là Alpine
                                     if ! command -v git >/dev/null; then apk add --no-cache git; fi
@@ -319,7 +319,7 @@ spec:
                                         git commit -m "Update image to nhongcuong/smash-shop-frontend:$IMAGE_TAG"
                                         git push https://$GIT_TOKEN@github.com/NHongCuong/smash-shop-k8s-mainfest.git HEAD:main
                                     fi
-                                """
+                                '''
                             }
                         } catch (Exception e) {
                             error "Lỗi Credentials: Không tìm thấy ID 'githubtoken' trong Jenkins. Vui lòng kiểm tra lại Manage Jenkins > Credentials."
