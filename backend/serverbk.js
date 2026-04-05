@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import connectDB from "./config/database.js";
+import connectDB from "./config/database.js"; // Import file kết nối MongoDB
 import userRoutes from "./routes/user.route.js";
 import Authrouter from "./routes/auth.route.js";
 import session from 'express-session';
@@ -23,42 +23,32 @@ import paymentRoutes from "./routes/payment.route.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5001;
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://smashshop.svuit.org";
+const FRONTEND_URL_VERCEL = process.env.FRONTEND_URL_VERCEL || "https://ie-213.vercel.app";
 connectDB();
 
 const app = express();
-
-// --- CẤU HÌNH QUAN TRỌNG KHI CHẠY SAU NGINX/K8S ---
-app.set("trust proxy", 1); // Cho phép Express tin tưởng các Header từ Nginx gửi sang
-
-app.use(express.json());
+app.use(express.json()); // Quan trọng để đọc dữ liệu JSON từ request
 app.use(cookieParser());
 
-// Cấu hình Session phù hợp cho cả HTTP và HTTPS
 app.use(
     session({
-        secret: "a9b8c7d6e5f4g3h2i1",
+        secret: "a9b8c7d6e5f4g3h2i1", // Khóa bí mật để mã hóa session
         resave: false,
-        saveUninitialized: false, // Đổi thành false để bảo mật hơn
-        cookie: { 
-            secure: true,        // Bắt buộc true khi chạy HTTPS để trình duyệt nhận Cookie
-            sameSite: "none",    // Bắt buộc "none" nếu Frontend và Backend khác Port/Giao thức
-            maxAge: 24 * 60 * 60 * 1000 // 1 ngày
-        },
+        saveUninitialized: true,
+        cookie: { secure: false }, // false nếu không dùng HTTPS
     })
 );
-
+// Cấu hình session
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- CẤU HÌNH CORS CHI TIẾT ---
+// Middleware
 app.use(cors({
-    origin: [
-        "https://192.168.88.133:30443", 
-        "http://192.168.88.133:30002",
-        "https://192.168.88.133"
-    ],
+    //origin: "https://192.168.88.133:30443", // KHÔNG được dùng '*'
+    origin: ["https://192.168.88.133:30443", "http://192.168.88.133:30002"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, // Quan trọng để gửi nhận Cookie/Session
+    credentials: true, // Cho phép gửi cookie/session
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -76,12 +66,13 @@ app.use('/api/auth', Authrouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/vnpay', paymentRoutes);
-
 // Route đăng nhập Google
 app.get('/api/auth/google',
     passport.authenticate("google", { scope: ["openid", "profile", "email"] })
+
 );
 
+// Route callback từ Google
 app.get('/api/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
@@ -89,9 +80,12 @@ app.get('/api/auth/google/callback',
     }
 );
 
+
+// Cấu hình các Routes còn lại 
 app.use('*', (req, res) => {
     res.status(404).json({ error: "not found" })
 });
+
 
 app.listen(PORT, () => console.log(`Server started at http://192.168.88.133:${PORT}`));
 
