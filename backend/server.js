@@ -23,7 +23,7 @@ import paymentRoutes from "./routes/payment.route.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5001;
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://smashshop.svuit.org";
+const FRONTEND_URL = process.env.FRONTEND_URL || "";
 const FRONTEND_URL_VERCEL = process.env.FRONTEND_URL_VERCEL || "https://ie-213.vercel.app";
 connectDB();
 
@@ -57,7 +57,8 @@ app.use(cors({
     origin: [
         "https://192.168.88.133:30443", 
         "http://192.168.88.133:30002",
-        "https://192.168.88.133"
+        "https://192.168.88.133",
+        "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true, // Quan trọng để gửi nhận Cookie/Session
