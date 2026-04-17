@@ -15,6 +15,18 @@ export default function Register({ setIsAuthenticated }) {
   
   const handleSubmit = async(event) => {
     event.preventDefault(); // ngăn reload page
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Vui lòng nhập định dạng email hợp lệ (ví dụ: abc@gmail.com, abc@domain.com)',
+        icon: 'error',
+      });
+      return;
+    }
+
     const data = {
       name: fullName,
       email,

@@ -6,9 +6,10 @@ import { useGetProfileQuery, useUpdateProfileMutation  } from "../../../features
 
 function Profile() {
   const { data: profile, isLoading, isError } = useGetProfileQuery();
-  const [updateProfile] = useUpdateProfileMutation ();
+  const [updateProfile] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
 
   // Load lại form khi có dữ liệu profile
   useEffect(() => {
@@ -34,6 +35,7 @@ function Profile() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setAvatarFile(file);
       const imageUrl = URL.createObjectURL(file);
       setFormData(prev => ({ ...prev, avatar: imageUrl }));
     }
@@ -41,9 +43,18 @@ function Profile() {
 
   const handleSave = async () => {
     try {
-      const { id, ...updateData } = formData;
-      await updateProfile(updateData).unwrap();
+      const { id, avatar, ...updateData } = formData;
+      const dataToSubmit = new FormData();
+      Object.keys(updateData).forEach(key => dataToSubmit.append(key, updateData[key]));
+      
+      // Append avatar file if changed
+      if (avatarFile) {
+        dataToSubmit.append('avatar', avatarFile);
+      }
+
+      await updateProfile(dataToSubmit).unwrap();
       setIsEditing(false);
+      setAvatarFile(null);
       alert("Cập nhật thành công!");
     } catch (err) {
       console.error("Update error", err);

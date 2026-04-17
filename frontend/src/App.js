@@ -6,6 +6,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './app/store/store';
 import { fetchCartThunk} from './app/store/cartThunks';
 import { selectIsAuthenticated } from './app/store/authSlice';
+import BackToTop from './components/BackToTop/BackToTop';
 function App() {
     const calledRef = useRef(false);
     const dispatch = useDispatch();
@@ -38,6 +39,7 @@ function App() {
                     </Route>
                 ))}
                 </Routes>
+                <BackToTop />
                 </Router>
             </div>
         </Provider>

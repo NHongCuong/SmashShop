@@ -1,4 +1,4 @@
-import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory} from '../controllers/order.controller.js'
+import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory, fetchOrderById} from '../controllers/order.controller.js'
 import express from 'express'
 import {authMiddleware} from "../middleware/auth.js";
 
@@ -16,5 +16,7 @@ orderRoutes.get('/',fetchAllOrders)
 orderRoutes.put('/', updateOrderStatus)
 // Lấy thông tin chi tiết đơn hàng
 orderRoutes.get('/detail/:id', fetchProductDetailsByOrderId)
+// Lấy đơn hàng theo ID
+orderRoutes.get('/single/:id', fetchOrderById)
 
 export default orderRoutes

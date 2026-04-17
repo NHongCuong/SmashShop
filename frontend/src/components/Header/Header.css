@@ -6,10 +6,15 @@
   padding: 10px 20px;
   background-color: #F9F9F9;
   gap: 20px;
-  overflow: visible; /* ❌ Bỏ overflow: hidden đi */
+  overflow: visible;
   flex-wrap: nowrap;
   min-width: 0;
-  position: relative; /* 🧠 Thêm cái này để các dropdown position tuyệt đối bên trong */
+  /* Sticky header */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
 }
 
 /* Cố định tỷ lệ các khối */

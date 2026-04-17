@@ -17,3 +17,11 @@ export const apiRefresh = (data) => {
         withCredentials: true // để gửi cookie
 }); 
 }
+
+export const apiForgotPassword = (data) => {
+    return api.post('api/v1/users/forgotpassword', data);
+}
+
+export const apiResetPassword = (data) => {
+    return api.put('api/v1/users/resetpassword', data);
+}

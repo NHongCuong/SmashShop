@@ -51,7 +51,7 @@ spec:
         CI = 'true'
         IMAGE_TAG = "${BUILD_NUMBER}"
         PIPELINE_NAME = "${env.JOB_NAME}"
-        REACT_APP_API_URL = 'http://192.168.88.133:30002'
+        REACT_APP_API_URL = 'https://192.168.88.133:30443'
     }
     stages {
         stage('Check npm and install git') {

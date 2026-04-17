@@ -137,7 +137,8 @@ export const deleteCart = async (req, res) => {
         //Xóa sản phẩm trong cart của User
         // 1. Tìm user để lấy quantity của sản phẩm bị xóa
         const cart_user = await Cart.findOne({user_id: user_id});
-        const cartItem = await cart_user.cart.find(item => item.product.toString() === product_id.toString());
+        if (!cart_user) throw new Error('Giỏ hàng không tồn tại');
+        const cartItem = cart_user.cart.find(item => item.product?.toString() === product_id.toString());
         // console.log(cartItem);
         if (!cartItem) {
             throw new Error('Sản phẩm không tồn tại trong giỏ hàng');
@@ -199,10 +200,14 @@ export const getCart = async (req, res) => {
 //thay đổi số lượng sản phẩm trong giỏ hàng
 export const changeCart = async (req, res) => {
     //Lấy userid từ token
-    // console.log(req.user._id)
     const user_id = req.user._id;
-    // console.log(user_id);
-    const {product_id,quantity} = req.body;
+    const {product_id, quantity} = req.body;
+
+    // Guard: product_id phải tồn tại
+    if (!product_id) {
+        return res.status(400).json({ success: false, message: "product_id is required" });
+    }
+
     try {
         //Tìm cart của user
         const cart_user = await Cart.findOne({user_id: user_id});
@@ -213,8 +218,8 @@ export const changeCart = async (req, res) => {
                 message: "Cart not found",
             });
         }
-        //Tìm sản phẩm trong cart
-        const product_in_cart = await cart_user.cart.find(item => item.product.toString() === product_id.toString());
+        //Tìm sản phẩm trong cart (dùng optional chaining tránh crash khi item.product là null)
+        const product_in_cart = cart_user.cart.find(item => item.product?.toString() === product_id.toString());
         //Nếu không có sản phẩm thì trả về lỗi
         if (!product_in_cart) {
             return res.status(404).json({

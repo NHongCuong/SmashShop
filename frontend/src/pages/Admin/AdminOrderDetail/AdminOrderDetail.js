@@ -1,7 +1,7 @@
 // AdminOrderDetail.js
 import React, { useState, useEffect } from 'react';
 import './AdminOrderDetail.css';
-import { useGetOrdersQuery, useUpdateOrderStatusMutation  } from '../../../features/order/orderApi';
+import { useGetOrderByIdQuery, useUpdateOrderStatusMutation  } from '../../../features/order/orderApi';
 import { useParams } from 'react-router-dom';
 
 
@@ -14,12 +14,13 @@ const AdminOrderDetail = () => {
   };
 
   const { id } = useParams(); 
-  const { data = {}, isLoading } = useGetOrdersQuery();
-  const { orders = [] } = data;
-  const order = orders.find((o) => o._id === id);
-  const [status, setStatus] = useState(order?.status || '');
+  const { data: order, isLoading, refetch } = useGetOrderByIdQuery(id);
+  const [status, setStatus] = useState('');
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
-  const { refetch } = useGetOrdersQuery(); // 👈 lấy refetch
+
+  useEffect(() => {
+    if (order) setStatus(order.status);
+  }, [order]);
 
   // useEffect(() => {
   //   if (order) setStatus(order.status);
@@ -46,6 +47,7 @@ const AdminOrderDetail = () => {
             <table>
               <thead>
                 <tr>
+                  <th>STT</th>
                   <th>Ảnh</th>
                   <th>Tên</th>
                   <th>Đơn giá</th>
@@ -56,6 +58,7 @@ const AdminOrderDetail = () => {
               <tbody>
                 {order.items.map((item, idx) => (
                   <tr key={item._id}>
+                    <td>{idx + 1}</td>
                     <td>
                     <img
                       src={

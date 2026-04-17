@@ -65,11 +65,11 @@ export const login = async (req, res) => {
 
         // Kiểm tra user có tồn tại không
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({success: false, message: "Sai email hoặc mật khẩu!" });
+        if (!user) return res.status(400).json({success: false, message: "Email không tồn tại!" });
 
         // So sánh mật khẩu
         const isMatch = await user.comparePassword(password);
-        if (!isMatch) return res.status(400).json({success: false, message: "Sai email hoặc mật khẩu!" });
+        if (!isMatch) return res.status(400).json({success: false, message: "Nhập sai password!" });
 
         // Tạo token JWT để lưu trong cookie
         const token = generateToken({ _id: user._id, email: user.email, role: user.role });
@@ -140,7 +140,7 @@ export const forgotPassword = asyncHandler( async (req, res) => {
     const resetToken = user.createPasswordResetToken()
     await user.save()
 
-    const html = `Xin vui lòng nhập vào link sau để lấy lại mật khẩu: <a href=${process.env.URL_SERVER}/resetpassword/${resetToken}>Reset Password</a>`
+    const html = `Xin vui lòng nhập vào link sau để lấy lại mật khẩu: <a href=${process.env.FRONTEND_URL}/resetpassword/${resetToken}>Reset Password</a>`
     const rs = await sendmail(email, html)
     return res.status(200).json({success: true, message: `Reset password link has been sent to ${email}`})
 })
@@ -182,8 +182,31 @@ export const getProfile = async (req, res) => {
 //Lấy thông tin tất cả tài khoản
 export const fetchAllUsers = async (req, res) => {
     try {
-        const users = await User.find({}).select("-password -refreshToken -passwordResetToken -passwordResetExpires").sort({user_id: 1});
-        res.status(200).json({success: true, data: users})
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const sortBy = req.query.sortBy || 'create_at';
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+        const skip = (page - 1) * limit;
+
+        const sortOptions = { [sortBy]: sortOrder };
+
+        const users = await User.find({})
+            .select("-password -refreshToken -passwordResetToken -passwordResetExpires")
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limit);
+            
+        const totalItems = await User.countDocuments({});
+        const totalPages = Math.ceil(totalItems / limit);
+
+        res.status(200).json({
+            success: true, 
+            data: users,
+            page,
+            limit,
+            totalPages,
+            totalItems
+        });
     } catch (e) {
         console.log("error in fetching users", e.message)
         res.status(500).json({success: false, message: "Server Error"})
@@ -192,10 +215,9 @@ export const fetchAllUsers = async (req, res) => {
 
 //Lấy thông tin tài khoản theo id
 export const fetchOneUser = async (req, res) => {
-    const user_id = Number(req.params.id)
-
     try {
-        const user = await User.findOne({user_id: user_id}).select("-password -refreshToken -passwordResetToken -passwordResetExpires");
+        const query = isNaN(req.params.id) ? { _id: req.params.id } : { user_id: Number(req.params.id) };
+        const user = await User.findOne(query).select("-password -refreshToken -passwordResetToken -passwordResetExpires");
 
         if (!user){
             return res.status(404).json({success: false, message: "User not found"})
@@ -203,7 +225,7 @@ export const fetchOneUser = async (req, res) => {
 
         res.status(200).json({success: true, data: user})
     } catch (e){
-        console.error("Error in fetching user:", e.mesage)
+        console.error("Error in fetching user:", e.message)
         res.status(500).json({success: false, message: "Server Error"})
     }
 }
@@ -212,12 +234,21 @@ export const fetchOneUser = async (req, res) => {
 export const createUsers = async (req, res) => {
     const user = req.body;
 
-    if(!user.user_id || !user.name || !user.email || !user.password) {
+    if(!user.name || !user.email || !user.password) {
         return res.status(400).json({success: false, message: "Please provide all fields"});
     }
-    user.user_id = Number(user.user_id)
-    const newUser = new User(user)
+    if (!user.user_id) {
+       const lastUser = await User.findOne().sort({ user_id: -1 });
+       user.user_id = lastUser ? lastUser.user_id + 1 : 1;
+    } else {
+       user.user_id = Number(user.user_id)
+    }
 
+    if (req.file && req.file.path) {
+        user.avatar = req.file.path;
+    }
+
+    const newUser = new User(user)
     try {
         await newUser.save();
         res.status(201).json({success: true, data: newUser});
@@ -231,16 +262,26 @@ export const createUsers = async (req, res) => {
 export const updateUsers = async (req,res) => {
     const user_id = req.params.id;
     const user = req.body;
-    // console.log("User ID:", user_id)
-    // console.log("User data:", user)
     try {
-        const updateUser = await User.findOneAndUpdate({_id: user_id}, user, {new: true})
-
-        if (!updateUser){
+        const existingUser = await User.findById(user_id);
+        if (!existingUser){
             return res.status(400).json({success: false, mesage: "Invalid User ID"})
         }
 
-        res.status(200).json({success: true, message: updateUser})
+        Object.keys(user).forEach((key) => {
+            if (key !== 'password' || user[key]) {
+                existingUser[key] = user[key];
+            }
+        });
+
+        if (req.file && req.file.path) {
+            existingUser.avatar = req.file.path;
+        }
+
+        await existingUser.save();
+        const updateUser = await User.findById(user_id).select("-password");
+
+        res.status(200).json({success: true, message: "Success", data: updateUser})
     } catch (e) {
         console.error("Error in Update user:", e.message)
         res.status(500).json({success: false, message: "Server Error"})
@@ -269,13 +310,20 @@ export const updateProfile = asyncHandler(async (req, res) => {
     const updates = req.body;
   
     try {
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        updates,
-        { new: true, runValidators: true }
-      ).select("-password");
-  
-      if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+      Object.keys(updates).forEach((key) => {
+        user[key] = updates[key];
+      });
+
+      // Nếu có upload file avatar thông qua Multer & Cloudinary
+      if (req.file && req.file.path) {
+        user.avatar = req.file.path;
+      }
+
+      await user.save();
+      const updatedUser = await User.findById(userId).select("-password");
   
       res.status(200).json({ success: true, data: updatedUser });
     } catch (e) {

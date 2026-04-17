@@ -79,7 +79,7 @@ export default function Cart() {
       navigate('/');
     } else if (paymentMethod === 'vnpay') {
       try {
-        const res = await fetch("https://smashshop.svuit.org/api/v1/vnpay/create_payment", {
+        const res = await fetch("http://localhost:5000/api/v1/vnpay/create_payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -90,7 +90,7 @@ export default function Cart() {
         const data = await res.json();
         if (data.paymentUrl) {
           localStorage.setItem("shippingInfo", JSON.stringify(formData));
-          localStorage.setItem("cartItems", JSON.stringify(items));
+          localStorage.setItem("cartItems", JSON.stringify(cartItems));
           
           window.location.href = data.paymentUrl;
         } else {

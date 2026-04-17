@@ -1,13 +1,13 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import "./ResetPassword.css";
-
+import { useUpdateProfileMutation } from "../../../features/user/userApi";
 
 const ResetPassword = () => {
-
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const handleSubmit = (e) => {
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
@@ -15,10 +15,17 @@ const ResetPassword = () => {
       return;
     }
 
-    console.log('Đặt lại mật khẩu thành công với:', newPassword);
-    alert('Mật khẩu của bạn đã được thay đổi thành công!');
-    // gọi API thực hiện thay đổi mật khẩu
+    try {
+      await updateProfile({ password: newPassword }).unwrap();
+      alert('Mật khẩu của bạn đã được thay đổi thành công!');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Lỗi khi đổi mật khẩu:', error);
+      alert('Đã xảy ra lỗi khi cập nhật mật khẩu.');
+    }
   };
+
   return (
     <div className="orders-history">
       <h2>Đặt Lại Mật Khẩu</h2>

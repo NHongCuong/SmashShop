@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
     count_type_cart: {type: Number},
+    gender: { type: String },
+    dob: { type: Date },
+    address: { type: String },
+    avatar: { type: String },
 });
 
 // Băm mật khẩu trước khi lưu

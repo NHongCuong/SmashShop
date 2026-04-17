@@ -41,10 +41,10 @@ export default function Login() {
       Swal.fire('Đăng nhập thành công!', '', 'success');
       navigate("/");
     } catch (err) {
-      console.log('Lỗi từ API:', err.message);
+      console.log('Lỗi từ API:', err);
       Swal.fire({
         title: 'Lỗi đăng nhập',
-        text: err.message || 'Sai email hoặc mật khẩu!',
+        text: typeof err === 'string' ? err : 'Sai email hoặc mật khẩu!',
         icon: 'error',
       });
     }
@@ -85,6 +85,9 @@ export default function Login() {
                 <button type="submit" className="login-btn">Đăng Nhập</button>
             </form>
             
+            <p className="register-link" style={{marginBottom: "5px"}}>
+              <Link to="/forgot-password" style={{fontSize: "14px", color: "#1890ff"}}>Quên mật khẩu?</Link>
+            </p>
             <p className="register-link">
             Bạn chưa có tài khoản? <Link to="/register">Đăng ký</Link>
             </p>

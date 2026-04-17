@@ -6,18 +6,37 @@ import Product from '../models/product.model.js';
 
 export const fetchOrderHistory = async (req, res) => {
     const userId = req.query.user_id || '';
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
     const query = (userId) ? {user_id: userId } : {};
 
     try {
+        const totalDocument = await Order.countDocuments(query);
         const order = await Order.find(query)
             .populate({
                 path: 'user_id', // Populate the 'orderBy' field
                 model: 'User',  // Specify the model to populate with (User model)
                 select: 'name email phone_number ' // Optionally select specific fields from the User model
             })
-            .sort({createdAt: -1})
+            .populate({
+                path: 'items.product',
+                model: 'Product'
+            })
+            .sort({[sortBy]: sortOrder})
+            .skip((page - 1) * limit)
+            .limit(limit);
 
-        res.status(200).json({success: true, data: order})
+        res.status(200).json({
+            success: true, 
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(totalDocument/limit),
+            totalItems: totalDocument,
+            data: order
+        })
     } catch(e) {
         res.status(500).json({success: false, error: e.message})
     }
@@ -78,6 +97,8 @@ export const createOrder = async (req, res) => {
 export const fetchAllOrders = async (req, res) => {
     const limit = parseInt(req.query.limit) || 12;
     const page = parseInt(req.query.page) || 1;
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
     try {
         const totalDocument = await Order.countDocuments();  
@@ -95,6 +116,9 @@ export const fetchAllOrders = async (req, res) => {
                 model: 'User',
                 select: 'name email phone_number '
             })
+            .sort({[sortBy]: sortOrder})
+            .skip((page - 1) * limit)
+            .limit(limit);
         res.status(200).json({
             success: true,
             page: page,
@@ -137,6 +161,33 @@ export const fetchProductDetailsByOrderId = async (req, res) => {
         }
         res.status(200).json({success: true, data: orderDetails});
     } catch (e) {
+        res.status(500).json({success: false, error: e.message});
+    }
+}
+
+export const fetchOrderById = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                populate: {
+                    path: 'images',
+                    model: 'ProductImage'
+                }
+            })
+            .populate({
+                path: 'user_id',
+                model: 'User',
+                select: 'name email phone_number '
+            });
+            
+        if (!order) {
+            return res.status(404).json({success: false, message: "Order not found"});
+        }
+        res.status(200).json({success: true, data: order});
+    } catch(e) {
         res.status(500).json({success: false, error: e.message});
     }
 }

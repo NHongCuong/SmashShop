@@ -62,8 +62,62 @@
   }
 
   /* Hiển thị nhãn trước giá trị */
-  .order-row span:nth-child(1)::before { content: "Mã đơn: "; }
-  .order-row span:nth-child(2)::before { content: "Trạng thái: "; }
-  .order-row span:nth-child(3)::before { content: "Ngày: "; }
-  .order-row span:nth-child(4)::before { content: "Tổng tiền: "; }
+  .order-row > span:nth-child(1)::before { content: "STT: "; }
+  .order-row > span:nth-child(2)::before { content: "Mã đơn: "; }
+  .order-row > span:nth-child(3)::before { content: "Tên sản phẩm: "; }
+  .order-row > span:nth-child(4)::before { content: "Số lượng: "; }
+  .order-row > span:nth-child(5)::before { content: "Trạng thái: "; }
+  .order-row > span:nth-child(6)::before { content: "Ngày: "; }
+  .order-row > span:nth-child(7)::before { content: "Tổng tiền: "; }
+}
+
+.orders-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.orders-controls label {
+  font-weight: 500;
+  color: #333;
+}
+
+.orders-controls select {
+  margin-left: 10px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  gap: 15px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background-color: #EAC427;
+  color: #000;
+  border: none;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pagination span {
+  font-weight: 500;
 }

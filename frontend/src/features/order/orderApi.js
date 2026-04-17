@@ -16,7 +16,8 @@ export const orderApi = createApi({
   tagTypes: ['Orders'],
   endpoints: (builder) => ({
     getOrders: builder.query({
-      query: ({ page = 1, limit = 12 } = {}) => `order?page=${page}&limit=${limit}`,
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = {}) => 
+        `order?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
       transformResponse: (response) => ({
         orders: response.data,
         totalPages: response.totalPages,
@@ -33,7 +34,12 @@ export const orderApi = createApi({
         }),
         invalidatesTags: ['Orders'],
     }),
+    getOrderById: builder.query({
+      query: (id) => `order/single/${id}`,
+      transformResponse: (response) => response.data,
+      providesTags: (result, error, id) => [{ type: 'Orders', id }],
+    }),
   })
 });
 
-export const { useGetOrdersQuery, useUpdateOrderStatusMutation } = orderApi;
+export const { useGetOrdersQuery, useUpdateOrderStatusMutation, useGetOrderByIdQuery } = orderApi;

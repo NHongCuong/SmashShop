@@ -2,6 +2,8 @@ import routes from '../configs/routes.config';
 import Home from '../pages/Home/Home';
 import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
+import ForgotPassword from '../pages/Login/ForgotPassword';
+import ResetPasswordFromEmail from '../pages/Login/ResetPasswordFromEmail';
 import User from '../pages/User/User';
 import Profile from '../pages/User/Profile/Profile';
 import OrdersHistory from '../pages/User/OrderHistory/OrdersHistory';
@@ -18,6 +20,10 @@ import AdminOrders from '../pages/Admin/AdminOrders/AdminOrders';
 import AdminStatistics from '../pages/Admin/AdminStatistics/AdminStatistics';
 import AdminProductDetail from '../pages/Admin/AdminProductDetail/AdminProductDetail';
 import AdminOrderDetail from '../pages/Admin/AdminOrderDetail/AdminOrderDetail';
+import AdminUsers from '../pages/Admin/AdminUsers/AdminUsers';
+import AdminUserDetail from '../pages/Admin/AdminUserDetail/AdminUserDetail';
+import AdminAddUser from '../pages/Admin/AdminAddUser';
+import AdminEditUser from '../pages/Admin/AdminEditUser';
 import AdminLogin from '../pages/Admin/AdminLogin/AdminLogin';
 import RequireAdminAuth from '../pages/Admin/AdminLogin/RequireAdminAuth';
 import RequireUserAuth from '../pages/User/RequireUserAuth';
@@ -29,6 +35,8 @@ import PaymentSuccess from '../pages/Payment/Payment';
 const pages = [
     { path: routes.home, Component: Home },
     { path: routes.login, Component: Login },
+    { path: "/forgot-password", Component: ForgotPassword },
+    { path: "/resetpassword/:token", Component: ResetPasswordFromEmail },
     { path: routes.register, Component: Register },
     { path: routes.products, Component: Products },
     { path: routes.product, Component: ProductDetail },
@@ -65,6 +73,10 @@ const pages = [
             { path: 'products/edit/:id', Component: AdminEditProduct },
             { path: 'orders', Component: AdminOrders },
             { path: 'orders/:id', Component: AdminOrderDetail },
+            { path: 'users', Component: AdminUsers },
+            { path: 'users/add', Component: AdminAddUser },
+            { path: 'users/:id', Component: AdminUserDetail },
+            { path: 'users/edit/:id', Component: AdminEditUser },
 
         ],
     },

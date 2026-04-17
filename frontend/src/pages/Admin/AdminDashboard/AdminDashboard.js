@@ -9,6 +9,8 @@ import {
   faBox,
   faChartPie,
   faUser,
+  faUsers,
+  faUserPlus,
   faBars,
   faXmark,
   faRightFromBracket,
@@ -54,7 +56,13 @@ export default function AdminDashboard() {
               <FontAwesomeIcon icon={faPlus} /> Thêm sản phẩm mới
             </NavLink>
             <NavLink to="/admin/orders" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
-              <FontAwesomeIcon icon={faUser} /> Đơn hàng
+              <FontAwesomeIcon icon={faCartShopping} /> Đơn hàng
+            </NavLink>
+            <NavLink to="/admin/users" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faUsers} /> Người dùng hiện có
+            </NavLink>
+            <NavLink to="/admin/users/add" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faUserPlus} /> Thêm người dùng mới
             </NavLink>
             <button className="ad-nav-item-logout" onClick={handleLogout}>
               <FontAwesomeIcon icon={faRightFromBracket} /> Đăng xuất
