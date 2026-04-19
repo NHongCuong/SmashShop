@@ -54,14 +54,33 @@ export const dashboardStatistics = async (req, res) => {
             }
         ]);
 
-        // Extract results
-        const totalRevenue = result.length > 0 ? result[0].totalRevenue : 0;
-        const totalOrders = result.length > 0 ? result[0].totalOrders : 0;
-        const totalProductsSold = result.length > 0 ? result[0].totalProductsSold : 0;
-        
+        // Calculate cumulative totals across all time for "Succeeded" orders
+        const allTimeStats = await Order.aggregate([
+            {
+                $match: {
+                    status: "Succeeded"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$total" },
+                    totalOrders: { $sum: 1 },
+                    totalSold: { $sum: { $size: "$items" } }
+                }
+            }
+        ]);
+
+        const totalOverall = allTimeStats.length > 0 ? {
+            revenue: allTimeStats[0].totalRevenue,
+            orders: allTimeStats[0].totalOrders,
+            sold: allTimeStats[0].totalSold
+        } : { revenue: 0, orders: 0, sold: 0 };
+
         res.status(200).json({
             success: true,
-            data: result
+            data: result,
+            totalOverall
         });
     } catch (error) {
         console.error("Error in dashboardStatistics:", error.message);

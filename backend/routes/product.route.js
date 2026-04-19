@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchAllProducts, fetchProductById, createProduct, updateProduct , deactiveProduct} from "../controllers/product.controller.js";
+import { fetchAllProducts, fetchProductById, createProduct, updateProduct, deactiveProduct } from "../controllers/product.controller.js";
 import parser from '../utils/multer.js'
 
 const productRouter = express.Router();

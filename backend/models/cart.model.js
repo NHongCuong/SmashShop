@@ -1,16 +1,21 @@
 import mongoose from 'mongoose';
 
 const CartSchema = mongoose.Schema({
+    cart_id: { type: String, unique: true },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     cart: [
         {
             product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product'
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product'
             },
-            quantity: Number
+            product_name: String,
+            price: Number,
+            quantity: Number,
+            subtotal: Number
         }
     ],
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updatedAt: { type: Date, default: Date.now }
 });
 
 const Cart = mongoose.model("Cart", CartSchema);

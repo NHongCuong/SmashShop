@@ -1,4 +1,4 @@
-import {useRef,React} from 'react';
+import { useRef, React } from 'react';
 import {
   faDollarSign,
   faBoxOpen,
@@ -29,16 +29,18 @@ const AdminStatistics = () => {
   if (isLoading) return <p>Đang tải dữ liệu thống kê...</p>;
   if (isError) return <p>Lỗi khi tải thống kê.</p>;
 
-  const { today, chartData } = data;
+  const { today, chartData, totalOverall } = data;
 
-  const StatCard = ({ title, value, change, icon, isDown = false }) => (
+  const StatCard = ({ title, value, change, icon, isDown = false, showChange = true }) => (
     <div className="stat-card">
       <div className="stat-left">
         <div className="stat-title">{title}</div>
         <div className="stat-value">{value.toLocaleString()}</div>
-        <div className={`stat-change ${isDown ? "down" : "up"}`}>
-          {isDown ? "▼" : "▲"} {Math.abs(change)}% so với hôm qua
-        </div>
+        {showChange && (
+          <div className={`stat-change ${isDown ? "down" : "up"}`}>
+            {isDown ? "▼" : "▲"} {Math.abs(change)}% so với hôm qua
+          </div>
+        )}
       </div>
       <div className="stat-icon">
         <FontAwesomeIcon icon={icon} />
@@ -63,6 +65,13 @@ const AdminStatistics = () => {
 
   return (
     <div className="dashboard-container">
+      <h2>Thống kê tổng quan</h2>
+      <div className="stat-cards">
+        <StatCard title="Tổng Doanh thu" value={totalOverall?.revenue || 0} icon={faDollarSign} showChange={false} />
+        <StatCard title="Tổng Đơn hàng" value={totalOverall?.orders || 0} icon={faCalendarAlt} showChange={false} />
+        <StatCard title="Tổng Sản phẩm đã bán" value={totalOverall?.sold || 0} icon={faBoxOpen} showChange={false} />
+      </div>
+
       <h2>Thống kê ngày hôm nay</h2>
       <div className="stat-cards">
         <StatCard title="Doanh thu" value={today.revenue} change={today.change.revenue} icon={faDollarSign} />

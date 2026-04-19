@@ -6,10 +6,12 @@ const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
 export const statisticsApi = createApi({
   reducerPath: 'statisticsApi',
   baseQuery: fetchBaseQuery({ baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/` }),
+  tagTypes: ['Statistics'],
   endpoints: (builder) => ({
     getStatistics: builder.query({
       query: ({ startDate, endDate }) =>
         `dashboard?start_date=${startDate}&end_date=${endDate}`,
+      providesTags: ['Statistics'],
       transformResponse: (res) => {
         const chartData = res.data;
        
@@ -35,6 +37,7 @@ export const statisticsApi = createApi({
         return {
           today,
           chartData,
+          totalOverall: res.totalOverall
         };
       },
     }),

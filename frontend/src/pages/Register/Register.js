@@ -8,14 +8,15 @@ import { apiRegister } from "../../apis/user";
 import Swal from 'sweetalert2';
 
 export default function Register({ setIsAuthenticated }) {
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  
-  const handleSubmit = async(event) => {
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const handleSubmit = async (event) => {
     event.preventDefault(); // ngăn reload page
-    
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -31,6 +32,7 @@ export default function Register({ setIsAuthenticated }) {
       name: fullName,
       email,
       password,
+      phone_number: phoneNumber,
     }
     try {
       //Thông báo thành công
@@ -66,16 +68,23 @@ export default function Register({ setIsAuthenticated }) {
 
   return (
     <div className="container">
-        <Header/>
-        <div className="register-container">
+      <Header />
+      <div className="register-container">
         <div className="register-box">
-            <h2>Đăng Ký</h2>
-            <form onSubmit={handleSubmit}>
+          <h2>Đăng Ký</h2>
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Họ và Tên"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Số điện thoại"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               required
             />
             <input
@@ -92,6 +101,7 @@ export default function Register({ setIsAuthenticated }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
             <button type="submit" className="register-btn">Đăng Ký</button>
           </form>
           <p className="login-link">

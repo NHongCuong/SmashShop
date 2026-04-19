@@ -1,5 +1,6 @@
 // features/order/orderApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { statisticsApi } from '../statistics/statisticsApi';
 
 export const orderApi = createApi({
   reducerPath: 'orderApi',
@@ -24,7 +25,13 @@ export const orderApi = createApi({
         totalItems: response.totalItems,
         page: response.page,
         limit: response.limit
-      })
+      }),
+      providesTags: ['Orders'],
+    }),
+    getAllOrders: builder.query({
+      query: () => `order?limit=1000000`,
+      transformResponse: (response) => response.data,
+      providesTags: ['Orders'],
     }),
     updateOrderStatus: builder.mutation({
         query: ({ order_id, status }) => ({
@@ -33,6 +40,14 @@ export const orderApi = createApi({
           body: { order_id, status },
         }),
         invalidatesTags: ['Orders'],
+        async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+          try {
+            await queryFulfilled;
+            dispatch(statisticsApi.util.invalidateTags(['Statistics']));
+          } catch (err) {
+            console.error("Failed to invalidate statistics:", err);
+          }
+        },
     }),
     getOrderById: builder.query({
       query: (id) => `order/single/${id}`,
@@ -42,4 +57,4 @@ export const orderApi = createApi({
   })
 });
 
-export const { useGetOrdersQuery, useUpdateOrderStatusMutation, useGetOrderByIdQuery } = orderApi;
+export const { useGetOrdersQuery, useUpdateOrderStatusMutation, useGetOrderByIdQuery, useGetAllOrdersQuery } = orderApi;

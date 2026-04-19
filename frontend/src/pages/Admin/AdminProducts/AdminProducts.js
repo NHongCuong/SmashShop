@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import './AdminProducts.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { useGetAllProductsQuery, useDeactiveProductMutation } from '../../../features/product/productApi';
+import { useGetAllProductsQuery, useDeactiveProductMutation, useGetProductsQuery } from '../../../features/product/productApi';
+
+import * as XLSX from 'xlsx';
 
 export default function AdminProducts() {
   const [page, setPage] = useState(1);
@@ -14,10 +16,44 @@ export default function AdminProducts() {
   const products = queryData?.data || [];
   const totalPages = queryData?.totalPages || 1;
 
+  const { data: allProductsData } = useGetProductsQuery();
+
   const [deactiveProduct] = useDeactiveProductMutation();
   const [showConfirm, setShowConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const navigate = useNavigate();
+
+  const handleExportExcel = () => {
+    if (!allProductsData || allProductsData.length === 0) {
+      alert("Không có dữ liệu để xuất!");
+      return;
+    }
+
+    const dataToExport = allProductsData.map((product, index) => ({
+      "STT": index + 1,
+      "Ảnh": product.images?.filter(img => img.is_primary_image)[0]?.image || "",
+      "Tên sản phẩm": product.prod_name,
+      "Danh mục": product.category_id?.category_name || "",
+      "Thương hiệu": product.brand_id?.brand_name || "",
+      "Giá": product.price,
+      "Số lượng trong kho": product.stock,
+      "Đã bán": product.quantity_sold,
+      "Giảm giá": product.discount || 0,
+      "Loại": product.type_id?.type_name || "",
+      "Thương hiệu ": product.brand_id?.brand_name || "",
+    }));
+
+    const totalPrice = allProductsData.reduce((sum, product) => sum + (product.price || 0), 0);
+    dataToExport.push({
+      "STT": "Tổng cộng",
+      "Giá": totalPrice
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách sản phẩm");
+    XLSX.writeFile(workbook, "Danh_sach_san_pham.xlsx");
+  };
 
   const handleDelete = (productId) => {
     setProductToDelete(productId);
@@ -28,7 +64,7 @@ export default function AdminProducts() {
     try {
       await deactiveProduct(productToDelete).unwrap();
       alert("Đã xóa sản phẩm thành công!");
-      refetch(); 
+      refetch();
     } catch (error) {
       console.error("Lỗi khi xóa sản phẩm:", error);
     }
@@ -39,31 +75,34 @@ export default function AdminProducts() {
   return (
     <div className="admin-products">
       <h1>Sản phẩm hiện có</h1>
-        <div className="orders-controls admin-controls">
-          <div className="controls-left">
-            <label>
-              Hiển thị:
-              <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={200}>200</option>
-              </select>
-            </label>
-          </div>
-          <div className="controls-right">
-            <label>
-              Sắp xếp theo:
-              <select value={sortField} onChange={(e) => { setSortField(e.target.value); setPage(1); }}>
-                <option value="newest">Mới nhất</option>
-                <option value="price_desc">Giá (Giảm dần)</option>
-                <option value="price_asc">Giá (Tăng dần)</option>
-                <option value="best_selling">Bán chạy</option>
-              </select>
-            </label>
-          </div>
+      <div className="orders-controls admin-controls">
+        <div className="controls-left">
+          <label>
+            Hiển thị:
+            <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+          </label>
+          <button className="btn-export-excel" onClick={handleExportExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            Download file excel tất cả sản phẩm
+          </button>
         </div>
+        <div className="controls-right">
+          <label>
+            Sắp xếp theo:
+            <select value={sortField} onChange={(e) => { setSortField(e.target.value); setPage(1); }}>
+              <option value="newest">Mới nhất</option>
+              <option value="price_desc">Giá (Giảm dần)</option>
+              <option value="price_asc">Giá (Tăng dần)</option>
+              <option value="best_selling">Bán chạy</option>
+            </select>
+          </label>
+        </div>
+      </div>
 
       <div className="product-table">
         <table>
@@ -88,15 +127,15 @@ export default function AdminProducts() {
                 <td>{product.brand_id.brand_name}</td>
                 <td>{product.price.toLocaleString('vi-VN')}₫</td>
                 <td onClick={e => e.stopPropagation()} className='ad-product-edit-delete'>
-                  <FontAwesomeIcon 
-                    icon={faPenToSquare} 
-                    className="icon edit" 
-                    onClick={() => navigate(`/admin/products/edit/${product.id}`)} 
+                  <FontAwesomeIcon
+                    icon={faPenToSquare}
+                    className="icon edit"
+                    onClick={() => navigate(`/admin/products/edit/${product.id}`)}
                   />
-                  <FontAwesomeIcon 
-                    icon={faTrash} 
-                    className="icon delete" 
-                    onClick={() => handleDelete(product.id)} 
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="icon delete"
+                    onClick={() => handleDelete(product.id)}
                   />
                 </td>
               </tr>

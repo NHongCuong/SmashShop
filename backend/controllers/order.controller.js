@@ -2,6 +2,7 @@ import Cart from '../models/cart.model.js';
 import Order from '../models/order.model.js'
 import OrderDetail from '../models/order_detail.js';
 import Product from '../models/product.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 
 export const fetchOrderHistory = async (req, res) => {
@@ -65,6 +66,7 @@ export const createOrder = async (req, res) => {
         // Tính tổng
         const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
 
+
         // Tạo Order
         const order = await Order.create({
             user_id,
@@ -74,6 +76,20 @@ export const createOrder = async (req, res) => {
             status: "Succeeded",
             paymentmethod: req.body.paymentMethod,
         });
+
+        // Tạo Order Detail
+        const orderDetailData = {
+            order_detail_id: uuidv4(),
+            order_id: order._id,
+            products: cartDoc.cart.map(ci => ({
+                product_id: ci.product._id,
+                product_name: ci.product.prod_name,
+                quantity: ci.quantity,
+                price: ci.product.price,
+                total: ci.product.price * ci.quantity
+            }))
+        };
+        await OrderDetail.create(orderDetailData);
         
         // giảm số lượng sản phẩm trong kho
         for (const item of items) {
@@ -87,7 +103,7 @@ export const createOrder = async (req, res) => {
         // Xoá giỏ hàng của user
         await Cart.updateOne({ user_id }, { $set: { cart: [] } });
 
-        return res.status(201).json({ success: true, order });
+        return res.status(201).json({ success: true, order, orderDetail: orderDetailData });
     } catch (err) {
         console.error('Error createOrder:', err);
         return res.status(500).json({ success: false, message: 'Server Error' });

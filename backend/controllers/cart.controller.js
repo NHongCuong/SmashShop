@@ -1,27 +1,48 @@
 import User from '../models/user.model.js';
 import Cart from '../models/cart.model.js';
+import Product from '../models/product.model.js'; // Added Product import
 import mongoose from 'mongoose';
 import ProductImage from '../models/productImage.model.js';
+import { v4 as uuidv4 } from 'uuid'; // Added uuid import
 
 //thêm/giảm sản phẩm trong giỏ hàng
 export const addCart = async (req, res) => {
     //Lấy user_id
     const user_id = req.user._id;
-    const {product_id,quantity} = req.body;
+    const { product_id, quantity } = req.body;
+    
+    // Fetch product details
+    const productData = await Product.findById(product_id);
+    if (!productData) {
+        return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const price = productData.price;
+    const product_name = productData.prod_name;
+    const subtotal = price * quantity;
+
     //Lấy cart của user
     const productObjectId = new mongoose.Types.ObjectId(product_id);
-    const cart_user = await Cart.findOne({user_id: user_id});
+    const cart_user = await Cart.findOne({ user_id: user_id });
+    
     //Nếu chưa có cart thì tạo mới cart
     if (!cart_user) {
         const newCart = new Cart({
+            cart_id: uuidv4(),
             user_id: user_id,
-            cart: [{ product: product_id, quantity }],
-            count_cart: quantity,          // khởi tạo luôn số lượng
+            cart: [{ 
+                product: product_id, 
+                product_name, 
+                price, 
+                quantity, 
+                subtotal 
+            }],
+            count_cart: quantity,
         });
         await newCart.save();
 
         return res.status(200).json({
-            success: true, 
+            success: true,
             message: "Create new cart",
         });
     }
@@ -58,9 +79,7 @@ export const addCart = async (req, res) => {
         // console.log("ok1");
         // Nếu không có sản phẩm thì thêm mới sản phẩm vào giỏ hàng
         if (!product_in_cart) {
-            // console.log("ok1");
             if (quantity < 0) {
-                // console.log("ok2");
                 return res.status(200).json({
                     success: true, 
                     message: "No product to delete",
@@ -70,13 +89,20 @@ export const addCart = async (req, res) => {
                 { user_id: user_id },
                 {
                     $push: {
-                        cart: { product: product_id, quantity: quantity }
+                        cart: { 
+                            product: product_id, 
+                            product_name, 
+                            price, 
+                            quantity, 
+                            subtotal 
+                        }
                     },
                     $inc: {
                         count_cart: quantity 
                     },
+                    $set: { updatedAt: new Date() }
                 },
-                {new : true}
+                { new: true }
             );
             return res.status(200).json({
                 success: true, 
@@ -108,7 +134,13 @@ export const addCart = async (req, res) => {
         const found = await Cart.findOne({ user_id: new mongoose.Types.ObjectId(user_id), 'cart.product': productObjectId });
         const up = await Cart.findOneAndUpdate(
             { user_id, 'cart.product': product_id },
-            { $inc: { 'cart.$.quantity': quantity } },
+            { 
+                $inc: { 'cart.$.quantity': quantity },
+                $set: { 
+                    'cart.$.subtotal': (product_in_cart.quantity + quantity) * price,
+                    updatedAt: new Date()
+                }
+            },
             { new: true }    
         );
         // console.log(up);
@@ -228,10 +260,17 @@ export const changeCart = async (req, res) => {
             });
         }
         //Nếu có sản phẩm thì thay đổi số lượng sản phẩm
+        const price = product_in_cart.price || 0; // Use stored price or handle if missing
         await Cart.updateOne(
             { user_id: user_id, 'cart.product': product_id },
-            { $set: { 'cart.$.quantity': quantity } },
-            { new: true }    // hoặc returnDocument: 'after' với Mongoose >=6
+            { 
+                $set: { 
+                    'cart.$.quantity': quantity,
+                    'cart.$.subtotal': price * quantity,
+                    updatedAt: new Date()
+                } 
+            },
+            { new: true }
         );
         res.status(201).json({
             success: true, 
