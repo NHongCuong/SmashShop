@@ -40,7 +40,7 @@ export default function AdminProducts() {
       "Đã bán": product.quantity_sold,
       "Giảm giá": product.discount || 0,
       "Loại": product.type_id?.type_name || "",
-      "Thương hiệu ": product.brand_id?.brand_name || "",
+      "Mô tả": product.description || "",
     }));
 
     const totalPrice = allProductsData.reduce((sum, product) => sum + (product.price || 0), 0);

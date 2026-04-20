@@ -19,18 +19,15 @@ export const fetchCartThunk = createAsyncThunk(
     );
 
     // 2. Thêm hoặc tăng/giảm số lượng (POST /cart)
-    //    body: { product_id, quantity }
+    //    data: { product_id, quantity } OR [{ product_id, quantity }, ...]
     export const changeCartItemThunk = createAsyncThunk(
     'cart/changeItem',
-    async ({ product_id, quantity }, { dispatch, rejectWithValue }) => {
+    async (data, { dispatch, rejectWithValue }) => {
         try {
-        const res = await apiUpdateItem({ product_id, quantity });
+        const res = await apiUpdateItem(data);
         dispatch(fetchCartThunk());
 
-        return {
-            product: res.data.product_id,  // Giả sử API trả về thông tin product
-            quantity: res.data.quantity  // Giả sử API trả về quantity mới
-        };
+        return res.data;
         } catch (err) {
         return rejectWithValue(err.response?.data?.message || err.message);
         }

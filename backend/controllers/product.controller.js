@@ -245,7 +245,7 @@ export const updateProduct = async (req, res) => {
         `;
         const prompt = `Write a product description for ${prod_name}.`;
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
         try {
             const result = await model.generateContent({
                 contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -307,7 +307,10 @@ export const deactiveProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
 
-        return res.status(200).json({ success: true, message: "Product deleted successfully" });
+        // Xóa các ảnh liên quan trong bảng productimages
+        await ProductImage.deleteMany({ prod_id: new mongoose.Types.ObjectId(productId) });
+
+        return res.status(200).json({ success: true, message: "Product and its images deleted (deactivated) successfully" });
     } catch (e) {
         console.error("Error in deleting product:", e.message);
         return res.status(500).json({ success: false, message: "Server Error" });

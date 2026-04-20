@@ -36,10 +36,14 @@ export const uploadImage = async (req, res) => {
 //Xóa hết ảnh cũ 
 export const deleteImagesByProductId = async (req, res) => {
   try {
-    const { id } = req.params;
-    await productImage.deleteMany({ prod_id: new mongoose.Types.ObjectId(id) });
-    res.status(200).json({ success: true });
+    const productId = req.params.id;
+    if (!productId) {
+      return res.status(400).json({ success: false, message: "Product ID is required" });
+    }
+    await productImage.deleteMany({ prod_id: new mongoose.Types.ObjectId(productId) });
+    res.status(200).json({ success: true, message: "Product images deleted successfully" });
   } catch (err) {
+    console.error("Error in deleteImagesByProductId:", err.message);
     res.status(500).json({ success: false, message: "Failed to delete images" });
   }
 };

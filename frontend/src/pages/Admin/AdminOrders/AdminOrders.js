@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AdminOrders.css';
 import { useNavigate } from 'react-router-dom';
-import { useGetOrdersQuery, useGetAllOrdersQuery } from '../../../features/order/orderApi';
+import { useGetOrdersQuery, useGetAllOrdersQuery, useDeleteOrderMutation } from '../../../features/order/orderApi';
 import * as XLSX from 'xlsx';
 
 const AdminOrders = () => {
@@ -15,6 +15,20 @@ const AdminOrders = () => {
   const { orders = [], totalPages = 1 } = data;
 
   const { data: allOrders = [] } = useGetAllOrdersQuery();
+  const [deleteOrder] = useDeleteOrderMutation();
+
+  const handleDeleteOrder = async (e, id) => {
+    e.stopPropagation();
+    if (window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này không?")) {
+      try {
+        await deleteOrder(id).unwrap();
+        alert("Xóa đơn hàng thành công!");
+      } catch (error) {
+        console.error("Xóa thất bại:", error);
+        alert("Có lỗi xảy ra khi xóa đơn hàng!");
+      }
+    }
+  };
 
   const handleExportExcel = () => {
     if (!allOrders || allOrders.length === 0) {
@@ -148,12 +162,14 @@ const AdminOrders = () => {
               <th>Giá trị đơn</th>
               <th>Khách hàng</th>
               <th>Ngày tạo</th>
+              <th>Ngày sửa</th>
               <th>Trạng thái</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6}>Đang tải...</td></tr>
+              <tr><td colSpan={8}>Đang tải...</td></tr>
             ) : (
               orders.map((order, idx) => (
                 <tr key={order._id} onClick={() => navigate(`/admin/orders/${order._id}`)}>
@@ -164,10 +180,20 @@ const AdminOrders = () => {
                     : '0₫'}</td>
                   <td>{order.user_id?.name || "Không rõ"}</td>
                   <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td>{order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : ""}</td>
                   <td>
                     <span className={`status-label ${statuses[order.status] || 'unknown'}`}>
                       {order.status}
                     </span>
+                  </td>
+                  <td>
+                    <button 
+                      className="btn-delete-order" 
+                      onClick={(e) => handleDeleteOrder(e, order._id)}
+                      style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', padding: '5px 10px', cursor: 'pointer' }}
+                    >
+                      Xóa
+                    </button>
                   </td>
                 </tr>
               ))

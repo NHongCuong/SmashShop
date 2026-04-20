@@ -176,3 +176,86 @@
     }
   }
   
+  /* Edit Dialog Styles */
+  .edit-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .edit-dialog {
+    background-color: white;
+    padding: 24px;
+    border-radius: 12px;
+    width: 450px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .edit-dialog h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+  }
+  
+  .edit-field {
+    margin-bottom: 16px;
+  }
+  
+  .edit-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .edit-field input, .edit-field select {
+    width: 100%;
+    padding: 10px;
+    border: 1.5px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .edit-field input:focus, .edit-field select:focus {
+    border-color: #f3c43e;
+  }
+  
+  .edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .btn-cancel {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .btn-save {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: #f3c43e;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .btn-save:hover {
+    background-color: #e0b832;
+  }
+  

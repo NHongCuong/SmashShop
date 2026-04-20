@@ -12,7 +12,7 @@ export const fetchOrderHistory = async (req, res) => {
     const sortBy = req.query.sortBy || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-    const query = (userId) ? {user_id: userId } : {};
+    const query = (userId) ? { user_id: userId } : {};
 
     try {
         const totalDocument = await Order.countDocuments(query);
@@ -26,29 +26,29 @@ export const fetchOrderHistory = async (req, res) => {
                 path: 'items.product',
                 model: 'Product'
             })
-            .sort({[sortBy]: sortOrder})
+            .sort({ [sortBy]: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit);
 
         res.status(200).json({
-            success: true, 
+            success: true,
             page: page,
             limit: limit,
-            totalPages: Math.ceil(totalDocument/limit),
+            totalPages: Math.ceil(totalDocument / limit),
             totalItems: totalDocument,
             data: order
         })
-    } catch(e) {
-        res.status(500).json({success: false, error: e.message})
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message })
     }
 }
 
 export const createOrder = async (req, res) => {
     try {
         const user_id = req.user._id;
-        
+
         const { name, address, phone, email, note } = req.body.shipping;
-        
+
         // console.log("ok")
         const cartDoc = await Cart.findOne({ user_id: user_id }).populate('cart.product');
         // console.log("ok")
@@ -56,7 +56,7 @@ export const createOrder = async (req, res) => {
         if (!cartDoc || cartDoc.cart.length === 0) {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
         }
-    // Chuẩn bị danh sách items với snapshot giá
+        // Chuẩn bị danh sách items với snapshot giá
         const items = cartDoc.cart.map(ci => ({
             product: ci.product._id,
             quantity: ci.quantity,
@@ -90,7 +90,7 @@ export const createOrder = async (req, res) => {
             }))
         };
         await OrderDetail.create(orderDetailData);
-        
+
         // giảm số lượng sản phẩm trong kho
         for (const item of items) {
             const product = await Product.findById(item.product);
@@ -102,7 +102,7 @@ export const createOrder = async (req, res) => {
         }
         // Xoá giỏ hàng của user
         await Cart.updateOne({ user_id }, { $set: { cart: [] } });
-
+        console.log("đã delete cart");
         return res.status(201).json({ success: true, order, orderDetail: orderDetailData });
     } catch (err) {
         console.error('Error createOrder:', err);
@@ -117,7 +117,7 @@ export const fetchAllOrders = async (req, res) => {
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
     try {
-        const totalDocument = await Order.countDocuments();  
+        const totalDocument = await Order.countDocuments();
         const orders = await Order.find({})
             .populate({
                 path: 'items.product', // Populate the 'product' field within the 'products' array
@@ -132,18 +132,19 @@ export const fetchAllOrders = async (req, res) => {
                 model: 'User',
                 select: 'name email phone_number '
             })
-            .sort({[sortBy]: sortOrder})
+            .sort({ [sortBy]: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit);
         res.status(200).json({
             success: true,
             page: page,
             limit: limit,
-            totalPages: Math.ceil(totalDocument/limit),
+            totalPages: Math.ceil(totalDocument / limit),
             totalItems: totalDocument,
-            data: orders})
+            data: orders
+        })
     } catch (e) {
-        res.status(500).json({success: false, error: e.message})
+        res.status(500).json({ success: false, error: e.message })
     }
 }
 
@@ -152,32 +153,32 @@ export const updateOrderStatus = async (req, res) => {
         const orderStatus = ["Processing", "Cancelled", "Succeeded", "Pending"];
         const orderId = req.body.order_id;
         const status = req.body.status;
-        
+
         if (!orderStatus.includes(status)) {
-            return res.status(400).json({success: false, message: "Status just be one of Processing, Cancelled, Succeeded"});
+            return res.status(400).json({ success: false, message: "Status just be one of Processing, Cancelled, Succeeded" });
         }
 
-        const order = await Order.findByIdAndUpdate(orderId, {status: status}, {new: true});
+        const order = await Order.findByIdAndUpdate(orderId, { status: status }, { new: true });
         if (!order) {
-            return res.status(404).json({success: false, message: "Order not found"});
+            return res.status(404).json({ success: false, message: "Order not found" });
         }
-        res.status(200).json({success: true, data: order});
+        res.status(200).json({ success: true, data: order });
     } catch (e) {
-        res.status(500).json({success: false, error: e.message});
+        res.status(500).json({ success: false, error: e.message });
     }
 }
 
 export const fetchProductDetailsByOrderId = async (req, res) => {
     const orderId = req.params.id;
     try {
-        const orderDetails = await OrderDetail.find({order_id: orderId})
+        const orderDetails = await OrderDetail.find({ order_id: orderId })
             .populate("prod_id")
         if (!orderDetails) {
-            return res.status(404).json({success: false, message: "No order details found for this order"});
+            return res.status(404).json({ success: false, message: "No order details found for this order" });
         }
-        res.status(200).json({success: true, data: orderDetails});
+        res.status(200).json({ success: true, data: orderDetails });
     } catch (e) {
-        res.status(500).json({success: false, error: e.message});
+        res.status(500).json({ success: false, error: e.message });
     }
 }
 
@@ -198,12 +199,118 @@ export const fetchOrderById = async (req, res) => {
                 model: 'User',
                 select: 'name email phone_number '
             });
-            
+
         if (!order) {
-            return res.status(404).json({success: false, message: "Order not found"});
+            return res.status(404).json({ success: false, message: "Order not found" });
         }
-        res.status(200).json({success: true, data: order});
-    } catch(e) {
-        res.status(500).json({success: false, error: e.message});
+        res.status(200).json({ success: true, data: order });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
     }
 }
+
+export const deleteOrder = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findByIdAndDelete(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+        await OrderDetail.deleteOne({ order_id: orderId });
+        res.status(200).json({ success: true, message: "Order deleted successfully" });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+}
+
+export const updateOrderItem = async (req, res) => {
+    try {
+        const { orderId, itemId, productId, quantity, price } = req.body;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        const itemIndex = order.items.findIndex(item => item._id.toString() === itemId);
+        if (itemIndex === -1) {
+            return res.status(404).json({ success: false, message: "Item not found in order" });
+        }
+
+        // Cập nhật thông tin item trong Order
+        order.items[itemIndex].product = productId;
+        order.items[itemIndex].quantity = quantity;
+        order.items[itemIndex].price = price;
+
+        // Tính lại tổng cho Order
+        order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        order.updatedAt = Date.now();
+        await order.save();
+
+        // Đồng bộ sang OrderDetail
+        const orderDetail = await OrderDetail.findOne({ order_id: orderId });
+        if (orderDetail) {
+            // Lấy thông tin tất cả sản phẩm hiện có trong đơn hàng để cập nhật OrderDetail
+            const updatedProducts = await Promise.all(order.items.map(async (item) => {
+                const product = await Product.findById(item.product);
+                return {
+                    product_id: item.product,
+                    product_name: product?.prod_name || "Sản phẩm không rõ",
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: item.price * item.quantity
+                };
+            }));
+
+            orderDetail.products = updatedProducts;
+            await orderDetail.save();
+        }
+
+        res.status(200).json({ success: true, data: order });
+    } catch (e) {
+        console.error("Error in updateOrderItem:", e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+}
+
+export const deleteOrderItem = async (req, res) => {
+    try {
+        const { orderId, itemId } = req.params;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        order.items = order.items.filter(item => item._id.toString() !== itemId);
+
+        // Tính lại tổng cho Order
+        order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        order.updatedAt = Date.now();
+        await order.save();
+
+        // Đồng bộ sang OrderDetail
+        const orderDetail = await OrderDetail.findOne({ order_id: orderId });
+        if (orderDetail) {
+            const updatedProducts = await Promise.all(order.items.map(async (item) => {
+                const product = await Product.findById(item.product);
+                return {
+                    product_id: item.product,
+                    product_name: product?.prod_name || "Sản phẩm không rõ",
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: item.price * item.quantity
+                };
+            }));
+
+            orderDetail.products = updatedProducts;
+            await orderDetail.save();
+        }
+
+        res.status(200).json({ success: true, data: order });
+    } catch (e) {
+        console.error("Error in deleteOrderItem:", e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+}
+

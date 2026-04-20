@@ -54,7 +54,37 @@ export const orderApi = createApi({
       transformResponse: (response) => response.data,
       providesTags: (result, error, id) => [{ type: 'Orders', id }],
     }),
+    deleteOrder: builder.mutation({
+      query: (id) => ({
+        url: `order/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Orders'],
+    }),
+    updateOrderItem: builder.mutation({
+      query: (data) => ({
+        url: 'order/item',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: 'Orders', id: orderId }, 'Orders'],
+    }),
+    deleteOrderItem: builder.mutation({
+      query: ({ orderId, itemId }) => ({
+        url: `order/item/${orderId}/${itemId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: 'Orders', id: orderId }, 'Orders'],
+    }),
   })
 });
 
-export const { useGetOrdersQuery, useUpdateOrderStatusMutation, useGetOrderByIdQuery, useGetAllOrdersQuery } = orderApi;
+export const { 
+  useGetOrdersQuery, 
+  useUpdateOrderStatusMutation, 
+  useGetOrderByIdQuery, 
+  useGetAllOrdersQuery,
+  useDeleteOrderMutation,
+  useUpdateOrderItemMutation,
+  useDeleteOrderItemMutation
+} = orderApi;
