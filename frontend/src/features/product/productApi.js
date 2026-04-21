@@ -64,6 +64,14 @@ export const productApi = createApi({
             }),
             invalidatesTags: ['Product'],
         }),
+        importProducts: builder.mutation({
+            query: (formData) => ({
+                url: 'products/import',
+                method: 'POST',
+                body: formData,
+            }),
+            invalidatesTags: ['Product'],
+        }),
     })
 })
-export const { useGetProductsQuery, useGetAllProductsQuery, useCreateProductMutation, useUpdateProductMutation, useGetAllBrandsQuery, useGetAllTypesQuery, useDeactiveProductMutation } = productApi;  
+export const { useGetProductsQuery, useGetAllProductsQuery, useCreateProductMutation, useUpdateProductMutation, useGetAllBrandsQuery, useGetAllTypesQuery, useDeactiveProductMutation, useImportProductsMutation } = productApi;

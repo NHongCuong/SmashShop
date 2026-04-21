@@ -67,4 +67,13 @@
     background-color: #f44336;
     color: white;
   }
+
+  .form-actions .import-btn {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .form-actions .import-btn:hover {
+    background-color: #218838;
+  }
   

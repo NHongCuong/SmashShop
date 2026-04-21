@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams  } from 'react-router-dom';
-import { useGetProductsQuery, useGetAllBrandsQuery, useGetAllTypesQuery } from '../../../features/product/productApi';
+import { useGetProductsQuery, useGetAllBrandsQuery, useGetAllTypesQuery, useImportProductsMutation } from '../../../features/product/productApi';
 import { useGetCategoriesQuery } from '../../../features/services/categoryApi';
 import './AdminProductForm.css';
 
@@ -15,6 +15,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
 
   const brands = brandsData || [];
   const types = typesData || [];
+  const [importProducts, { isLoading: isImporting }] = useImportProductsMutation();
 
   const [formData, setFormData] = useState({
     prod_name: '',
@@ -79,6 +80,29 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
       return;
     }
     onSubmit(formattedData); // Gửi dữ liệu ra ngoài
+  };
+
+  const handleImportExcel = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (window.confirm("Bạn có muốn import sản phẩm từ file excel này không?")) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await importProducts(formData).unwrap();
+        alert(res.message);
+        if (res.errors) {
+            console.error("Import Errors:", res.errors);
+            alert("Có một số lỗi trong quá trình import, vui lòng kiểm tra console log.");
+        }
+        navigate('/admin/products');
+      } catch (err) {
+        console.error("Import failed:", err);
+        alert(err?.data?.message || "Import thất bại.");
+      }
+    }
   };
   return (
     <form className="product-form" onSubmit={handleSubmit}>
@@ -164,6 +188,25 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
         <button type="submit">
            {loading ? 'Đang xử lý...' : isEdit ? 'Lưu thay đổi' : 'Thêm sản phẩm'}
         </button>
+        {!isEdit && (
+          <>
+            <input
+              type="file"
+              id="import-excel"
+              accept=".xlsx, .xls"
+              onChange={handleImportExcel}
+              style={{ display: 'none' }}
+            />
+            <button
+              type="button"
+              className="import-btn"
+              onClick={() => document.getElementById('import-excel').click()}
+              disabled={isImporting}
+            >
+              {isImporting ? 'Đang import...' : 'Import Sản phẩm (Excel)'}
+            </button>
+          </>
+        )}
         <button type="button" className="cancel" onClick={() => navigate("/admin/products")} disabled={loading}>Hủy</button>
       </div>
     </form>
