@@ -17,8 +17,11 @@ export const orderApi = createApi({
   tagTypes: ['Orders'],
   endpoints: (builder) => ({
     getOrders: builder.query({
-      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = {}) => 
-        `order?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search = '' } = {}) => {
+        let url = `order?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        return url;
+      },
       transformResponse: (response) => ({
         orders: response.data,
         totalPages: response.totalPages,

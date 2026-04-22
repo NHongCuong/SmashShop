@@ -40,8 +40,11 @@ export const userApi = createApi({
       providesTags: ['User'],
     }),
     getAdminUsers: builder.query({
-      query: ({ page = 1, limit = 10, sortBy = 'user_id', sortOrder = 'asc' } = {}) => 
-        `users?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+      query: ({ page = 1, limit = 10, sortBy = 'user_id', sortOrder = 'asc', search = '' } = {}) => {
+        let url = `users?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        return url;
+      },
       providesTags: ['User'],
     }),
     getUserById: builder.query({

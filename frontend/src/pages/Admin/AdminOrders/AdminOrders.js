@@ -10,8 +10,9 @@ const AdminOrders = () => {
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { data = {}, isLoading } = useGetOrdersQuery({ page, limit, sortBy: sortField, sortOrder });
+  const { data = {}, isLoading } = useGetOrdersQuery({ page, limit, sortBy: sortField, sortOrder, search: searchTerm });
   const { orders = [], totalPages = 1 } = data;
 
   const { data: allOrders = [] } = useGetAllOrdersQuery();
@@ -40,7 +41,8 @@ const AdminOrders = () => {
       "STT": index + 1,
       "ID đơn hàng": order.order_id,
       "Giá trị đơn": order.total_price ?? order.total,
-      "Khách hàng": order.user_id?.name || "Không rõ",
+      // "Khách hàng": order.user_id?.name || "Không rõ",
+      "Khách hàng": order.shipping?.name || "Không rõ",
       "Ngày tạo": new Date(order.createdAt).toLocaleDateString(),
       "Trạng thái": order.status,
     }));
@@ -71,9 +73,12 @@ const AdminOrders = () => {
         dataToExport.push({
           "STT": stt++,
           "Mã đơn hàng": order.order_id,
-          "Khách hàng": order.user_id?.name || "Không rõ",
-          "Email": order.user_id?.email || "",
-          "Số điện thoại": order.user_id?.phone_number || "",
+          // "Khách hàng": order.user_id?.name || "Không rõ",
+          // "Email": order.user_id?.email || "",
+          // "Số điện thoại": order.user_id?.phone_number || "",
+          "Khách hàng": order.shipping?.name || "Không rõ",
+          "Email": order.shipping?.email || "",
+          "Số điện thoại": order.shipping?.phone || "",
           "Địa chỉ": order.shipping?.address || "",
           "Ảnh": item.product?.images?.filter(img => img.is_primary_image)[0]?.image || "",
           "Tên sản phẩm": item.product?.prod_name || "",
@@ -93,7 +98,7 @@ const AdminOrders = () => {
     // but the user asked to sum the 'Tổng cộng' column. 
     // Usually, in a detail sheet, you sum the 'Tạm tính' column to get the total revenue correctly.
     // However, I will follow the user's specific request for the column named "Tổng cộng".
-    
+
     // To avoid double-counting if "Tổng cộng" is order total repeated on rows, 
     // I will add a final row with the true total revenue calculated once per order.
     dataToExport.push({
@@ -134,8 +139,16 @@ const AdminOrders = () => {
           <button className="btn-export-excel" onClick={handleExportDetailedExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
             Download file excel chi tiết đơn hàng
           </button>
+
         </div>
         <div className="controls-right">
+          <input
+            type="text"
+            placeholder="Tìm theo mã đơn, khách hàng, SĐT..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          // style={{ marginLeft: '200px', padding: '5px 10px', border: '1px solid #ccc', borderRadius: '4px', width: '250px' }}
+          />
           <label>
             Sắp xếp theo:
             <select value={`${sortField}-${sortOrder}`} onChange={(e) => {
@@ -161,6 +174,7 @@ const AdminOrders = () => {
               <th>ID đơn hàng</th>
               <th>Giá trị đơn</th>
               <th>Khách hàng</th>
+              <th>Số điện thoại</th>
               <th>Ngày tạo</th>
               <th>Ngày sửa</th>
               <th>Trạng thái</th>
@@ -178,7 +192,10 @@ const AdminOrders = () => {
                   <td>{typeof (order.total_price ?? order.total) === 'number'
                     ? (order.total_price ?? order.total).toLocaleString('vi-VN') + '₫'
                     : '0₫'}</td>
-                  <td>{order.user_id?.name || "Không rõ"}</td>
+                  {/* <td>{order.user_id?.name || "Không rõ"}</td>
+                  <td>{order.user_id?.phone_number || "Không rõ"}</td> */}
+                  <td>{order.shipping?.name || "Không rõ"}</td>
+                  <td>{order.shipping?.phone || "Không rõ"}</td>
                   <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td>{order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : ""}</td>
                   <td>
@@ -187,8 +204,8 @@ const AdminOrders = () => {
                     </span>
                   </td>
                   <td>
-                    <button 
-                      className="btn-delete-order" 
+                    <button
+                      className="btn-delete-order"
                       onClick={(e) => handleDeleteOrder(e, order._id)}
                       style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', padding: '5px 10px', cursor: 'pointer' }}
                     >

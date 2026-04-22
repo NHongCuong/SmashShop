@@ -11,8 +11,9 @@ export default function AdminProducts() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("newest");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: queryData, refetch, isLoading } = useGetAllProductsQuery({ page, limit, sort: sortField });
+  const { data: queryData, refetch, isLoading } = useGetAllProductsQuery({ page, limit, sort: sortField, search: searchTerm });
   const products = queryData?.data || [];
   const totalPages = queryData?.totalPages || 1;
 
@@ -36,6 +37,8 @@ export default function AdminProducts() {
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",
       "Giá": product.price,
+      "Ngày tạo": product.create_at ? new Date(product.create_at).toLocaleDateString('vi-VN') : "",
+      "Ngày sửa": product.update_at ? new Date(product.update_at).toLocaleDateString('vi-VN') : "",
       "Số lượng trong kho": product.stock,
       "Đã bán": product.quantity_sold,
       "Giảm giá": product.discount || 0,
@@ -90,8 +93,16 @@ export default function AdminProducts() {
           <button className="btn-export-excel" onClick={handleExportExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
             Download file excel tất cả sản phẩm
           </button>
+
         </div>
         <div className="controls-right">
+          <input
+            type="text"
+            placeholder="Tìm theo tên hoặc danh mục..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          // style={{ marginLeft: '10px', padding: '5px 10px', border: '1px solid #ccc', borderRadius: '4px', width: '250px' }}
+          />
           <label>
             Sắp xếp theo:
             <select value={sortField} onChange={(e) => { setSortField(e.target.value); setPage(1); }}>
@@ -114,6 +125,8 @@ export default function AdminProducts() {
               <th>Danh mục</th>
               <th>Thương hiệu</th>
               <th>Giá</th>
+              <th>Ngày tạo</th>
+              <th>Ngày sửa</th>
               <th></th>
             </tr>
           </thead>
@@ -126,6 +139,8 @@ export default function AdminProducts() {
                 <td>{product.category_id.category_name}</td>
                 <td>{product.brand_id.brand_name}</td>
                 <td>{product.price.toLocaleString('vi-VN')}₫</td>
+                <td>{product.create_at ? new Date(product.create_at).toLocaleDateString('vi-VN') : '---'}</td>
+                <td>{product.update_at ? new Date(product.update_at).toLocaleDateString('vi-VN') : '---'}</td>
                 <td onClick={e => e.stopPropagation()} className='ad-product-edit-delete'>
                   <FontAwesomeIcon
                     icon={faPenToSquare}

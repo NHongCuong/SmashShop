@@ -115,10 +115,20 @@ export const fetchAllOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const sortBy = req.query.sortBy || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const search = req.query.search || '';
+
+    const query = {};
+    if (search) {
+        query.$or = [
+            { order_id: { $regex: search, $options: 'i' } },
+            { 'shipping.name': { $regex: search, $options: 'i' } },
+            { 'shipping.phone': { $regex: search, $options: 'i' } }
+        ];
+    }
 
     try {
-        const totalDocument = await Order.countDocuments();
-        const orders = await Order.find({})
+        const totalDocument = await Order.countDocuments(query);
+        const orders = await Order.find(query)
             .populate({
                 path: 'items.product', // Populate the 'product' field within the 'products' array
                 model: 'Product', // Specify the model to populate with (Product model)

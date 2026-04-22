@@ -93,7 +93,17 @@ export const fetchAllProducts = async (req, res) => {
     const type = req.query.type || '';
     const typeFilter = type ? { type_id: type } : {};
     const search = req.query.search || '';
-    const keywordFilter = search ? { prod_name: { $regex: search, $options: 'i' } } : {};
+    let keywordFilter = {};
+    if (search) {
+        const categories = await Category.find({ category_name: { $regex: search, $options: 'i' } });
+        const categoryIds = categories.map(c => c._id);
+        keywordFilter = {
+            $or: [
+                { prod_name: { $regex: search, $options: 'i' } },
+                { category_id: { $in: categoryIds } }
+            ]
+        };
+    }
 
     const query = { ...priceFilter, ...categoryFilter, ...brandFilter, ...typeFilter, ...keywordFilter, ...activeFilter };
     const totalDocument = await Product.countDocuments(query);
@@ -104,11 +114,11 @@ export const fetchAllProducts = async (req, res) => {
     const sort = req.query.sort || 'newest';
     let sortOption = {};
     switch (sort) {
-        case 'newest': sortOption = { createdAt: -1 }; break;
+        case 'newest': sortOption = { create_at: -1 }; break;
         case 'best_selling': sortOption = { quantity_sold: -1 }; break;
         case 'price_asc': sortOption = { price: 1 }; break;
         case 'price_desc': sortOption = { price: -1 }; break;
-        default: sortOption = { createdAt: -1 };
+        default: sortOption = { create_at: -1 };
     }
 
     try {
@@ -211,10 +221,20 @@ export const updateProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndUpdate(
             productId,
-            { prod_name, price, description, quantity_sold, stock, discount: discount || 0, category_id, brand_id, type_id },
+            { 
+                prod_name, 
+                price, 
+                description, 
+                quantity_sold, 
+                stock, 
+                discount: discount || 0, 
+                category_id, 
+                brand_id, 
+                type_id, 
+                update_at: Date.now() 
+            },
             { new: true }
-        );
-
+        )
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
         }

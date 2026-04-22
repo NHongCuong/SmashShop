@@ -186,17 +186,27 @@ export const fetchAllUsers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const sortBy = req.query.sortBy || 'create_at';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+        const search = req.query.search || '';
         const skip = (page - 1) * limit;
 
         const sortOptions = { [sortBy]: sortOrder };
 
-        const users = await User.find({})
+        const query = {};
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { phone_number: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const users = await User.find(query)
             .select("-password -refreshToken -passwordResetToken -passwordResetExpires")
             .sort(sortOptions)
             .skip(skip)
             .limit(limit);
             
-        const totalItems = await User.countDocuments({});
+        const totalItems = await User.countDocuments(query);
         const totalPages = Math.ceil(totalItems / limit);
 
         res.status(200).json({

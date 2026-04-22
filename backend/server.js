@@ -80,17 +80,7 @@ app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/vnpay', paymentRoutes);
 
-// Route đăng nhập Google
-app.get('/api/auth/google',
-    passport.authenticate("google", { scope: ["openid", "profile", "email"] })
-);
-
-app.get('/api/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-        res.send(`🚀 Đăng nhập thành công! Chào ${req.user.displayName}`);
-    }
-);
+import { generateToken } from "./middleware/jwt.js";
 
 app.use('*', (req, res) => {
     res.status(404).json({ error: "not found" })

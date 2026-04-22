@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -12,7 +13,11 @@
   font-size: 24px;
   font-weight: bold;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
 }
 
 .ad-menu-btn {
@@ -23,26 +28,24 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  display: none; /* Ẩn mặc định */
+  display: none;
+  /* Ẩn mặc định */
 }
 
 .ad-body {
   display: flex;
   flex: 1;
+  overflow: hidden;
 }
 
 .ad-sidebar {
   width: 220px;
-  height: 94%;
+  height: 100%;
   background-color: #f9f9f9;
   padding: 20px 0;
   border-right: 1px solid #e0e0e0;
   transition: transform 0.3s ease-in-out;
-
-  position: sticky;
-  top: 0px;
-  align-self: flex-start; 
-  z-index: 10;
+  overflow-y: auto;
 }
 
 .ad-logo {
@@ -65,7 +68,8 @@
   text-decoration: none;
   gap: 10px;
 }
-.ad-nav-item-logout{
+
+.ad-nav-item-logout {
   background-color: #f9f9f9;
   font-size: 16px;
   border: none;
@@ -76,7 +80,9 @@
   text-decoration: none;
   gap: 10px;
 }
-.ad-nav-item:hover, .ad-nav-item-logout:hover {
+
+.ad-nav-item:hover,
+.ad-nav-item-logout:hover {
   background-color: #e4e4e4af;
   border-radius: 20px;
 }
@@ -102,15 +108,15 @@
 
   .ad-sidebar {
     position: fixed;
+    top: 60px;
     bottom: 0;
     left: 0;
     width: 220px;
-    height: 100%;
+    height: calc(100% - 60px);
     background-color: #fff;
     z-index: 1000;
     transform: translateX(-100%);
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-    margin-top: 60px; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
   }
 
   .ad-sidebar.open {

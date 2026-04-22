@@ -70,7 +70,14 @@ const authSlice = createSlice({
   },
   reducers: {
     setAccessToken: (state, action) => {
-      state.token = action.payload;
+      if (typeof action.payload === 'string') {
+        state.token = action.payload;
+      } else {
+        const { token, user } = action.payload;
+        state.token = token;
+        state.user = user;
+        state.userId = user?.id || user?._id;
+      }
       state.isAuthenticated = true;
     },
     logout(state) {

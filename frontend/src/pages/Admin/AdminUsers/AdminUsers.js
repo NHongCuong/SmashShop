@@ -11,8 +11,9 @@ export default function AdminUsers() {
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("create_at");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: queryData, refetch, isLoading } = useGetAdminUsersQuery({ page, limit, sortBy: sortField, sortOrder });
+  const { data: queryData, refetch, isLoading } = useGetAdminUsersQuery({ page, limit, sortBy: sortField, sortOrder, search: searchTerm });
   const users = queryData?.data || [];
   const totalPages = queryData?.totalPages || 1;
 
@@ -70,8 +71,16 @@ export default function AdminUsers() {
               <option value={200}>200</option>
             </select>
           </label>
+
         </div>
         <div className="controls-right">
+          <input
+            type="text"
+            placeholder="Tìm theo tên, email, SĐT..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          // style={{ marginLeft: '10px', padding: '5px 10px', border: '1px solid #ccc', borderRadius: '4px', width: '250px' }}
+          />
           <label>
             Sắp xếp theo:
             <select value={`${sortField}-${sortOrder}`} onChange={handleSortChange}>
@@ -98,6 +107,7 @@ export default function AdminUsers() {
               <th>Ngày sinh</th>
               <th>Giới tính</th>
               <th>Ngày tạo</th>
+              <th>Ngày sửa</th>
               <th></th>
             </tr>
           </thead>
@@ -124,6 +134,7 @@ export default function AdminUsers() {
                   <td>{user.dob ? new Date(user.dob).toLocaleDateString('vi-VN') : '-'}</td>
                   <td>{user.gender || '-'}</td>
                   <td>{new Date(user.create_at).toLocaleDateString('vi-VN')}</td>
+                  <td>{user.update_at ? new Date(user.update_at).toLocaleDateString('vi-VN') : '---'}</td>
                   <td onClick={e => e.stopPropagation()} className='ad-user-edit-delete'>
                     <FontAwesomeIcon
                       icon={faPenToSquare}
