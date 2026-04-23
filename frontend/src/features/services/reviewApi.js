@@ -5,7 +5,10 @@ export const reviewApi = createApi({
   baseQuery: fetchBaseQuery({ 
     baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/`,
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem('authToken');
+      const isAdminPage = window.location.pathname.startsWith('/admin');
+      const token = isAdminPage 
+        ? localStorage.getItem('adminAuthToken') 
+        : localStorage.getItem('authToken');
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

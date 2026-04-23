@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
-import { loginThunk } from '../../../app/store/authThunks';
+import { adminLoginThunk } from '../../../app/store/adminAuthThunks';
 import Swal from 'sweetalert2';
 
 const AdminLogin = () => {
@@ -16,7 +16,7 @@ const AdminLogin = () => {
 
     if (email.trim() !== '' && password.trim() !== '') {
       try {
-        const result = await dispatch(loginThunk({ email, password })).unwrap();
+        const result = await dispatch(adminLoginThunk({ email, password })).unwrap();
 
         if (result.user.role !== 'admin') {
           Swal.fire({

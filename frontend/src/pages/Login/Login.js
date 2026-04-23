@@ -54,13 +54,13 @@ export default function Login() {
     try {
       const result = await dispatch(loginThunk({ email, password })).unwrap();
 
-      // Chặn nếu không phải user
-      if (result.user.role !== 'user') {
+      // Chặn nếu không phải user hoặc admin
+      if (result.user.role !== 'user' && result.user.role !== 'admin') {
         dispatch(logout());
         Swal.fire({
           icon: 'error',
           title: 'Không đúng role',
-          text: 'Tài khoản này không được phép truy cập trang người dùng!',
+          text: 'Tài khoản này không được phép truy cập!',
         });
         return;
       }

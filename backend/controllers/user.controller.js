@@ -258,13 +258,18 @@ export const createUsers = async (req, res) => {
         user.avatar = req.file.path;
     }
 
-    const newUser = new User(user)
     try {
+        const existingUser = await User.findOne({ email: user.email });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "Email đã tồn tại!" });
+        }
+
+        const newUser = new User(user)
         await newUser.save();
         res.status(201).json({success: true, data: newUser});
     } catch (e) {
         console.error("Error in Create user:", e.message);
-        res.status(500).json({success: false, message: "Server Error"});
+        res.status(500).json({success: false, message: e.message || "Server Error"});
     }
 };
 
@@ -275,7 +280,15 @@ export const updateUsers = async (req,res) => {
     try {
         const existingUser = await User.findById(user_id);
         if (!existingUser){
-            return res.status(400).json({success: false, mesage: "Invalid User ID"})
+            return res.status(400).json({success: false, message: "Invalid User ID"})
+        }
+
+        // Kiểm tra email mới có bị trùng với user khác không
+        if (user.email && user.email !== existingUser.email) {
+            const emailExists = await User.findOne({ email: user.email });
+            if (emailExists) {
+                return res.status(400).json({ success: false, message: "Email đã tồn tại!" });
+            }
         }
 
         Object.keys(user).forEach((key) => {

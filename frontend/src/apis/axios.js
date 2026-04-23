@@ -14,7 +14,11 @@ const api = axios.create({
 // Request interceptor: tự động đính token
 api.interceptors.request.use(
     config => {
-        const token = localStorage.getItem('authToken');
+        const isAdminPage = window.location.pathname.startsWith('/admin');
+        const token = isAdminPage 
+            ? localStorage.getItem('adminAuthToken') 
+            : localStorage.getItem('authToken');
+            
         if (token) config.headers.Authorization = `Bearer ${token}`;
         return config;
     },
@@ -32,20 +36,36 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
+                const isAdminPage = window.location.pathname.startsWith('/admin');
                 const response = await apiRefresh();
                 const newAccessToken = response.newAccessToken;
 
                 // Lưu lại token mới
-                localStorage.setItem('authToken', newAccessToken);
-                localStorage.setItem("isAuthenticated", "true");
+                if (isAdminPage) {
+                    localStorage.setItem('adminAuthToken', newAccessToken);
+                    localStorage.setItem("adminIsAuthenticated", "true");
+                } else {
+                    localStorage.setItem('authToken', newAccessToken);
+                    localStorage.setItem("isAuthenticated", "true");
+                }
+
                 // Gắn lại header và gọi lại request cũ
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return api(originalRequest);
             } catch (refreshErr) {
                 console.error('Refresh token failed', refreshErr);
+                const isAdminPage = window.location.pathname.startsWith('/admin');
+                
                 // Xóa token và điều hướng login nếu refresh thất bại
-                localStorage.removeItem('authToken');
-                window.location.href = '/login';
+                if (isAdminPage) {
+                    localStorage.removeItem('adminAuthToken');
+                    localStorage.removeItem('adminIsAuthenticated');
+                    window.location.href = '/admin-login';
+                } else {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('isAuthenticated');
+                    window.location.href = '/login';
+                }
             }
         }
 

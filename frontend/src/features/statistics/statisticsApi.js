@@ -5,7 +5,19 @@ const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
 
 export const statisticsApi = createApi({
   reducerPath: 'statisticsApi',
-  baseQuery: fetchBaseQuery({ baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/` }),
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/`,
+    prepareHeaders: (headers) => {
+      const isAdminPage = window.location.pathname.startsWith('/admin');
+      const token = isAdminPage 
+        ? localStorage.getItem('adminAuthToken') 
+        : localStorage.getItem('authToken');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ['Statistics'],
   endpoints: (builder) => ({
     getStatistics: builder.query({

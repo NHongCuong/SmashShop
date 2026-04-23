@@ -3,7 +3,19 @@ import { productApi } from '../product/productApi';
 
 export const productImageApi = createApi({
   reducerPath: 'productImageApi',
-  baseQuery: fetchBaseQuery({ baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/` }),
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: `${process.env.REACT_APP_API_URL}/api/v1/`,
+    prepareHeaders: (headers) => {
+      const isAdminPage = window.location.pathname.startsWith('/admin');
+      const token = isAdminPage 
+        ? localStorage.getItem('adminAuthToken') 
+        : localStorage.getItem('authToken');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     createProductImage: builder.mutation({
       query: (formData) => ({

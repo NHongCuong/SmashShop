@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
 
 // Cập nhật trường update_at và băm mật khẩu trước khi lưu
 UserSchema.pre("save", async function (next) {
-    if (this.isModified()) {
+    if (!this.isNew && this.isModified()) {
         this.update_at = Date.now();
     }
     if (!this.isModified("password")) return next();

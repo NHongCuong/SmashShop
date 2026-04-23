@@ -20,6 +20,10 @@ const AdminUserDetail = () => {
             src={user.avatar || 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg'}
             alt={user.name}
             style={{ borderRadius: '50%', objectFit: 'cover', width: '200px', height: '200px' }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
+            }}
           />
         </div>
         <div className="user-info">

@@ -7,7 +7,7 @@ const RequireUserAuth = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
   const location = useLocation();
 
-  if (!isAuthenticated || user?.role !== 'user') {
+  if (!isAuthenticated || (user?.role !== 'user' && user?.role !== 'admin')) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

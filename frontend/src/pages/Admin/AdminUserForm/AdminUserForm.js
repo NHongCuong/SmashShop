@@ -172,7 +172,15 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
           <input type="file" accept="image/*" onChange={handleImageChange} className="pd-form-input" />
           {avatarPreview && (
             <div className="image-preview" style={{marginTop: '10px', position: 'relative', width: '150px'}}>
-              <img src={avatarPreview} alt="Preview" style={{width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%'}} />
+              <img 
+                src={avatarPreview} 
+                alt="Preview" 
+                style={{width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%'}} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
+                }}
+              />
               <button
                 type="button"
                 onClick={handleRemoveImage}

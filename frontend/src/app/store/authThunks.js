@@ -40,8 +40,9 @@ export const loginThunk = createAsyncThunk(
         localStorage.setItem("userId", res.user.id);
         
         //đã kiểm tra role ở RequireAdminAuth.js
-        if (res.user.role === 'user'){
-            dispatch(fetchCartThunk());  // ← đổ đầy luôn cả product details
+        // Đổ cart cho cả user và admin nếu login ở user page
+        if (res.user.role === 'user' || res.user.role === 'admin'){
+            dispatch(fetchCartThunk());
         }
     
         return res;

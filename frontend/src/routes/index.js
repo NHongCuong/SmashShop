@@ -27,6 +27,7 @@ import AdminEditUser from '../pages/Admin/AdminEditUser';
 import AdminLogin from '../pages/Admin/AdminLogin/AdminLogin';
 import RequireAdminAuth from '../pages/Admin/AdminLogin/RequireAdminAuth';
 import RequireUserAuth from '../pages/User/RequireUserAuth';
+import AdminCustomers from '../pages/Admin/AdminCustomers/AdminCustomers';
 
 
 import { Navigate } from "react-router-dom";
@@ -77,6 +78,7 @@ const pages = [
             { path: 'users/add', Component: AdminAddUser },
             { path: 'users/:id', Component: AdminUserDetail },
             { path: 'users/edit/:id', Component: AdminEditUser },
+            { path: 'customers', Component: AdminCustomers },
 
         ],
     },

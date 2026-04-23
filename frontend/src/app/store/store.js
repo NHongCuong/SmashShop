@@ -11,11 +11,13 @@ import searchReducer from '../../features/search/searchSlice';
 // import productsReducer from '../features/products/productsSlice';
 import cartReducer from '../store/cartSlice.js'
 import authReducer from './authSlice.js';
+import adminAuthReducer from './adminAuthSlice.js';
 import orderReducer from './orderSlice.js';
 
 export const store = configureStore({ // Khai báo store để lưu trữ state 
   reducer: {
     auth: authReducer,
+    adminAuth: adminAuthReducer,
     order: orderReducer,
     [userApi.reducerPath]: userApi.reducer,
 

@@ -7,8 +7,8 @@ const OrdersHistory = () => {
   const userId = useSelector((state) => state.auth.userId) || localStorage.getItem("userId");
   const reduxId = useSelector((state) => state.auth.userId);
   const storedId = localStorage.getItem("userId");
-  console.log("Redux userId:", reduxId);
-  console.log("LocalStorage userId:", storedId);
+  // console.log("Redux userId:", reduxId);
+  // console.log("LocalStorage userId:", storedId);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("createdAt");
@@ -72,7 +72,7 @@ const OrdersHistory = () => {
           <span>Ngày</span>
           <span>Tổng tiền</span>
         </div>
-                {orders.length > 0 ? (
+        {orders.length > 0 ? (
           orders.map((order, index) => (
             <div key={order._id} className="order-row">
               <span>{(page - 1) * limit + index + 1}</span>

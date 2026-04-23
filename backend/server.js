@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import connectDB from "./config/database.js";
 import userRoutes from "./routes/user.route.js";
 import Authrouter from "./routes/auth.route.js";
@@ -19,6 +21,7 @@ import cookieParser from 'cookie-parser';
 import cartRouter from "./routes/cart.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 import paymentRoutes from "./routes/payment.route.js";
+import initChatSocket from "./socket/chatSocket.js";
 
 dotenv.config();
 
@@ -29,22 +32,41 @@ connectDB();
 
 const app = express();
 
+// Tạo HTTP server để dùng cả Express lẫn Socket.io
+const httpServer = createServer(app);
+
+// Cấu hình Socket.io
+const io = new Server(httpServer, {
+    cors: {
+        origin: [
+            "https://192.168.88.133:30443",
+            "http://192.168.88.133:30002",
+            "https://192.168.88.133",
+            "http://localhost:3000"
+        ],
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
+
+// Khởi tạo chat socket
+initChatSocket(io);
+
 // --- CẤU HÌNH QUAN TRỌNG KHI CHẠY SAU NGINX/K8S ---
-app.set("trust proxy", 1); // Cho phép Express tin tưởng các Header từ Nginx gửi sang
+app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Cấu hình Session phù hợp cho cả HTTP và HTTPS
 app.use(
     session({
         secret: "a9b8c7d6e5f4g3h2i1",
         resave: false,
-        saveUninitialized: false, // Đổi thành false để bảo mật hơn
+        saveUninitialized: false,
         cookie: { 
-            secure: true,        // Bắt buộc true khi chạy HTTPS để trình duyệt nhận Cookie
-            sameSite: "none",    // Bắt buộc "none" nếu Frontend và Backend khác Port/Giao thức
-            maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+            secure: true,
+            sameSite: "none",
+            maxAge: 24 * 60 * 60 * 1000
         },
     })
 );
@@ -61,7 +83,7 @@ app.use(cors({
         "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, // Quan trọng để gửi nhận Cookie/Session
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -86,6 +108,7 @@ app.use('*', (req, res) => {
     res.status(404).json({ error: "not found" })
 });
 
-app.listen(PORT, () => console.log(`Server started at http://192.168.88.133:${PORT}`));
+// Dùng httpServer thay cho app.listen để Socket.io hoạt động
+httpServer.listen(PORT, () => console.log(`Server started at http://192.168.88.133:${PORT}`));
 
 export default app;

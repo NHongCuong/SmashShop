@@ -124,6 +124,10 @@ export default function AdminUsers() {
                       alt={user.name}
                       className="user-img"
                       style={{ borderRadius: '50%', width: '40px', height: '40px', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
+                      }}
                     />
                   </td>
                   <td>{user.name}</td>
