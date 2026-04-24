@@ -1,4 +1,5 @@
 import User from '../models/user.model.js';
+import Message from '../models/message.model.js';
 
 // Map lưu trạng thái online: userId -> { socketId, userInfo }
 const onlineUsers = new Map();
@@ -48,17 +49,13 @@ export default function initChatSocket(io) {
             console.log(`${fullUserInfo.role} [${fullUserInfo.name}] connected`);
 
             // Gửi danh sách online users cho admin
-            broadcastOnlineUsers(io);
-
-            // Nếu là admin, gửi danh sách online users ngay
-            if (fullUserInfo.role === 'admin') {
-                socket.emit('online:users', getOnlineUsersList());
-            }
+            // Cập nhật tới toàn bộ admin
+            io.emit('online:users', getOnlineUsersList());
         });
 
         // Gửi tin nhắn giữa user và admin
         socket.on('message:send', (data) => {
-            const { fromId, fromName, fromRole, toId, toRole, message, avatar } = data;
+            const { fromId, fromName, fromRole, toId, toRole, message, replyTo, avatar } = data;
 
             const roomId = getRoomId(fromId, toId);
             if (!conversations.has(roomId)) {
@@ -71,6 +68,7 @@ export default function initChatSocket(io) {
                 fromName,
                 fromRole,
                 message,
+                replyTo: replyTo || null,
                 avatar,
                 timestamp: new Date()
             };
@@ -89,6 +87,34 @@ export default function initChatSocket(io) {
 
             // Gửi lại cho người gửi (confirm)
             socket.emit('message:sent', { roomId, msg: msgObj });
+
+            // Ghi nội dung vào bảng Message
+            (async () => {
+                try {
+                    const chatUserId = fromRole === 'user' ? fromId : toId;
+                    const contactInfo = fromRole === 'user' ? onlineUsers.get(fromId)?.userInfo : onlineUsers.get(toId)?.userInfo;
+
+                    const roleLabel = fromRole === 'admin' ? 'admin' : 'user';
+                    const replyText = replyTo ? ` [Trả lời ${replyTo.name}: ${replyTo.message}]` : '';
+                    const chatLine = `${fromName}(${roleLabel})${replyText}: ${message}`;
+
+                    let dbMsg = await Message.findOne({ user_id: chatUserId });
+                    if (dbMsg) {
+                        dbMsg.content_message += `; ${chatLine}`;
+                        await dbMsg.save();
+                    } else if (contactInfo) {
+                        await Message.create({
+                            user_id: chatUserId,
+                            name: contactInfo.name,
+                            email: contactInfo.email,
+                            phone_number: contactInfo.phone_number || '',
+                            content_message: chatLine
+                        });
+                    }
+                } catch (err) {
+                    console.error("Lỗi lưu message model:", err);
+                }
+            })();
 
             // Nếu user gửi cho admin → notify toàn bộ admin đang online
             if (fromRole === 'user') {
@@ -113,6 +139,35 @@ export default function initChatSocket(io) {
             const roomId = getRoomId(userId, adminId);
             const history = conversations.get(roomId) || [];
             socket.emit('chat:history', { roomId, messages: history });
+        });
+
+        // Xử lý sự kiện "Đang soạn tin nhắn..."
+        socket.on('chat:typing', (data) => {
+            const { fromId, toId, isTyping, role } = data;
+            const recipient = onlineUsers.get(toId);
+            if (recipient) {
+                // Gửi tới đúng client nhận
+                io.to(recipient.socketId).emit('chat:typing', { fromId, isTyping, role });
+            }
+            if (role === 'user') {
+                // Nếu User đang gõ, báo cho các admin socket biết
+                io.emit('chat:typing', { fromId, isTyping, role });
+            }
+        });
+
+        // Xử lý reaction event
+        socket.on('chat:reaction', (data) => {
+            const { roomId, msgId, reaction, fromId, toId } = data;
+            if (conversations.has(roomId)) {
+                const msgs = conversations.get(roomId);
+                const msg = msgs.find(m => m.id === msgId);
+                if (msg) {
+                    if (!msg.reactions) msg.reactions = {};
+                    msg.reactions[fromId] = reaction;
+                }
+            }
+            // Broadcast cho tất cả ai đang quan tâm
+            io.emit('chat:reaction:update', { roomId, msgId, reaction, fromId });
         });
 
         socket.on('disconnect', () => {
@@ -141,17 +196,11 @@ function getOnlineUsersList() {
 
 function broadcastOnlineUsers(io) {
     const list = getOnlineUsersList();
-    for (const [userId, data] of onlineUsers.entries()) {
-        if (data.userInfo.role === 'admin') {
-            io.to(data.socketId).emit('online:users', list);
-        }
-    }
+    io.emit('online:users', list);
 }
 
 function notifyAdmins(io, notif) {
-    for (const [userId, data] of onlineUsers.entries()) {
-        if (data.userInfo.role === 'admin') {
-            io.to(data.socketId).emit('admin:newMessage', notif);
-        }
-    }
+    // Phát sự kiện tới tất cả client. Chỉ có AdminDashboard mới lắng nghe 'admin:newMessage'.
+    // Cách này giúp giải quyết dứt điểm lỗi admin có nhiều tab hoặc disconnect/reconnect làm mất socketId.
+    io.emit('admin:newMessage', notif);
 }

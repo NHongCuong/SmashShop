@@ -5,10 +5,12 @@ import './LiveChat.css';
 
 const DEFAULT_AVATAR = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
 const ADMIN_ID = 'ADMIN_SUPPORT';
+const REACTIONS = ['❤️', '😆', '😮', '😢', '😡', '👍'];
+const INPUT_EMOJIS = ['😊', '😂', '😍', '😭', '😡', '👍', '🙏', '❤️', '😁', '🥰', '🥺', '🎉'];
 
 function formatTime(date) {
     const d = new Date(date);
-    return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 }
 
 /* ========== ADMIN CHAT WIDGET ========== */
@@ -22,6 +24,12 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     const [input, setInput] = useState('');
     const [unread, setUnread] = useState(0);
     const messagesEndRef = useRef(null);
+
+    const [typingUsers, setTypingUsers] = useState({});
+    const typingTimeoutRef = useRef(null);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [activeReactionMsgId, setActiveReactionMsgId] = useState(null);
+    const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false);
 
     const adminId = adminUser?.id || adminUser?._id || ADMIN_ID;
     const adminName = adminUser?.name || 'Admin';
@@ -54,6 +62,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             if (!open || selectedUserId !== uid) {
                 setUnread((u) => u + 1);
             }
+            setTypingUsers((prev) => ({ ...prev, [uid]: false }));
         });
 
         socket.on('message:sent', ({ msg }) => {
@@ -83,12 +92,37 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             }));
         });
 
+        socket.on('chat:typing', ({ fromId, isTyping: typingStatus, role }) => {
+            if (role === 'user') {
+                setTypingUsers((prev) => ({ ...prev, [fromId]: typingStatus }));
+            }
+        });
+
+        socket.on('chat:reaction:update', ({ msgId, reaction, fromId }) => {
+            setConversations((prev) => {
+                const next = { ...prev };
+                for (const uid in next) {
+                    next[uid] = next[uid].map(m => {
+                        if (m.id === msgId) {
+                            const newReactions = { ...(m.reactions || {}) };
+                            newReactions[fromId] = reaction;
+                            return { ...m, reactions: newReactions };
+                        }
+                        return m;
+                    });
+                }
+                return next;
+            });
+        });
+
         return () => {
             socket.off('online:users');
             socket.off('message:receive');
             socket.off('message:sent');
             socket.off('chat:history');
             socket.off('admin:newMessage');
+            socket.off('chat:typing');
+            socket.off('chat:reaction:update');
         };
     }, [socket, adminUser, open, selectedUserId]);
 
@@ -121,6 +155,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
     const handleSelectUser = (uid) => {
         setSelectedUserId(uid);
+        setReplyingTo(null);
         if (socket) {
             socket.emit('chat:history', { userId: uid, adminId: ADMIN_ID });
         }
@@ -135,6 +170,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             toId: selectedUserId,
             toRole: 'user',
             message: input.trim(),
+            replyTo: replyingTo ? { id: replyingTo.id, name: replyingTo.fromName, message: replyingTo.message } : null,
             avatar: adminAvatar,
         };
         // Thêm vào UI ngay
@@ -148,16 +184,45 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
         }));
         socket.emit('message:send', msgObj);
         setInput('');
-    }, [input, socket, selectedUserId, adminName, adminAvatar]);
+        setReplyingTo(null);
+
+        if (socket) {
+            socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: false, role: 'admin' });
+        }
+    }, [input, socket, selectedUserId, adminName, adminAvatar, replyingTo]);
+
+    const toggleReactionPicker = (msgId) => {
+        setActiveReactionMsgId(activeReactionMsgId === msgId ? null : msgId);
+    };
+
+    const handleReact = (msgId, emoji) => {
+        if (socket && selectedUserId) {
+            const roomId = [selectedUserId, ADMIN_ID].sort().join('_');
+            socket.emit('chat:reaction', { roomId, msgId, reaction: emoji, fromId: ADMIN_ID, toId: selectedUserId });
+        }
+        setActiveReactionMsgId(null);
+    };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    };
+
+    const handleInputChange = (e) => {
+        setInput(e.target.value);
+        if (socket && selectedUserId) {
+            socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: e.target.value.length > 0, role: 'admin' });
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: false, role: 'admin' });
+            }, 2000);
+        }
     };
 
     if (!adminUser) return null;
 
     const messages = selectedUserId ? (conversations[selectedUserId] || []) : [];
     const selectedUser = onlineUsers.find((u) => u.userId === selectedUserId);
+    const isOtherTyping = selectedUserId ? typingUsers[selectedUserId] : false;
 
     return (
         <div className="chat-widget">
@@ -201,7 +266,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                     {/* Messages */}
                     {!selectedUserId ? (
                         <div className="chat-no-target">
-                            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" /></svg>
                             Chọn khách hàng để bắt đầu chat
                         </div>
                     ) : (
@@ -221,9 +286,37 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                                             className="chat-msg-avatar"
                                             onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
                                         />
-                                        <div>
+                                        <div className="chat-msg-content-wrapper">
                                             {!isMe && <div className="chat-msg-name">{msg.fromName}</div>}
-                                            <div className="chat-msg-bubble">{msg.message}</div>
+
+                                            <div className={`chat-msg-bubble-container ${activeReactionMsgId === msg.id ? 'reaction-active' : ''}`}>
+                                                <div className="chat-msg-actions">
+                                                    <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
+                                                    <button onClick={() => toggleReactionPicker(msg.id)} title="Thả cảm xúc">🙂</button>
+                                                </div>
+
+                                                <div className="chat-msg-bubble-wrapper">
+                                                    {activeReactionMsgId === msg.id && (
+                                                        <div className="chat-reaction-picker">
+                                                            {REACTIONS.map(r => (
+                                                                <span key={r} onClick={() => handleReact(msg.id, r)}>{r}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {msg.replyTo && (
+                                                        <div className="chat-msg-reply-quote">
+                                                            <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
+                                                        </div>
+                                                    )}
+                                                    <div className="chat-msg-bubble">{msg.message}</div>
+                                                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                                        <div className="chat-msg-reactions-display">
+                                                            {Object.values(msg.reactions).map((r, idx) => <span key={idx}>{r}</span>)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
                                             <div className="chat-msg-time">{formatTime(msg.timestamp)}</div>
                                         </div>
                                     </div>
@@ -233,15 +326,42 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                         </div>
                     )}
 
+                    {replyingTo && (
+                        <div className="chat-reply-preview">
+                            <div>Đang trả lời <strong>{replyingTo.fromName}</strong>: {replyingTo.message}</div>
+                            <button onClick={() => setReplyingTo(null)}>×</button>
+                        </div>
+                    )}
+
+                    {isOtherTyping && (
+                        <div className="chat-typing-status">Đang soạn tin nhắn...</div>
+                    )}
+
                     {selectedUserId && (
                         <div className="chat-input-area">
                             <input
                                 value={input}
-                                onChange={(e) => setInput(e.target.value)}
+                                onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Nhập tin nhắn..."
                                 autoFocus
                             />
+                            <button className="chat-input-emoji-btn" onClick={() => setShowInputEmojiPicker(!showInputEmojiPicker)} title="Chèn Emoji">
+                                🙂
+                            </button>
+                            {showInputEmojiPicker && (
+                                <div className="chat-input-emoji-picker">
+                                    {INPUT_EMOJIS.map(e => (
+                                        <span key={e} onClick={() => {
+                                            setInput(prev => prev + e);
+                                            setShowInputEmojiPicker(false);
+                                            if (socket && selectedUserId) socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: true, role: 'admin' });
+                                        }}>
+                                            {e}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                             <button className="chat-send-btn" onClick={handleSend}>
                                 <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" /></svg>
                             </button>
@@ -252,9 +372,9 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
             <button className="chat-toggle-btn" onClick={() => setOpen((o) => !o)} title="Chat hỗ trợ">
                 {open ? (
-                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
                 ) : (
-                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" /></svg>
                 )}
                 {unread > 0 && <span className="chat-toggle-badge">{unread}</span>}
             </button>
