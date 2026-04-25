@@ -60,7 +60,7 @@ app.use(cookieParser());
 
 app.use(
     session({
-        secret: "a9b8c7d6e5f4g3h2i1",
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: { 
@@ -108,7 +108,9 @@ app.use('*', (req, res) => {
     res.status(404).json({ error: "not found" })
 });
 
+import logger from "./utils/logger.js";
+
 // Dùng httpServer thay cho app.listen để Socket.io hoạt động
-httpServer.listen(PORT, () => console.log(`Server started at http://192.168.88.133:${PORT}`));
+httpServer.listen(PORT, () => logger.info(`Server started at http://192.168.88.133:${PORT}`));
 
 export default app;

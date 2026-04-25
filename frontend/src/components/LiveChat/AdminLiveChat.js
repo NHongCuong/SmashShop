@@ -113,6 +113,9 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                 }
                 return next;
             });
+            if (fromId !== ADMIN_ID && (!open || selectedUserId !== fromId)) {
+                setUnread(u => u + 1);
+            }
         });
 
         return () => {
@@ -163,7 +166,9 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
     const handleSend = useCallback(() => {
         if (!input.trim() || !socket || !selectedUserId) return;
+        const msgId = Date.now();
         const msgObj = {
+            id: msgId,
             fromId: ADMIN_ID,
             fromName: adminName,
             fromRole: 'admin',
@@ -178,7 +183,6 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             ...prev,
             [selectedUserId]: [...(prev[selectedUserId] || []), {
                 ...msgObj,
-                id: Date.now(),
                 timestamp: new Date(),
             }],
         }));
@@ -197,6 +201,22 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
     const handleReact = (msgId, emoji) => {
         if (socket && selectedUserId) {
+            // Cập nhật UI ngay lập tức (Optimistic UI)
+            setConversations(prev => {
+                const next = { ...prev };
+                if (next[selectedUserId]) {
+                    next[selectedUserId] = next[selectedUserId].map(m => {
+                        if (m.id === msgId) {
+                            const newReactions = { ...(m.reactions || {}) };
+                            newReactions[ADMIN_ID] = emoji;
+                            return { ...m, reactions: newReactions };
+                        }
+                        return m;
+                    });
+                }
+                return next;
+            });
+
             const roomId = [selectedUserId, ADMIN_ID].sort().join('_');
             socket.emit('chat:reaction', { roomId, msgId, reaction: emoji, fromId: ADMIN_ID, toId: selectedUserId });
         }

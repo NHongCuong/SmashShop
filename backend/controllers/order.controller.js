@@ -2,17 +2,24 @@ import Cart from '../models/cart.model.js';
 import Order from '../models/order.model.js'
 import OrderDetail from '../models/order_detail.js';
 import Product from '../models/product.model.js';
+import ProductImage from "../models/productImage.model.js";
+import logger from "../utils/logger.js";
 import { v4 as uuidv4 } from 'uuid';
 
 
 export const fetchOrderHistory = async (req, res) => {
-    const userId = req.query.user_id || '';
+    const { _id, role } = req.user;
+    
+    // Nếu không phải admin, luôn lấy userId từ chính token (req.user._id)
+    // Nếu là admin, có thể xem hộ user khác nếu có user_id trong query
+    const userId = (role === 'admin') ? (req.query.user_id || _id) : _id;
+    
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const sortBy = req.query.sortBy || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-    const query = (userId) ? { user_id: userId } : {};
+    const query = { user_id: userId };
 
     try {
         const totalDocument = await Order.countDocuments(query);
@@ -39,6 +46,7 @@ export const fetchOrderHistory = async (req, res) => {
             data: order
         })
     } catch (e) {
+        logger.error("Error fetching order history: " + e.message);
         res.status(500).json({ success: false, error: e.message })
     }
 }
@@ -49,10 +57,7 @@ export const createOrder = async (req, res) => {
 
         const { name, address, phone, email, note } = req.body.shipping;
 
-        // console.log("ok")
         const cartDoc = await Cart.findOne({ user_id: user_id }).populate('cart.product');
-        // console.log("ok")
-        // console.log(cartDoc," ", user_id, " ",req.user);
         if (!cartDoc || cartDoc.cart.length === 0) {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
         }
@@ -102,10 +107,10 @@ export const createOrder = async (req, res) => {
         }
         // Xoá giỏ hàng của user
         await Cart.updateOne({ user_id }, { $set: { cart: [] } });
-        console.log("đã delete cart");
+        logger.info("đã delete cart");
         return res.status(201).json({ success: true, order, orderDetail: orderDetailData });
     } catch (err) {
-        console.error('Error createOrder:', err);
+        logger.error('Error createOrder:', err);
         return res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
@@ -154,6 +159,7 @@ export const fetchAllOrders = async (req, res) => {
             data: orders
         })
     } catch (e) {
+        logger.error("Error fetching all orders: " + e.message);
         res.status(500).json({ success: false, error: e.message })
     }
 }
@@ -174,6 +180,7 @@ export const updateOrderStatus = async (req, res) => {
         }
         res.status(200).json({ success: true, data: order });
     } catch (e) {
+        logger.error("Error updating order status: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
@@ -188,6 +195,7 @@ export const fetchProductDetailsByOrderId = async (req, res) => {
         }
         res.status(200).json({ success: true, data: orderDetails });
     } catch (e) {
+        logger.error("Error fetching product details by order id: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
@@ -213,8 +221,15 @@ export const fetchOrderById = async (req, res) => {
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
+
+        // Kiểm tra quyền
+        if (req.user.role !== 'admin' && order.user_id?._id.toString() !== req.user._id.toString() && order.user_id?.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền xem đơn hàng này." });
+        }
+
         res.status(200).json({ success: true, data: order });
     } catch (e) {
+        logger.error("Error fetching order by id: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
@@ -222,13 +237,22 @@ export const fetchOrderById = async (req, res) => {
 export const deleteOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const order = await Order.findByIdAndDelete(orderId);
+        const order = await Order.findById(orderId);
+        
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
+
+        // Kiểm tra quyền (Chỉ Admin hoặc chủ đơn hàng mới được xóa)
+        if (req.user.role !== 'admin' && order.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền xóa đơn hàng này." });
+        }
+
+        await Order.findByIdAndDelete(orderId);
         await OrderDetail.deleteOne({ order_id: orderId });
         res.status(200).json({ success: true, message: "Order deleted successfully" });
     } catch (e) {
+        logger.error("Error deleting order: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
@@ -240,6 +264,11 @@ export const updateOrderItem = async (req, res) => {
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Kiểm tra quyền
+        if (req.user.role !== 'admin' && order.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền chỉnh sửa đơn hàng này." });
         }
 
         const itemIndex = order.items.findIndex(item => item._id.toString() === itemId);
@@ -278,7 +307,7 @@ export const updateOrderItem = async (req, res) => {
 
         res.status(200).json({ success: true, data: order });
     } catch (e) {
-        console.error("Error in updateOrderItem:", e);
+        logger.error("Error in updateOrderItem: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
@@ -290,6 +319,11 @@ export const deleteOrderItem = async (req, res) => {
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Kiểm tra quyền
+        if (req.user.role !== 'admin' && order.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền chỉnh sửa đơn hàng này." });
         }
 
         order.items = order.items.filter(item => item._id.toString() !== itemId);
@@ -319,7 +353,7 @@ export const deleteOrderItem = async (req, res) => {
 
         res.status(200).json({ success: true, data: order });
     } catch (e) {
-        console.error("Error in deleteOrderItem:", e);
+        logger.error("Error in deleteOrderItem: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }

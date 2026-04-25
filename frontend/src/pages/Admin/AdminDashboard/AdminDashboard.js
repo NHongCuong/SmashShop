@@ -60,7 +60,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!socket || !adminUser) return;
 
-    const handler = ({ fromId, fromName, avatar, message }) => {
+    const handler = (data) => {
+      const { fromId, fromName, avatar, message, type } = data;
       setNotifications((prev) => {
         // Tránh duplicate: nếu đã có từ user này với message giống hệt thì bỏ qua
         const isDuplicate = prev.some(
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
         if (isDuplicate) return prev;
 
         const updated = [
-          { fromId, fromName, avatar, message, time: new Date().toISOString(), read: false },
+          { fromId, fromName, avatar, message, type, time: new Date().toISOString(), read: false },
           ...prev.slice(0, 19),
         ];
         saveNotificationsToStorage(updated);

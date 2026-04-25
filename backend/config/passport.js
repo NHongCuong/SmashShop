@@ -2,6 +2,8 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
 import User from "../models/user.model.js";
+import { getNextSequenceValue } from "../models/counter.model.js";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -19,14 +21,13 @@ passport.use(
                 if (user) {
                     return done(null, user);
                 } else {
-                    const lastUser = await User.findOne().sort({ user_id: -1 });
-                    const newUserId = lastUser ? lastUser.user_id + 1 : 1;
+                    const newUserId = await getNextSequenceValue("user_id");
                     
                     user = await User.create({
                         user_id: newUserId,
                         name: profile.displayName,
                         email: profile.emails[0].value,
-                        password: Math.random().toString(36).substring(7), // Mật khẩu ngẫu nhiên cho user Google
+                        password: crypto.randomBytes(20).toString('hex'), // Mật khẩu ngẫu nhiên bảo mật hơn
                         avatar: profile.photos[0].value,
                         role: 'user'
                     });

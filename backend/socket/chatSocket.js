@@ -63,7 +63,7 @@ export default function initChatSocket(io) {
             }
 
             const msgObj = {
-                id: Date.now(),
+                id: data.id || Date.now(),
                 fromId,
                 fromName,
                 fromRole,
@@ -168,6 +168,20 @@ export default function initChatSocket(io) {
             }
             // Broadcast cho tất cả ai đang quan tâm
             io.emit('chat:reaction:update', { roomId, msgId, reaction, fromId });
+
+            // Nếu user thả cảm xúc -> notify admin (hiện thông báo ngay)
+            const sender = onlineUsers.get(fromId);
+            if (sender && sender.userInfo.role === 'user') {
+                const msgs = conversations.get(roomId) || [];
+                const msg = msgs.find(m => m.id === msgId);
+                notifyAdmins(io, { 
+                    fromId, 
+                    fromName: sender.userInfo.name, 
+                    avatar: sender.userInfo.avatar, 
+                    message: `đã thả cảm xúc ${reaction} vào tin nhắn: "${msg?.message || '...'}"`,
+                    type: 'reaction' 
+                });
+            }
         });
 
         socket.on('disconnect', () => {

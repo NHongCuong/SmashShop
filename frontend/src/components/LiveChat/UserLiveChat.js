@@ -82,6 +82,7 @@ export default function UserLiveChat() {
                 }
                 return m;
             }));
+            if (!open && fromId !== userId) setUnread(u => u + 1);
         });
 
         return () => {
@@ -102,7 +103,9 @@ export default function UserLiveChat() {
 
     const handleSend = useCallback(() => {
         if (!input.trim() || !socket || !userId) return;
+        const msgId = Date.now();
         const msgObj = {
+            id: msgId,
             fromId: userId,
             fromName: user.name,
             fromRole: 'user',
@@ -115,7 +118,6 @@ export default function UserLiveChat() {
         // Thêm tin nhắn vào UI ngay
         setMessages((prev) => [...prev, {
             ...msgObj,
-            id: Date.now(),
             timestamp: new Date(),
         }]);
         socket.emit('message:send', msgObj);
@@ -126,6 +128,16 @@ export default function UserLiveChat() {
 
     const handleReact = (msgId, emoji) => {
         if (socket) {
+            // Cập nhật UI ngay lập tức (Optimistic UI)
+            setMessages(prev => prev.map(m => {
+                if (m.id === msgId) {
+                    const newReactions = { ...(m.reactions || {}) };
+                    newReactions[userId] = emoji;
+                    return { ...m, reactions: newReactions };
+                }
+                return m;
+            }));
+
             const roomId = [userId, ADMIN_ID].sort().join('_');
             socket.emit('chat:reaction', { roomId, msgId, reaction: emoji, fromId: userId, toId: ADMIN_ID });
         }
