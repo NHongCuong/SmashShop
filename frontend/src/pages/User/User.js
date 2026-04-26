@@ -1,6 +1,13 @@
 import Header from "../../components/Header/Header";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../app/store/authSlice";
+import { userApi } from "../../features/user/userApi";
+import { orderApi } from "../../features/order/orderApi.js";
+import { productApi } from "../../features/product/productApi.js";
+import { categoryApi } from "../../features/services/categoryApi.js";
+import { reviewApi } from "../../features/services/reviewApi.js";
+import { wishlistApi } from "../../features/services/wishlistApi.js";
+import { clearCart } from "../../app/store/cartSlice";
 import Footer from "../../components/Footer/Footer";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -31,6 +38,16 @@ export default function User({ isAuthenticated, setIsAuthenticated }) {
     // console.log("Logout")
     // Xóa token và thông tin người dùng khỏi localStorage
     dispatch(logout());
+    dispatch(clearCart());
+
+    // Reset RTK Query caches to prevent data leak between users
+    dispatch(userApi.util.resetApiState());
+    dispatch(orderApi.util.resetApiState());
+    dispatch(productApi.util.resetApiState());
+    dispatch(categoryApi.util.resetApiState());
+    dispatch(reviewApi.util.resetApiState());
+    dispatch(wishlistApi.util.resetApiState());
+
     navigate("/");
     localStorage.removeItem("isAuthenticated"); // Xóa dữ liệu đăng nhập
   };

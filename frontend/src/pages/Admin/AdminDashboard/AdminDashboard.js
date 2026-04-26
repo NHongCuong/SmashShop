@@ -18,6 +18,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
 import AdminLiveChat from '../../../components/LiveChat/AdminLiveChat';
 import { useSocket } from '../../../context/SocketContext';
+import { userApi } from '../../../features/user/userApi';
+import { orderApi } from '../../../features/order/orderApi';
+import { productApi } from '../../../features/product/productApi';
+import { categoryApi } from '../../../features/services/categoryApi';
+import { reviewApi } from '../../../features/services/reviewApi';
+import { statisticsApi } from '../../../features/statistics/statisticsApi';
+import { wishlistApi } from '../../../features/services/wishlistApi';
 
 const NOTIF_STORAGE_KEY = 'admin_chat_notifications';
 
@@ -53,6 +60,16 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     dispatch(adminLogout());
+    
+    // Reset RTK Query caches
+    dispatch(userApi.util.resetApiState());
+    dispatch(orderApi.util.resetApiState());
+    dispatch(productApi.util.resetApiState());
+    dispatch(categoryApi.util.resetApiState());
+    dispatch(reviewApi.util.resetApiState());
+    dispatch(statisticsApi.util.resetApiState());
+    dispatch(wishlistApi.util.resetApiState());
+
     navigate('/admin-login');
   };
 

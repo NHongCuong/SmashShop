@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
@@ -6,33 +7,64 @@ const SocketContext = createContext(null);
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
-    const socketRef = useRef(null);
+    const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
+    const socketRef = useRef(null); // Dùng ref để quản lý instance, state để trigger re-render
 
+    // Lắng nghe token từ cả user auth và admin auth
+    const userToken = useSelector((state) => state.auth?.token);
+    const adminToken = useSelector((state) => state.adminAuth?.token);
+    const token = userToken || adminToken;
+
+    // Khi token thay đổi (login/logout) → reconnect socket với token mới
     useEffect(() => {
+        // Ngắt kết nối cũ nếu có
+        if (socketRef.current) {
+            socketRef.current.removeAllListeners();
+            socketRef.current.disconnect();
+            socketRef.current = null;
+        }
+
+        if (!token) {
+            setSocket(null);
+            setIsConnected(false);
+            return;
+        }
+
         const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
-        socketRef.current = io(SOCKET_URL, {
+
+        const newSocket = io(SOCKET_URL, {
             transports: ['websocket'],
             reconnection: true,
+            auth: {
+                token: token
+            }
         });
 
-        socketRef.current.on('connect', () => {
+        newSocket.on('connect', () => {
             setIsConnected(true);
         });
 
-        socketRef.current.on('disconnect', () => {
+        newSocket.on('disconnect', () => {
             setIsConnected(false);
         });
 
+        newSocket.on('connect_error', (err) => {
+            console.warn('Socket connection error:', err.message);
+            setIsConnected(false);
+        });
+
+        socketRef.current = newSocket;
+        setSocket(newSocket); // Trigger re-render → các component nhận socket mới ngay
+
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
+            newSocket.removeAllListeners();
+            newSocket.disconnect();
         };
-    }, []);
+    }, [token]);
 
     return (
-        <SocketContext.Provider value={{ socket: socketRef.current, isConnected }}>
+        <SocketContext.Provider value={{ socket, isConnected }}>
             {children}
         </SocketContext.Provider>
     );

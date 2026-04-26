@@ -200,9 +200,11 @@
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden; /* Dứt điểm thanh scroll ngang */
+    overflow-x: hidden;
+    /* Dứt điểm thanh scroll ngang */
     padding: 14px 12px;
-    padding-top: 45px; /* Chừa chỗ cho picker của tin nhắn đầu tiên */
+    padding-top: 45px;
+    /* Chừa chỗ cho picker của tin nhắn đầu tiên */
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -235,11 +237,13 @@
     object-fit: cover;
     flex-shrink: 0;
     background: #ddd;
-    margin-bottom: 2px; /* Căn lề dưới cho khớp với bong bóng */
+    margin-bottom: 2px;
+    /* Căn lề dưới cho khớp với bong bóng */
 }
 
 .chat-msg-bubble {
-    max-width: 100%; /* Đổi thành 100% vì wrapper đã giới hạn rồi */
+    max-width: 100%;
+    /* Đổi thành 100% vì wrapper đã giới hạn rồi */
     padding: 9px 13px;
     border-radius: 18px;
     font-size: 14px;
@@ -357,7 +361,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    max-width: calc(100% - 100px); /* Tăng lề an toàn để tránh đẩy avatar hoặc bị tràn */
+    max-width: calc(100% - 100px);
+    /* Tăng lề an toàn để tránh đẩy avatar hoặc bị tràn */
     min-width: 0;
 }
 
@@ -379,11 +384,13 @@
 
 /* Quan trọng: Bong bóng luôn phải nằm cạnh Avatar */
 .chat-msg-row.other .chat-msg-bubble-container {
-    flex-direction: row-reverse; /* Bubble (trước trong flex flow nhờ reverse) - Actions */
+    flex-direction: row-reverse;
+    /* Bubble (trước trong flex flow nhờ reverse) - Actions */
 }
 
 .chat-msg-row.me .chat-msg-bubble-container {
-    flex-direction: row; /* Actions - Bubble */
+    flex-direction: row;
+    /* Actions - Bubble */
 }
 
 .chat-msg-bubble-wrapper {
@@ -401,7 +408,7 @@
     transition: 0.2s ease;
     visibility: hidden;
     white-space: nowrap;
-    background: rgba(255,255,255,0.7);
+    background: rgba(255, 255, 255, 0.7);
     padding: 2px 4px;
     border-radius: 12px;
 }
@@ -528,8 +535,8 @@
     border-left: none;
     border-right: 3px solid #EAC427;
     text-align: right;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.05);
+    color: #555;
 }
 
 .chat-reply-preview {

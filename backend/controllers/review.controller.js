@@ -1,4 +1,5 @@
 import Review from "../models/review.model.js";
+import { getNextSequenceValue } from "../models/counter.model.js";
 
 // Lấy đánh giá theo sản phẩm
 export const getReviewsByProduct = async (req, res) => {
@@ -41,9 +42,8 @@ export const createReview = async (req, res) => {
             return res.status(400).json({ success: false, message: "Bạn đã đánh giá sản phẩm này rồi" });
         }
 
-        // Tạo review_id tự tăng
-        const maxReview = await Review.findOne({}).sort({ review_id: -1 });
-        const newReviewId = maxReview ? maxReview.review_id + 1 : 1;
+        // Tạo review_id tự tăng bằng Counter để tránh Race Condition
+        const newReviewId = await getNextSequenceValue("review_id");
 
         const review = new Review({
             review_id: newReviewId,
@@ -75,7 +75,7 @@ export const deleteReview = async (req, res) => {
         }
 
         // Chỉ cho phép user xóa review của chính mình
-        if (review.user_id.toString() !== req.user._id) {
+        if (review.user_id.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: "Không có quyền xóa đánh giá này" });
         }
 

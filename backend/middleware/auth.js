@@ -17,9 +17,7 @@ export const authMiddleware = (req, res, next) => {
     }
 };
 
-const isAdmin = (req, res, next) => {
-    // console.log(req.user.role);
-    // console.log(req.user);
+export const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === "admin") {
         next();
     } else {

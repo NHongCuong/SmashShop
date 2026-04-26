@@ -71,6 +71,27 @@ export const createOrder = async (req, res) => {
         // Tính tổng
         const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
 
+        // Kiểm tra và trừ tồn kho (atomic) trước khi tạo đơn hàng
+        const updatedItems = [];
+        for (const item of items) {
+            const product = await Product.findOneAndUpdate(
+                { _id: item.product, stock: { $gte: item.quantity } },
+                { $inc: { stock: -item.quantity, quantity_sold: item.quantity } },
+                { new: true }
+            );
+
+            if (!product) {
+                // Rollback nếu có sản phẩm không đủ tồn kho
+                for (const updated of updatedItems) {
+                    await Product.findByIdAndUpdate(
+                        updated.product,
+                        { $inc: { stock: updated.quantity, quantity_sold: -updated.quantity } }
+                    );
+                }
+                return res.status(400).json({ success: false, message: 'Một số sản phẩm không đủ số lượng trong kho' });
+            }
+            updatedItems.push(item);
+        }
 
         // Tạo Order
         const order = await Order.create({
@@ -78,7 +99,7 @@ export const createOrder = async (req, res) => {
             items,
             shipping: { name, address, phone, email, note },
             total,
-            status: "Succeeded",
+            status: req.body.paymentMethod === 'vnpay' ? "Pending" : "Succeeded",
             paymentmethod: req.body.paymentMethod,
         });
 
@@ -95,16 +116,6 @@ export const createOrder = async (req, res) => {
             }))
         };
         await OrderDetail.create(orderDetailData);
-
-        // giảm số lượng sản phẩm trong kho
-        for (const item of items) {
-            const product = await Product.findById(item.product);
-            if (product) {
-                product.stock -= item.quantity; // Giảm số lượng trong kho
-                product.quantity_sold += item.quantity; // Tăng số lượng đã bán
-                await product.save(); // Lưu thay đổi vào cơ sở dữ liệu
-            }
-        }
         // Xoá giỏ hàng của user
         await Cart.updateOne({ user_id }, { $set: { cart: [] } });
         logger.info("đã delete cart");

@@ -6,8 +6,12 @@ import "./Header.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setSearchTerm, clearSearchTerm } from "../../features/search/searchSlice";
-import { useGetProductsQuery } from "../../features/product/productApi";
-import { useGetCategoriesQuery } from "../../features/services/categoryApi.js";
+import { userApi } from "../../features/user/userApi.js";
+import { orderApi } from "../../features/order/orderApi.js";
+import { productApi, useGetProductsQuery } from "../../features/product/productApi.js";
+import { categoryApi, useGetCategoriesQuery } from "../../features/services/categoryApi.js";
+import { reviewApi } from "../../features/services/reviewApi.js";
+import { wishlistApi } from "../../features/services/wishlistApi.js";
 import { logout, selectIsAuthenticated } from "../../app/store/authSlice.js";
 import { clearCart } from "../../app/store/cartSlice"; // ✅ thêm dòng này
 
@@ -71,6 +75,15 @@ export default function Header() {
     // Xóa token và thông tin người dùng khỏi localStorage
     dispatch(logout());
     dispatch(clearCart());
+    
+    // Reset RTK Query caches to prevent data leak between users
+    dispatch(userApi.util.resetApiState());
+    dispatch(orderApi.util.resetApiState());
+    dispatch(productApi.util.resetApiState());
+    dispatch(categoryApi.util.resetApiState());
+    dispatch(reviewApi.util.resetApiState());
+    dispatch(wishlistApi.util.resetApiState());
+
     navigate("/");
     localStorage.removeItem("isAuthenticated"); // Xóa dữ liệu đăng nhập
   };

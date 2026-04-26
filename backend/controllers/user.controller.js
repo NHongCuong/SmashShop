@@ -1,4 +1,3 @@
-import { response } from "express";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { generateToken, generateRefreshToken } from "../middleware/jwt.js";
@@ -84,7 +83,7 @@ export const login = async (req, res) => {
             httpOnly: true,
             secure: false,          // chỉ bật true khi dùng HTTPS
             sameSite: 'Lax',        // hoặc 'none' nếu frontend ở khác domain
-            maxAge: 2 * 60 * 60 * 10000 //2h
+            maxAge: 2 * 60 * 60 * 1000 // 2h (7,200,000 ms)
         });
 
         res.status(200).json({
@@ -105,7 +104,7 @@ export const RefreshToken = asyncHandler(async (req, res) => {
     const refresh_Token = cookie.refreshtoken;
     jwt.verify(refresh_Token, process.env.JWT_REFRESH_SECRET, async (err, decoded) => {
         if (err || !decoded) return res.status(403).json({ success: false, message: "Refresh token is not valid" });
-        
+
         const user = await User.findOne({ _id: decoded._id, refreshToken: refresh_Token });
         if (!user) return res.status(403).json({ success: false, message: "User not found or token mismatch" });
 
@@ -176,7 +175,7 @@ export const getProfile = async (req, res) => {
         res.status(200).json(user);
     } catch (error) {
         logger.error("Error in fetching user: " + error.message)
-        res.status(500).json({success: false,  message: "Error retrieving user data", error });
+        res.status(500).json({ success: false, message: "Error retrieving user data", error });
     }
 };
 

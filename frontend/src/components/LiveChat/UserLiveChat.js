@@ -77,7 +77,11 @@ export default function UserLiveChat() {
             setMessages(prev => prev.map(m => {
                 if (m.id === msgId) {
                     const newReactions = { ...(m.reactions || {}) };
-                    newReactions[fromId] = reaction;
+                    if (reaction === null) {
+                        delete newReactions[fromId];
+                    } else {
+                        newReactions[fromId] = reaction;
+                    }
                     return { ...m, reactions: newReactions };
                 }
                 return m;
@@ -132,7 +136,11 @@ export default function UserLiveChat() {
             setMessages(prev => prev.map(m => {
                 if (m.id === msgId) {
                     const newReactions = { ...(m.reactions || {}) };
-                    newReactions[userId] = emoji;
+                    if (emoji === null) {
+                        delete newReactions[userId];
+                    } else {
+                        newReactions[userId] = emoji;
+                    }
                     return { ...m, reactions: newReactions };
                 }
                 return m;
@@ -222,7 +230,13 @@ export default function UserLiveChat() {
                                                 <div className="chat-msg-bubble">{msg.message}</div>
                                                 {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                     <div className="chat-msg-reactions-display">
-                                                        {Object.values(msg.reactions).map((r, idx) => <span key={idx}>{r}</span>)}
+                                                        {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
+                                                            <span 
+                                                                key={idx} 
+                                                                onDoubleClick={() => { if (reactionUserId === userId) handleReact(msg.id, null); }}
+                                                                title={reactionUserId === userId ? "Nhấp đúp để xóa" : ""}
+                                                            >{r}</span>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>

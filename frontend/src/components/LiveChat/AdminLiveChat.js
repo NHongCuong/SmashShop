@@ -13,6 +13,8 @@ function formatTime(date) {
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 }
 
+const UNREAD_STORAGE_KEY = 'admin_chat_unread_count';
+
 /* ========== ADMIN CHAT WIDGET ========== */
 export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     const { socket } = useSocket();
@@ -22,7 +24,10 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [conversations, setConversations] = useState({}); // { userId: [msgs] }
     const [input, setInput] = useState('');
-    const [unread, setUnread] = useState(0);
+    const [unread, setUnread] = useState(() => {
+        const saved = localStorage.getItem(UNREAD_STORAGE_KEY);
+        return saved ? parseInt(saved, 10) : 0;
+    });
     const messagesEndRef = useRef(null);
 
     const [typingUsers, setTypingUsers] = useState({});
@@ -105,7 +110,11 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                     next[uid] = next[uid].map(m => {
                         if (m.id === msgId) {
                             const newReactions = { ...(m.reactions || {}) };
-                            newReactions[fromId] = reaction;
+                            if (reaction === null) {
+                                delete newReactions[fromId];
+                            } else {
+                                newReactions[fromId] = reaction;
+                            }
                             return { ...m, reactions: newReactions };
                         }
                         return m;
@@ -129,6 +138,11 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
         };
     }, [socket, adminUser, open, selectedUserId]);
 
+    // Lưu unread count vào localStorage mỗi khi thay đổi
+    useEffect(() => {
+        localStorage.setItem(UNREAD_STORAGE_KEY, unread.toString());
+    }, [unread]);
+
     // Khi được yêu cầu mở chat với user nhất định (từ notification hoặc nút Chat)
     useEffect(() => {
         if (openWithUserId) {
@@ -150,6 +164,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     useEffect(() => {
         if (open) {
             setUnread(0);
+            localStorage.setItem(UNREAD_STORAGE_KEY, '0');
             setTimeout(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, 50);
@@ -208,7 +223,11 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                     next[selectedUserId] = next[selectedUserId].map(m => {
                         if (m.id === msgId) {
                             const newReactions = { ...(m.reactions || {}) };
-                            newReactions[ADMIN_ID] = emoji;
+                            if (emoji === null) {
+                                delete newReactions[ADMIN_ID];
+                            } else {
+                                newReactions[ADMIN_ID] = emoji;
+                            }
                             return { ...m, reactions: newReactions };
                         }
                         return m;
@@ -331,7 +350,13 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                                                     <div className="chat-msg-bubble">{msg.message}</div>
                                                     {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                         <div className="chat-msg-reactions-display">
-                                                            {Object.values(msg.reactions).map((r, idx) => <span key={idx}>{r}</span>)}
+                                                            {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
+                                                                <span 
+                                                                    key={idx} 
+                                                                    onDoubleClick={() => { if (reactionUserId === ADMIN_ID) handleReact(msg.id, null); }}
+                                                                    title={reactionUserId === ADMIN_ID ? "Nhấp đúp để xóa" : ""}
+                                                                >{r}</span>
+                                                            ))}
                                                         </div>
                                                     )}
                                                 </div>
