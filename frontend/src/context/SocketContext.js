@@ -31,11 +31,22 @@ export const SocketProvider = ({ children }) => {
             return;
         }
 
-        const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+        const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001' || 'http://192.168.88.1:5001';
 
+        // const newSocket = io(SOCKET_URL, {
+        //     transports: ['websocket'],
+        //     reconnection: true,
+        //     auth: {
+        //         token: token
+        //     }
+        // });
         const newSocket = io(SOCKET_URL, {
-            transports: ['websocket'],
+            path: '/socket.io',
+            transports: ['polling', 'websocket'],
             reconnection: true,
+            secure: true,      // Vì chúng ta dùng HTTPS bên ngoài
+            reconnectionAttempts: 5,
+            timeout: 10000,
             auth: {
                 token: token
             }

@@ -14,6 +14,7 @@ const messageSchema = new mongoose.Schema({
     replyTo: { type: mongoose.Schema.Types.Mixed, default: null },
     avatar: { type: String },
     reactions: { type: Map, of: String, default: {} },
+    isRecalled: { type: Boolean, default: false },
     create_at: { type: Date, default: Date.now }
 });
 

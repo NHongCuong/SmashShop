@@ -101,7 +101,8 @@ export default function initChatSocket(io) {
                 message,
                 replyTo: replyTo || null,
                 avatar,
-                timestamp: new Date()
+                timestamp: new Date(),
+                isRecalled: false
             };
 
             if (fromRole === 'admin') {
@@ -226,7 +227,8 @@ export default function initChatSocket(io) {
                         replyTo: msg.replyTo,
                         avatar: msg.avatar,
                         timestamp: msg.create_at,
-                        reactions: msg.reactions ? Object.fromEntries(msg.reactions) : {}
+                        reactions: msg.reactions ? Object.fromEntries(msg.reactions) : {},
+                        isRecalled: msg.isRecalled || false
                     }));
                     conversations.set(roomId, history);
                 } catch (err) {
@@ -261,7 +263,8 @@ export default function initChatSocket(io) {
                         replyTo: msg.replyTo,
                         avatar: msg.avatar,
                         timestamp: msg.create_at,
-                        reactions: msg.reactions ? Object.fromEntries(msg.reactions) : {}
+                        reactions: msg.reactions ? Object.fromEntries(msg.reactions) : {},
+                        isRecalled: msg.isRecalled || false
                     }));
                     conversations.set(roomId, history);
                 } catch (err) {
@@ -334,6 +337,35 @@ export default function initChatSocket(io) {
                     type: 'reaction'
                 });
             }
+        });
+
+        // Xử lý thu hồi tin nhắn
+        socket.on('chat:recall', async (data) => {
+            const { roomId, msgId, fromId } = data;
+            
+            // Cập nhật ở RAM
+            if (conversations.has(roomId)) {
+                const msgs = conversations.get(roomId);
+                const msg = msgs.find(m => m.id === msgId);
+                // Kiểm tra từ đúng người gửi
+                if (msg && msg.fromId === fromId) {
+                    msg.isRecalled = true;
+                }
+            }
+
+            // Cập nhật ở Database
+            try {
+                const targetMsg = await Message.findOne({ roomId, msgId, fromId });
+                if (targetMsg) {
+                    targetMsg.isRecalled = true;
+                    await targetMsg.save();
+                }
+            } catch (err) {
+                console.error("Lỗi thu hồi tin nhắn:", err);
+            }
+
+            // Broadcast tới tất cả
+            io.emit('chat:recall:update', { roomId, msgId });
         });
 
         socket.on('disconnect', () => {

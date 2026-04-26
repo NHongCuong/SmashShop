@@ -127,6 +127,16 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             }
         });
 
+        socket.on('chat:recall:update', ({ msgId }) => {
+            setConversations((prev) => {
+                const next = { ...prev };
+                for (const uid in next) {
+                    next[uid] = next[uid].map(m => m.id === msgId ? { ...m, isRecalled: true } : m);
+                }
+                return next;
+            });
+        });
+
         return () => {
             socket.off('online:users');
             socket.off('message:receive');
@@ -135,6 +145,7 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
             socket.off('admin:newMessage');
             socket.off('chat:typing');
             socket.off('chat:reaction:update');
+            socket.off('chat:recall:update');
         };
     }, [socket, adminUser, open, selectedUserId]);
 
@@ -204,6 +215,8 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
         socket.emit('message:send', msgObj);
         setInput('');
         setReplyingTo(null);
+        const textarea = document.querySelector('.chat-widget .chat-input-area textarea');
+        if (textarea) textarea.style.height = 'auto';
 
         if (socket) {
             socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: false, role: 'admin' });
@@ -242,12 +255,27 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
         setActiveReactionMsgId(null);
     };
 
+    const handleRecall = (msgId) => {
+        if (!socket || !selectedUserId) return;
+        setConversations(prev => {
+            const next = { ...prev };
+            if (next[selectedUserId]) {
+                next[selectedUserId] = next[selectedUserId].map(m => m.id === msgId ? { ...m, isRecalled: true } : m);
+            }
+            return next;
+        });
+        const roomId = [selectedUserId, ADMIN_ID].sort().join('_');
+        socket.emit('chat:recall', { roomId, msgId, fromId: ADMIN_ID });
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
     };
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
         if (socket && selectedUserId) {
             socket.emit('chat:typing', { fromId: ADMIN_ID, toId: selectedUserId, isTyping: e.target.value.length > 0, role: 'admin' });
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -332,6 +360,9 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                                                 <div className="chat-msg-actions">
                                                     <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
                                                     <button onClick={() => toggleReactionPicker(msg.id)} title="Thả cảm xúc">🙂</button>
+                                                    {isMe && !msg.isRecalled && (
+                                                        <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
+                                                    )}
                                                 </div>
 
                                                 <div className="chat-msg-bubble-wrapper">
@@ -347,7 +378,11 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                                                             <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
                                                         </div>
                                                     )}
-                                                    <div className="chat-msg-bubble">{msg.message}</div>
+                                                    {msg.isRecalled ? (
+                                                        <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
+                                                    ) : (
+                                                        <div className="chat-msg-bubble">{msg.message}</div>
+                                                    )}
                                                     {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                         <div className="chat-msg-reactions-display">
                                                             {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
@@ -384,12 +419,13 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
                     {selectedUserId && (
                         <div className="chat-input-area">
-                            <input
+                            <textarea
                                 value={input}
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Nhập tin nhắn..."
                                 autoFocus
+                                rows={1}
                             />
                             <button className="chat-input-emoji-btn" onClick={() => setShowInputEmojiPicker(!showInputEmojiPicker)} title="Chèn Emoji">
                                 🙂

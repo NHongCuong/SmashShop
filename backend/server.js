@@ -42,7 +42,8 @@ const io = new Server(httpServer, {
             "https://192.168.88.133:30443",
             "http://192.168.88.133:30002",
             "https://192.168.88.133",
-            "http://localhost:3000"
+            "http://localhost:3000",
+            "http://192.168.88.1:3000"
         ],
         methods: ["GET", "POST"],
         credentials: true
@@ -63,7 +64,7 @@ app.use(
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
-        cookie: { 
+        cookie: {
             secure: true,
             sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000
@@ -77,10 +78,11 @@ app.use(passport.session());
 // --- CẤU HÌNH CORS CHI TIẾT ---
 app.use(cors({
     origin: [
-        "https://192.168.88.133:30443", 
+        "https://192.168.88.133:30443",
         "http://192.168.88.133:30002",
         "https://192.168.88.133",
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "http://192.168.88.1:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,

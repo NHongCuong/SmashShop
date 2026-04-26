@@ -89,12 +89,17 @@ export default function UserLiveChat() {
             if (!open && fromId !== userId) setUnread(u => u + 1);
         });
 
+        socket.on('chat:recall:update', ({ msgId }) => {
+            setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRecalled: true } : m));
+        });
+
         return () => {
             socket.off('chat:history');
             socket.off('message:receive');
             socket.off('message:sent');
             socket.off('chat:typing');
             socket.off('chat:reaction:update');
+            socket.off('chat:recall:update');
         };
     }, [socket, userId, open]);
 
@@ -127,6 +132,8 @@ export default function UserLiveChat() {
         socket.emit('message:send', msgObj);
         setInput('');
         setReplyingTo(null);
+        const textarea = document.querySelector('.chat-widget .chat-input-area textarea');
+        if (textarea) textarea.style.height = 'auto';
         if (socket) socket.emit('chat:typing', { fromId: userId, toId: ADMIN_ID, isTyping: false, role: 'user' });
     }, [input, socket, userId, user, replyingTo]);
 
@@ -152,12 +159,21 @@ export default function UserLiveChat() {
         setActiveReactionMsgId(null);
     };
 
+    const handleRecall = (msgId) => {
+        if (!socket || !userId) return;
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isRecalled: true } : m));
+        const roomId = [userId, ADMIN_ID].sort().join('_');
+        socket.emit('chat:recall', { roomId, msgId, fromId: userId });
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
     };
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
         if (socket) {
             socket.emit('chat:typing', { fromId: userId, toId: ADMIN_ID, isTyping: e.target.value.length > 0, role: 'user' });
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -212,6 +228,9 @@ export default function UserLiveChat() {
                                             <div className="chat-msg-actions">
                                                 <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
                                                 <button onClick={() => setActiveReactionMsgId(activeReactionMsgId === msg.id ? null : msg.id)} title="Thả cảm xúc">🙂</button>
+                                                {isMe && !msg.isRecalled && (
+                                                    <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
+                                                )}
                                             </div>
 
                                             <div className="chat-msg-bubble-wrapper">
@@ -227,7 +246,11 @@ export default function UserLiveChat() {
                                                         <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
                                                     </div>
                                                 )}
-                                                <div className="chat-msg-bubble">{msg.message}</div>
+                                                {msg.isRecalled ? (
+                                                    <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
+                                                ) : (
+                                                    <div className="chat-msg-bubble">{msg.message}</div>
+                                                )}
                                                 {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                     <div className="chat-msg-reactions-display">
                                                         {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
@@ -262,12 +285,13 @@ export default function UserLiveChat() {
                     )}
 
                     <div className="chat-input-area">
-                        <input
+                        <textarea
                             value={input}
                             onChange={handleInputChange}
                             onKeyDown={handleKeyDown}
                             placeholder="Nhập tin nhắn..."
                             autoFocus
+                            rows={1}
                         />
                         <button className="chat-input-emoji-btn" onClick={() => setShowInputEmojiPicker(!showInputEmojiPicker)} title="Chèn Emoji">
                             🙂
