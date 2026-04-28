@@ -12,7 +12,7 @@ spec:
     args: ["infinity"]
     resources:
       requests:
-        cpu: "10m"
+        cpu: "50m"
         memory: "64Mi"
       limits:
         cpu: "200m"
