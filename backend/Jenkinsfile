@@ -139,6 +139,7 @@ spec:
                 //         }
                 //     }
                 // }
+                
                 stage('SonarQube Scan') {
                     steps {
                         // Thêm retry để nếu timeout do mạng thì sẽ thử lại
@@ -146,14 +147,20 @@ spec:
                             container('node') {
                                 script {
                                     def scannerHome = tool 'sonarqube'
-                                    dir('backend') {
-                                        withSonarQubeEnv(credentialsId: 'sonarqube-token',installationName: 'sonarqube') {
-                                            sh """
-                                                ${scannerHome}/bin/sonar-scanner \
-                                                -Dsonar.projectKey=smash-shop-backend-project \
-                                                -Dsonar.sources=. \
-                                                -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                            """
+                                    // Thiết lập RAM cho tiến trình Java của Scanner
+                                    // -Xmx4g là mức khuyến nghị để tránh lỗi giải nén (tukaani xz)
+                                    withEnv(['SONAR_SCANNER_OPTS=-Xmx4g -XX:+HeapDumpOnOutOfMemoryError']) {
+                                        dir('backend') {
+                                            withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'sonarqube') {
+                                                sh """
+                                                    ${scannerHome}/bin/sonar-scanner \
+                                                    -Dsonar.projectKey=smash-shop-backend-project \
+                                                    -Dsonar.sources=. \
+                                                    -Dsonar.host.url=http://192.168.88.133:31000/ \
+                                                    -Dsonar.javascript.node.maxspace=4096 \
+                                                    -Dsonar.nodejs.executable=/usr/local/bin/node
+                                                """
+                                            }
                                         }
                                     }
                                 }
