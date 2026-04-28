@@ -8,40 +8,41 @@ spec:
   containers:
   - name: node
     image: node:22.14-alpine
-    command:
-    - sleep
-    args:
-    - infinity
+    command: ["sleep"]
+    args: ["infinity"]
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
-    command:
-    - sleep
-    args:
-    - 9999999
+    command: ["sleep"]
+    args: ["9999999"]
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
     resources:
       requests:
-        cpu: "500m"
-        memory: "1024Mi"
+        cpu: "200m"   # Giảm xuống để dễ scale trên node nhỏ
+        memory: "512Mi"
       limits:
-        cpu: "1000m"
-        memory: "2048Mi"
+        cpu: "500m"   # Giới hạn vừa đủ để build image
+        memory: "1Gi"
   - name: trivy 
     image: aquasecurity/trivy:latest
     imagePullPolicy: IfNotPresent
-    command: 
-    - sleep
-    args:
-    - 9999999
+    command: ["sleep"]
+    args: ["9999999"]
     resources:
-        requests:
-        cpu: "500m"
-        memory: "1024Mi"
-    limits:
-        cpu: "1000m"
-        memory: "2048Mi"
+      requests:
+        cpu: "100m"   # Trivy chỉ chạy lúc scan, không cần giữ nhiều CPU
+        memory: "400Mi"
+      limits:
+        cpu: "400m"
+        memory: "800Mi"
   volumes:
   - name: docker-config
     projected:
