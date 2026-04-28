@@ -12,8 +12,8 @@ spec:
     args: ["infinity"]
     resources:
       requests:
-        cpu: "50m"
-        memory: "128Mi"
+        cpu: "10m"
+        memory: "64Mi"
       limits:
         cpu: "200m"
         memory: "256Mi"
@@ -26,10 +26,10 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        cpu: "200m"   # Giảm xuống để dễ scale trên node nhỏ
-        memory: "512Mi"
+        cpu: "50m"   # Giảm xuống để dễ scale trên node nhỏ
+        memory: "256Mi"
       limits:
-        cpu: "500m"   # Giới hạn vừa đủ để build image
+        cpu: "800m"   # Giới hạn vừa đủ để build image
         memory: "1Gi"
   - name: trivy 
     image: aquasecurity/trivy:latest
@@ -38,10 +38,10 @@ spec:
     args: ["9999999"]
     resources:
       requests:
-        cpu: "100m"   # Trivy chỉ chạy lúc scan, không cần giữ nhiều CPU
-        memory: "400Mi"
+        cpu: "50m"   # Trivy chỉ chạy lúc scan, không cần giữ nhiều CPU
+        memory: "256Mi"
       limits:
-        cpu: "400m"
+        cpu: "500m"
         memory: "800Mi"
   volumes:
   - name: docker-config
