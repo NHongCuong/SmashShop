@@ -23,11 +23,11 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        cpu: "200m"
-        memory: "512Mi"
-      limits:
         cpu: "500m"
         memory: "1024Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2048Mi"
   - name: trivy 
     image: aquasecurity/trivy:latest
     imagePullPolicy: IfNotPresent
@@ -37,11 +37,11 @@ spec:
     - 9999999
     resources:
         requests:
-        cpu: "100m"
-        memory: "400Mi"
+        cpu: "500m"
+        memory: "1024Mi"
     limits:
-        cpu: "400m"
-        memory: "800Mi"
+        cpu: "1000m"
+        memory: "2048Mi"
   volumes:
   - name: docker-config
     projected:
