@@ -179,7 +179,7 @@ spec:
                                                     -Dsonar.projectKey=smash-shop-backend-project \
                                                     -Dsonar.sources=. \
                                                     -Dsonar.host.url=http://192.168.88.133:31000/ \
-                                                    -Dsonar.javascript.node.maxspace=3048 \
+                                                    -Dsonar.javascript.node.maxspace=2048 \
                                                     -Dsonar.nodejs.executable=/usr/local/bin/node
                                                 """
                                             }
