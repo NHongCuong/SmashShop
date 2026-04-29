@@ -40,13 +40,22 @@ export const SocketProvider = ({ children }) => {
         //         token: token
         //     }
         // });
+        // const newSocket = io(SOCKET_URL, {
+        //     path: '/socket.io',
+        //     transports: ['polling', 'websocket'],
+        //     reconnection: true,
+        //     secure: true,      // Vì chúng ta dùng HTTPS bên ngoài
+        //     reconnectionAttempts: 5,
+        //     timeout: 10000,
+        //     auth: {
+        //         token: token
+        //     }
+        // });
         const newSocket = io(SOCKET_URL, {
             path: '/socket.io',
-            transports: ['polling', 'websocket'],
-            reconnection: true,
-            secure: true,      // Vì chúng ta dùng HTTPS bên ngoài
-            reconnectionAttempts: 5,
-            timeout: 10000,
+            transports: ['websocket'], // Skip polling
+            secure: true,
+            rejectUnauthorized: false, // Note: This only works in Node.js, not browsers
             auth: {
                 token: token
             }
