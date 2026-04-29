@@ -31,7 +31,7 @@ export const SocketProvider = ({ children }) => {
             return;
         }
 
-        const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://192.168.88.133:5001' || 'http://192.168.88.1:5001';
+        const SOCKET_URL = process.env.REACT_APP_API_URL || 'https://192.168.88.133:30443' || 'http://192.168.88.133:5001';
 
         // const newSocket = io(SOCKET_URL, {
         //     transports: ['websocket'],
