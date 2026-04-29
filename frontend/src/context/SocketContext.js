@@ -53,9 +53,8 @@ export const SocketProvider = ({ children }) => {
         // });
         const newSocket = io(SOCKET_URL, {
             path: '/socket.io',
-            transports: ['websocket'], // Skip polling
+            transports: ['polling', 'websocket'], // Skip polling
             secure: true,
-            rejectUnauthorized: false, // Note: This only works in Node.js, not browsers
             auth: {
                 token: token
             }
