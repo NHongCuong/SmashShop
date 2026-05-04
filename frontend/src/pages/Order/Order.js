@@ -8,10 +8,12 @@ import { createOrderThunk } from "../../app/store/orderThunk";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
+const EMPTY_CART = [];
+
 export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart?.cart || []);
+  const cartItems = useSelector((state) => state.cart?.cart || EMPTY_CART);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -69,14 +71,23 @@ export default function Cart() {
 
 
     if (paymentMethod === 'cod') {
-      dispatch(createOrderThunk(orderData));
-      Swal.fire({
-        icon: 'success',
-        title: "Đơn hàng của bạn đã được đặt thành công.",
-        showConfirmButton: false,
-        timer: 1000
-      });
-      navigate('/');
+      try {
+        await dispatch(createOrderThunk(orderData)).unwrap();
+        Swal.fire({
+          icon: 'success',
+          title: "Đơn hàng của bạn đã được đặt thành công.",
+          showConfirmButton: false,
+          timer: 1000
+        });
+        navigate('/');
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Đặt hàng thất bại',
+          text: err || 'Có lỗi xảy ra, vui lòng thử lại.',
+          showConfirmButton: true,
+        });
+      }
     } else if (paymentMethod === 'vnpay') {
       try {
         const res = await fetch("http://localhost:5001/api/v1/vnpay/create_payment", {

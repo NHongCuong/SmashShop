@@ -55,10 +55,26 @@ export const createOrder = async (req, res) => {
     try {
         const user_id = req.user._id;
 
+        // Validate shipping data exists
+        if (!req.body.shipping) {
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin giao hàng.' });
+        }
+
         const { name, address, phone, email, note } = req.body.shipping;
 
+        // Validate required shipping fields
+        if (!name || !address || !phone || !email) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ thông tin giao hàng.' });
+        }
+
+        // Validate paymentMethod
+        const paymentMethod = req.body.paymentMethod;
+        if (!paymentMethod || !['cod', 'vnpay'].includes(paymentMethod)) {
+            return res.status(400).json({ success: false, message: 'Phương thức thanh toán không hợp lệ.' });
+        }
+
         const cartDoc = await Cart.findOne({ user_id: user_id }).populate('cart.product');
-        if (!cartDoc || cartDoc.cart.length === 0) {
+        if (!cartDoc || !cartDoc.cart || cartDoc.cart.length === 0) {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
         }
         // Chuẩn bị danh sách items với snapshot giá
@@ -99,8 +115,8 @@ export const createOrder = async (req, res) => {
             items,
             shipping: { name, address, phone, email, note },
             total,
-            status: req.body.paymentMethod === 'vnpay' ? "Pending" : "Succeeded",
-            paymentmethod: req.body.paymentMethod,
+            status: paymentMethod === 'vnpay' ? "Pending" : "Succeeded",
+            paymentmethod: paymentMethod,
         });
 
         // Tạo Order Detail

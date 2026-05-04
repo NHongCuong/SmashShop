@@ -8,7 +8,8 @@ export const createOrderThunk = createAsyncThunk(
     async (payload, { dispatch, rejectWithValue }) => {
         try {
         const res = await apiCreateOrder(payload);
-        // Sau khi tạo xong, re-fetch cart để xoá
+        // res is already unwrapped by axios interceptor: { success, order, orderDetail }
+        // Sau khi tạo xong, re-fetch cart để cập nhật (cart đã bị xóa trên server)
         dispatch(fetchCartThunk());
         return res.order;
         } catch (err) {

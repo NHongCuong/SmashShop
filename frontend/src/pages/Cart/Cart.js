@@ -3,13 +3,14 @@ import { useEffect} from "react";
 import { useNavigate} from "react-router-dom";
 import "./Cart.css";
 import { useDispatch, useSelector } from "react-redux";
-import { changeCartItemThunk, fetchCartThunk, removeCartItemThunk } from "../../app/store/cartThunks";
+import { removeCartItemThunk, changeCartItemThunk } from "../../app/store/cartThunks";
 import Footer from "../../components/Footer/Footer";
 
 const formatCurrency = (amount) => {
   return amount.toLocaleString('vi-VN') + ' đ';
 };
 
+const EMPTY_CART = [];
 
 export default function Cart() {
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
@@ -20,10 +21,7 @@ export default function Cart() {
     }
   }, [isAuthenticated, navigate]);
   const dispatch = useDispatch();
-  // console.log(isAuthenticated)
-    // const cart = useSelector(state => state.cart);
-  // console.log("cart: ",cart);
-  const cartItemsWithDetails = useSelector(state => state.cart?.cart || []);
+  const cartItemsWithDetails = useSelector(state => state.cart?.cart || EMPTY_CART);
 
   // console.log("detail",cartItemsWithDetails);
   const handleQuantityChange = (productId, changeAmount) => {
@@ -50,13 +48,11 @@ export default function Cart() {
     }));
   };
 
-  const handleCheckout = async () => {
-  // Chỉ gọi API khi người dùng thanh toán
-  await dispatch(changeCartItemThunk(cartItemsWithDetails));
-  navigate('/order');
-};
+  const handleCheckout = () => {
+    navigate('/order');
+  };
 
-  console.log("cartItemsWithDetails", cartItemsWithDetails);
+
   const totalQuantity = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity, 0);
   // const totalQuantity = 0;
   // const totalPrice = 0;
