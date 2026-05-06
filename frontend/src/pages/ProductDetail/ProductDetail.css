@@ -118,6 +118,33 @@
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
+.buy-now-btn {
+  background: white;
+  color: #d10000;
+  border: 2px solid #d10000;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 15px;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.buy-now-btn:hover {
+  background: #d10000;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.buy-now-btn:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
 .btn:hover {
   /* Khi hover, hơi nâng cao hơn */
   transform: translateY(-2px);

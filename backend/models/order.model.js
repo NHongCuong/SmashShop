@@ -2,6 +2,8 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
+import { getVietnamTime } from '../utils/dayjs.js';
+
 const orderSchema = new mongoose.Schema({
     order_id: { 
         type: String, 
@@ -26,9 +28,16 @@ const orderSchema = new mongoose.Schema({
     },
     total:   { type: Number, required: true },
     status:  { type: String, default: 'Pending' }, // Pending, Confirmed, Shipped...
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date },
+    createdAt: { type: Date, default: getVietnamTime },
+    updatedAt: { type: Date, default: getVietnamTime },
     paymentmethod: { type: String, required: true }, // 'cod' or 'vnpay'
+});
+
+orderSchema.pre('save', function(next) {
+    if (!this.isNew) {
+        this.updatedAt = getVietnamTime();
+    }
+    next();
 });
 
 export default mongoose.model('Order', orderSchema);

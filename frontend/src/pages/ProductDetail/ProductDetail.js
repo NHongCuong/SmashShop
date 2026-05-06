@@ -43,6 +43,16 @@ export default function ProductDetail() {
       setShowLoginModal(true);
       return;
     }
+    // Kiểm tra tồn kho trước khi thêm vào giỏ
+    if (!product.stock || product.stock <= 0 || quantity > product.stock) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Đặt hàng thất bại',
+        text: 'Một số sản phẩm không đủ số lượng trong kho',
+        showConfirmButton: true,
+      });
+      return;
+    }
     setLoading(true);
     try {
       await dispatch(addToCart({ product_id: product._id, quantity }))
@@ -58,10 +68,43 @@ export default function ProductDetail() {
       dispatch(fetchCartThunk());
     } catch (err) {
       console.error('Lỗi khi thêm vào giỏ:', err);
-      setError('Thêm vào giỏ thất bại. Vui lòng thử lại.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Thêm vào giỏ thất bại',
+        text: err.message || err || 'Có lỗi xảy ra, vui lòng thử lại.',
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    // Kiểm tra tồn kho trước khi mua ngay
+    if (!product.stock || product.stock <= 0 || quantity > product.stock) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Đặt hàng thất bại',
+        text: 'Một số sản phẩm không đủ số lượng trong kho',
+        showConfirmButton: true,
+      });
+      return;
+    }
+    navigate('/order', {
+      state: {
+        buyNowItem: {
+          product: {
+            _id: product._id,
+            prod_name: product.prod_name,
+            price: product.price,
+          },
+          quantity: quantity,
+        }
+      }
+    });
   };
   if (isLoadingProducts) {
     return <><Header /><div className="container">Đang tải sản phẩm...</div><Footer /></>;
@@ -96,23 +139,27 @@ export default function ProductDetail() {
               <button
                 className="qty-btn"
                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                disabled={product.stock <= 0}
               >-</button>
 
               <input
                 type="number"
                 min="1"
-                max={product.stock}
-                value={quantity}
+                max={product.stock > 0 ? product.stock : 1}
+                value={product.stock <= 0 ? 0 : quantity}
                 onChange={e => {
                   const val = Number(e.target.value);
-                  const clamped = Math.min(product.stock, Math.max(1, val));
+                  if (product.stock <= 0) return;
+                  const maxStock = Math.max(1, product.stock);
+                  const clamped = Math.min(maxStock, Math.max(1, val));
                   setQuantity(clamped);
                 }}
-
+                disabled={product.stock <= 0}
               />
               <button
                 className="qty-btn"
-                onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                onClick={() => setQuantity(q => Math.min(Math.max(1, product.stock), q + 1))}
+                disabled={product.stock <= 0}
               >
                 +
               </button>
@@ -120,9 +167,17 @@ export default function ProductDetail() {
               <button
                 className="add-to-cart-btn"
                 onClick={handleAddToCart}
-                disabled={loading}
+                disabled={loading || product.stock <= 0}
               >
-                Thêm vào giỏ
+                {product.stock <= 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+              </button>
+
+              <button
+                className="buy-now-btn"
+                onClick={handleBuyNow}
+                disabled={product.stock <= 0}
+              >
+                Mua ngay
               </button>
 
             </div>

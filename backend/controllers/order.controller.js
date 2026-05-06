@@ -9,11 +9,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const fetchOrderHistory = async (req, res) => {
     const { _id, role } = req.user;
-    
+
     // Nếu không phải admin, luôn lấy userId từ chính token (req.user._id)
     // Nếu là admin, có thể xem hộ user khác nếu có user_id trong query
     const userId = (role === 'admin') ? (req.query.user_id || _id) : _id;
-    
+
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const sortBy = req.query.sortBy || 'createdAt';
@@ -54,6 +54,7 @@ export const fetchOrderHistory = async (req, res) => {
 export const createOrder = async (req, res) => {
     try {
         const user_id = req.user._id;
+        const isBuyNow = req.body.isBuyNow === true;
 
         // Validate shipping data exists
         if (!req.body.shipping) {
@@ -73,16 +74,55 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phương thức thanh toán không hợp lệ.' });
         }
 
-        const cartDoc = await Cart.findOne({ user_id: user_id }).populate('cart.product');
-        if (!cartDoc || !cartDoc.cart || cartDoc.cart.length === 0) {
-            return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
+        let items = [];
+        let orderDetailProducts = [];
+
+        if (isBuyNow) {
+            // ===== LUỒNG MUA NGAY =====
+            const buyNowItems = req.body.items;
+            if (!buyNowItems || buyNowItems.length === 0) {
+                return res.status(400).json({ success: false, message: 'Không có sản phẩm nào để đặt hàng.' });
+            }
+
+            for (const bi of buyNowItems) {
+                const product = await Product.findById(bi.product);
+                if (!product) {
+                    return res.status(400).json({ success: false, message: `Sản phẩm không tồn tại.` });
+                }
+                items.push({
+                    product: product._id,
+                    quantity: bi.quantity,
+                    price: product.price
+                });
+                orderDetailProducts.push({
+                    product_id: product._id,
+                    product_name: product.prod_name,
+                    quantity: bi.quantity,
+                    price: product.price,
+                    total: product.price * bi.quantity
+                });
+            }
+        } else {
+            // ===== LUỒNG GIỎ HÀNG =====
+            const cartDoc = await Cart.findOne({ user_id: user_id }).populate('cart.product');
+            if (!cartDoc || !cartDoc.cart || cartDoc.cart.length === 0) {
+                return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
+            }
+
+            items = cartDoc.cart.map(ci => ({
+                product: ci.product._id,
+                quantity: ci.quantity,
+                price: ci.product.price
+            }));
+
+            orderDetailProducts = cartDoc.cart.map(ci => ({
+                product_id: ci.product._id,
+                product_name: ci.product.prod_name,
+                quantity: ci.quantity,
+                price: ci.product.price,
+                total: ci.product.price * ci.quantity
+            }));
         }
-        // Chuẩn bị danh sách items với snapshot giá
-        const items = cartDoc.cart.map(ci => ({
-            product: ci.product._id,
-            quantity: ci.quantity,
-            price: ci.product.price
-        }));
 
         // Tính tổng
         const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
@@ -123,19 +163,17 @@ export const createOrder = async (req, res) => {
         const orderDetailData = {
             order_detail_id: uuidv4(),
             order_id: order._id,
-            products: cartDoc.cart.map(ci => ({
-                product_id: ci.product._id,
-                product_name: ci.product.prod_name,
-                quantity: ci.quantity,
-                price: ci.product.price,
-                total: ci.product.price * ci.quantity
-            }))
+            products: orderDetailProducts
         };
         await OrderDetail.create(orderDetailData);
-        // Xoá giỏ hàng của user
-        await Cart.updateOne({ user_id }, { $set: { cart: [] } });
-        logger.info("đã delete cart");
-        return res.status(201).json({ success: true, order, orderDetail: orderDetailData });
+
+        // Chỉ xoá giỏ hàng khi đặt hàng từ giỏ hàng (không xoá khi Mua Ngay)
+        if (!isBuyNow) {
+            await Cart.updateOne({ user_id }, { $set: { cart: [] } });
+            logger.info("đã delete cart");
+        }
+
+        return res.status(201).json({ success: true, _id: order._id, order, orderDetail: orderDetailData });
     } catch (err) {
         logger.error('Error createOrder:', err);
         return res.status(500).json({ success: false, message: 'Server Error' });
@@ -265,7 +303,7 @@ export const deleteOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
         const order = await Order.findById(orderId);
-        
+
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }

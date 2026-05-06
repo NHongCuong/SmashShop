@@ -1,19 +1,31 @@
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "./Order.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createOrderThunk } from "../../app/store/orderThunk";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const EMPTY_CART = [];
 
 export default function Cart() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart?.cart || EMPTY_CART);
+
+  // Check if this is a "Buy Now" flow
+  const buyNowItem = location.state?.buyNowItem || null;
+
+  // Determine which items to display in the order
+  const orderItems = useMemo(() => {
+    if (buyNowItem) {
+      return [buyNowItem];
+    }
+    return cartItems;
+  }, [buyNowItem, cartItems]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -28,8 +40,7 @@ export default function Cart() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // const discountAmount = 300000;
-  const total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const total = orderItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
   const finalTotal = total;
 
   const handleSubmit = async () => {
@@ -46,11 +57,11 @@ export default function Cart() {
       }
     }
 
-    // Check if the cart is empty
-    if (cartItems.length === 0) {
+    // Check if order items are empty
+    if (orderItems.length === 0) {
       Swal.fire({
         icon: 'error',
-        title: "Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm vào giỏ.",
+        title: "Không có sản phẩm nào để đặt hàng.",
         showConfirmButton: false,
         timer: 1000
       });
@@ -58,7 +69,7 @@ export default function Cart() {
     }
 
     const shipping = { ...formData };
-    const items = cartItems.map(i => ({
+    const items = orderItems.map(i => ({
       product: i.product._id,
       quantity: i.quantity
     }));
@@ -66,7 +77,8 @@ export default function Cart() {
     const orderData = {
       shipping,
       items,
-      paymentMethod: paymentMethod
+      paymentMethod: paymentMethod,
+      isBuyNow: !!buyNowItem
     };
 
 
@@ -90,26 +102,42 @@ export default function Cart() {
       }
     } else if (paymentMethod === 'vnpay') {
       try {
+        // Bước 1: Tạo đơn hàng trước để kiểm tra tồn kho atomic
+        // Nếu tồn kho không đủ, createOrderThunk sẽ reject với message lỗi
+        const orderResult = await dispatch(createOrderThunk(orderData)).unwrap();
+
+        // Bước 2: Tạo đơn thành công -> lấy order ID rồi gọi API tạo payment URL
+        const createdOrderId = orderResult._id;
+
         const res = await fetch("http://localhost:5001/api/v1/vnpay/create_payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: finalTotal,
-            orderId: Date.now().toString(),
+            orderId: createdOrderId,
           }),
         });
         const data = await res.json();
         if (data.paymentUrl) {
-          localStorage.setItem("shippingInfo", JSON.stringify(formData));
-          localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
+          // Lưu orderId để xử lý khi quay lại từ VNPAY
+          localStorage.setItem("pendingVnpayOrderId", createdOrderId);
           window.location.href = data.paymentUrl;
         } else {
-          alert("Không thể tạo thanh toán online.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi thanh toán',
+            text: 'Không thể tạo liên kết thanh toán online.',
+            showConfirmButton: true,
+          });
         }
       } catch (err) {
-        console.error(err);
-        alert("Lỗi kết nối cổng thanh toán.");
+        // Hiển thị lỗi tồn kho hoặc lỗi khác giống COD
+        Swal.fire({
+          icon: 'error',
+          title: 'Đặt hàng thất bại',
+          text: err || 'Một số sản phẩm không đủ số lượng trong kho',
+          showConfirmButton: true,
+        });
       }
     }
   };
@@ -120,7 +148,7 @@ export default function Cart() {
 
       <div className="user-container">
         <div className="user-header-container">
-          <p className="user-header">TRANG CHỦ {'>'} GIỎ HÀNG</p>
+          <p className="user-header">TRANG CHỦ {'>'} {buyNowItem ? 'MUA NGAY' : 'GIỎ HÀNG'}</p>
         </div>
 
         <div className="order-container">
@@ -167,10 +195,10 @@ export default function Cart() {
 
           <div className="order-summary">
             <h3>Đơn hàng</h3>
-            {cartItems.map(item => (
+            {orderItems.map(item => (
               <div key={item.product._id} className="order-item">
                 <span>{item.product.prod_name} ×{item.quantity}</span>
-                <span>{item.product.price.toLocaleString()} đ</span>
+                <span>{(item.product.price * item.quantity).toLocaleString()} đ</span>
               </div>
             ))}
             <div className="order-total">

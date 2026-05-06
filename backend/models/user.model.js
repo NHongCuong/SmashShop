@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import bcrypt from "bcrypt";
 import crypto from 'crypto';
 
+import { getVietnamTime } from '../utils/dayjs.js';
+
 const UserSchema = new mongoose.Schema({
     user_id: { type: Number, unique: true },
     name: { type: String, required: true },
@@ -10,8 +12,8 @@ const UserSchema = new mongoose.Schema({
     phone_number: { type: String },
     status: { type: String },
     role: { type: String, enum: ["admin", "user"], default: "user" },
-    create_at: { type: Date, default: Date.now },
-    update_at: { type: Date },
+    create_at: { type: Date, default: getVietnamTime },
+    update_at: { type: Date, default: getVietnamTime },
     refreshToken: { type: String },
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
@@ -25,7 +27,7 @@ const UserSchema = new mongoose.Schema({
 // Cập nhật trường update_at và băm mật khẩu trước khi lưu
 UserSchema.pre("save", async function (next) {
     if (!this.isNew && this.isModified()) {
-        this.update_at = Date.now();
+        this.update_at = getVietnamTime();
     }
     if (!this.isModified("password")) return next();
     const salt = await bcrypt.genSalt(10);
@@ -41,7 +43,7 @@ UserSchema.methods ={
     createPasswordResetToken: function () {
         const resetToken = crypto.randomBytes(32).toString("hex");
         this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-        this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 phút
+        this.passwordResetExpires = new Date(getVietnamTime().getTime() + 10 * 60 * 1000); // 10 phút
         return resetToken;
     },
 }

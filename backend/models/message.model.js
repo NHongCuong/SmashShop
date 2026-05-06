@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+import { getVietnamTime } from '../utils/dayjs.js';
+
 const messageSchema = new mongoose.Schema({
     roomId: { type: String, required: true, index: true },
     msgId: { type: String },
@@ -15,7 +17,7 @@ const messageSchema = new mongoose.Schema({
     avatar: { type: String },
     reactions: { type: Map, of: String, default: {} },
     isRecalled: { type: Boolean, default: false },
-    create_at: { type: Date, default: Date.now }
+    create_at: { type: Date, default: getVietnamTime }
 });
 
 export default mongoose.model('Message', messageSchema);

@@ -29,9 +29,14 @@ export default function Cart() {
     if (!item) return;
   
     const newQuantity = item.quantity + changeAmount;
+    const stock = item.product.stock;
+
+    // Không cho tăng vượt quá số lượng tồn kho
+    if (changeAmount > 0 && stock !== undefined && newQuantity > stock) {
+      return;
+    }
   
     if (newQuantity < 1) {
-      // Có thể yêu cầu xác nhận xoá luôn nếu < 1
       dispatch(removeCartItemThunk(productId));
     } else {
       dispatch(changeCartItemThunk({
@@ -88,7 +93,10 @@ export default function Cart() {
             <div className="quantity-control">
               <button onClick={() => handleQuantityChange(item.product._id, -1)}>-</button>
               <span>{item.quantity}</span>
-              <button onClick={() => handleQuantityChange(item.product._id, 1)}>+</button>
+              <button
+                onClick={() => handleQuantityChange(item.product._id, 1)}
+                disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
+              >+</button>
             </div>
             <div>{formatCurrency(item.product.price * item.quantity)}</div>
             <button className="delete-button" onClick={() => handleRemove(item.product._id)}>Xóa</button>
