@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import './AdminOrders.css';
 import { useNavigate } from 'react-router-dom';
 import { useGetOrdersQuery, useGetAllOrdersQuery, useDeleteOrderMutation } from '../../../features/order/orderApi';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
+
+dayjs.extend(utc);
 
 const AdminOrders = () => {
   const navigate = useNavigate();
@@ -43,7 +47,7 @@ const AdminOrders = () => {
       "Giá trị đơn": order.total_price ?? order.total,
       // "Khách hàng": order.user_id?.name || "Không rõ",
       "Khách hàng": order.shipping?.name || "Không rõ",
-      "Ngày tạo": new Date(order.createdAt).toLocaleDateString(),
+      "Ngày tạo": order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : "",
       "Trạng thái": order.status,
     }));
 
@@ -87,7 +91,7 @@ const AdminOrders = () => {
           "Tạm tính": item.price * item.quantity,
           "Phí vận chuyển": 0,
           "Trạng thái đơn hàng": order.status,
-          "Ngày đặt hàng": new Date(order.createdAt).toLocaleDateString(),
+          "Ngày đặt hàng": order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : "",
           "Tổng cộng": order.total,
         });
       });
@@ -196,8 +200,8 @@ const AdminOrders = () => {
                   <td>{order.user_id?.phone_number || "Không rõ"}</td> */}
                   <td>{order.shipping?.name || "Không rõ"}</td>
                   <td>{order.shipping?.phone || "Không rõ"}</td>
-                  <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                  <td>{order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : ""}</td>
+                  <td>{order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : '---'}</td>
+                  <td>{order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : '---'}</td>
                   <td>
                     <span className={`status-label ${statuses[order.status] || 'unknown'}`}>
                       {order.status}

@@ -13,6 +13,10 @@ import {
   faXmark,
   faRightFromBracket,
   faHeadset,
+  faFolder,
+  faTrademark,
+  faThumbsUp,
+  faTags,
 } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
@@ -22,6 +26,8 @@ import { userApi } from '../../../features/user/userApi';
 import { orderApi } from '../../../features/order/orderApi';
 import { productApi } from '../../../features/product/productApi';
 import { categoryApi } from '../../../features/services/categoryApi';
+import { brandApi } from '../../../features/services/brandApi.js';
+import { typeApi } from '../../../features/services/typeApi.js';
 import { reviewApi } from '../../../features/services/reviewApi';
 import { statisticsApi } from '../../../features/statistics/statisticsApi';
 import { wishlistApi } from '../../../features/services/wishlistApi';
@@ -40,7 +46,7 @@ function loadNotificationsFromStorage() {
 function saveNotificationsToStorage(notifs) {
   try {
     localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(notifs.slice(0, 20)));
-  } catch {}
+  } catch { }
 }
 
 export default function AdminDashboard() {
@@ -60,12 +66,14 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     dispatch(adminLogout());
-    
+
     // Reset RTK Query caches
     dispatch(userApi.util.resetApiState());
     dispatch(orderApi.util.resetApiState());
     dispatch(productApi.util.resetApiState());
     dispatch(categoryApi.util.resetApiState());
+    dispatch(brandApi.util.resetApiState());
+    dispatch(typeApi.util.resetApiState());
     dispatch(reviewApi.util.resetApiState());
     dispatch(statisticsApi.util.resetApiState());
     dispatch(wishlistApi.util.resetApiState());
@@ -215,6 +223,15 @@ export default function AdminDashboard() {
           <nav className="ad-nav" onClick={closeSidebar}>
             <NavLink to="/admin" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faGauge} /> Tổng quan
+            </NavLink>
+            <NavLink to="/admin/categories" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faFolder} /> Danh mục
+            </NavLink>
+            <NavLink to="/admin/brands" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faTrademark} /> Thương hiệu
+            </NavLink>
+            <NavLink to="/admin/types" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faTags} /> Phân loại
             </NavLink>
             <NavLink to="/admin/products" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faBox} /> Sản phẩm hiện có

@@ -19,6 +19,9 @@ import WishlistButton from '../../components/WishlistButton/WishlistButton';
 
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
+  const [zoomStyle, setZoomStyle] = useState({ display: 'none' });
+  const [lensStyle, setLensStyle] = useState({ display: 'none' });
+  const imgRef = useRef(null);
   const { id } = useParams();
   const { data: products = [], isLoading: isLoadingProducts } = useGetProductsQuery();
   const product = products.find((p) => p._id === id);
@@ -113,6 +116,43 @@ export default function ProductDetail() {
     return <><Header /><div className="container">Không tìm thấy sản phẩm.</div><Footer /></>;
   }
 
+  const handleMouseMove = (e) => {
+    if (!imgRef.current) return;
+    
+    const { left, top, width, height } = imgRef.current.getBoundingClientRect();
+    const x = ((e.pageX - left - window.scrollX) / width) * 100;
+    const y = ((e.pageY - top - window.scrollY) / height) * 100;
+
+    // Lens position (centered on mouse)
+    const lensWidth = 100; // px
+    const lensHeight = 100; // px
+    let lx = e.pageX - left - window.scrollX - lensWidth / 2;
+    let ly = e.pageY - top - window.scrollY - lensHeight / 2;
+
+    // Constrain lens within image bounds
+    lx = Math.max(0, Math.min(lx, width - lensWidth));
+    ly = Math.max(0, Math.min(ly, height - lensHeight));
+
+    setLensStyle({
+      display: 'block',
+      left: `${lx}px`,
+      top: `${ly}px`,
+      width: `${lensWidth}px`,
+      height: `${lensHeight}px`
+    });
+
+    setZoomStyle({
+      display: 'block',
+      backgroundPosition: `${x}% ${y}%`,
+      backgroundImage: `url(${product.images?.find(img => img?.is_primary_image)?.image || ''})`
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({ display: 'none' });
+    setLensStyle({ display: 'none' });
+  };
+
   return (
     <>
       <Header />
@@ -122,8 +162,20 @@ export default function ProductDetail() {
         </div>
 
         <div className="product">
-          <div className="images">
-            <img src={product.images?.find(img => img?.is_primary_image)?.image || ''} alt={product.prod_name} />
+          <div className="image-zoom-container">
+            <div 
+              className={`images ${zoomStyle.display === 'block' ? 'zoomed' : ''}`}
+              onMouseMove={handleMouseMove} 
+              onMouseLeave={handleMouseLeave}
+            >
+              <img 
+                ref={imgRef}
+                src={product.images?.find(img => img?.is_primary_image)?.image || ''} 
+                alt={product.prod_name} 
+              />
+              <div className="zoom-lens" style={lensStyle}></div>
+            </div>
+            <div className="zoom-overlay" style={zoomStyle}></div>
           </div>
 
           <div className="info">

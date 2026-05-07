@@ -28,6 +28,9 @@ import AdminLogin from '../pages/Admin/AdminLogin/AdminLogin';
 import RequireAdminAuth from '../pages/Admin/AdminLogin/RequireAdminAuth';
 import RequireUserAuth from '../pages/User/RequireUserAuth';
 import AdminCustomers from '../pages/Admin/AdminCustomers/AdminCustomers';
+import AdminCategory from '../pages/Admin/AdminCategories/AdminCategory';
+import AdminBrands from '../pages/Admin/AdminBrands/AdminBrands';
+import AdminTypes from '../pages/Admin/AdminTypes/AdminTypes';
 
 
 import { Navigate } from "react-router-dom";
@@ -72,6 +75,9 @@ const pages = [
             { path: 'products/add', Component: AdminAddProduct },
             { path: 'products/:id', Component: AdminProductDetail },
             { path: 'products/edit/:id', Component: AdminEditProduct },
+            { path: 'categories', Component: AdminCategory },
+            { path: 'brands', Component: AdminBrands },
+            { path: 'types', Component: AdminTypes },
             { path: 'orders', Component: AdminOrders },
             { path: 'orders/:id', Component: AdminOrderDetail },
             { path: 'users', Component: AdminUsers },

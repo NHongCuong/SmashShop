@@ -13,11 +13,11 @@ const UserSchema = new mongoose.Schema({
     status: { type: String },
     role: { type: String, enum: ["admin", "user"], default: "user" },
     create_at: { type: Date, default: getVietnamTime },
-    update_at: { type: Date, default: getVietnamTime },
+    update_at: { type: Date },
     refreshToken: { type: String },
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
-    count_type_cart: {type: Number},
+    count_type_cart: { type: Number },
     gender: { type: String },
     dob: { type: Date },
     address: { type: String },
@@ -36,9 +36,9 @@ UserSchema.pre("save", async function (next) {
 });
 
 // Phương thức check lại pass
-UserSchema.methods ={
+UserSchema.methods = {
     comparePassword: async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+        return await bcrypt.compare(candidatePassword, this.password);
     },
     createPasswordResetToken: function () {
         const resetToken = crypto.randomBytes(32).toString("hex");

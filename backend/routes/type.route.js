@@ -1,8 +1,27 @@
-import express from "express";
-import { fetchAllType } from "../controllers/type.controller.js";
+import express from 'express';
+import { 
+    fetchAllTypes, 
+    fetchTypesAdmin, 
+    createType, 
+    updateType, 
+    deleteType,
+    exportTypesExcel,
+    importTypesExcel
+} from '../controllers/type.controller.js';
+import multer from 'multer';
 
-const typeRoutes = express.Router();
+const router = express.Router();
+const upload = multer(); // For excel import
 
-typeRoutes.get("/", fetchAllType);
+// Public
+router.get('/', fetchAllTypes);
 
-export default typeRoutes;
+// Admin
+router.get('/admin', fetchTypesAdmin);
+router.post('/', createType);
+router.put('/:id', updateType);
+router.delete('/:id', deleteType);
+router.get('/export', exportTypesExcel);
+router.post('/import', upload.single('file'), importTypesExcel);
+
+export default router;

@@ -4,8 +4,12 @@ import './AdminProducts.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useGetAllProductsQuery, useDeactiveProductMutation, useGetProductsQuery } from '../../../features/product/productApi';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 import * as XLSX from 'xlsx';
+
+dayjs.extend(utc);
 
 export default function AdminProducts() {
   const [page, setPage] = useState(1);
@@ -37,8 +41,8 @@ export default function AdminProducts() {
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",
       "Giá": product.price,
-      "Ngày tạo": product.create_at ? new Date(product.create_at).toLocaleDateString('vi-VN') : "",
-      "Ngày sửa": product.update_at ? new Date(product.update_at).toLocaleDateString('vi-VN') : "",
+      "Ngày tạo": product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY') : "",
+      "Ngày sửa": product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY') : "",
       "Số lượng trong kho": product.stock,
       "Đã bán": product.quantity_sold,
       "Giảm giá": product.discount || 0,
@@ -92,6 +96,12 @@ export default function AdminProducts() {
           </label>
           <button className="btn-export-excel" onClick={handleExportExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
             Download file excel tất cả sản phẩm
+          </button> <br /><br />
+          <button
+            onClick={() => navigate('/admin/products/add')}
+            style={{ padding: '8px 16px', backgroundColor: '#ffd700', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            + Thêm sản phẩm
           </button>
 
         </div>
@@ -134,13 +144,13 @@ export default function AdminProducts() {
             {products.map((product, idx) => (
               <tr key={product.id} onClick={() => navigate(`/admin/products/${product.id}`)}>
                 <td>{(page - 1) * limit + idx + 1}</td>
-                <td className="prod-img-cell"><img src={`${product.images.filter(prod => prod.is_primary_image)[0]?.image}`} loading='lazy' alt={product.prod_name} className="product-img" /></td>
+                <td className="prod-img-cell"><img src={`${product.images?.filter(prod => prod.is_primary_image)[0]?.image || ''}`} loading='lazy' alt={product.prod_name} className="product-img" /></td>
                 <td className="prod-name-cell">{product.prod_name}</td>
-                <td>{product.category_id.category_name}</td>
-                <td>{product.brand_id.brand_name}</td>
+                <td>{product.category_id?.category_name || '---'}</td>
+                <td>{product.brand_id?.brand_name || '---'}</td>
                 <td>{product.price.toLocaleString('vi-VN')}₫</td>
-                <td>{product.create_at ? new Date(product.create_at).toLocaleDateString('vi-VN') : '---'}</td>
-                <td>{product.update_at ? new Date(product.update_at).toLocaleDateString('vi-VN') : '---'}</td>
+                <td>{product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
                 <td onClick={e => e.stopPropagation()} className='ad-product-edit-delete'>
                   <FontAwesomeIcon
                     icon={faPenToSquare}

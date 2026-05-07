@@ -4,6 +4,8 @@ import { productApi } from '../../features/product/productApi';
 import { orderApi } from '../../features/order/orderApi.js';
 import {userApi} from '../../features/user/userApi.js'
 import { categoryApi } from '../../features/services/categoryApi.js';
+import { brandApi } from '../../features/services/brandApi.js';
+import { typeApi } from '../../features/services/typeApi.js';
 import { statisticsApi } from '../../features/statistics/statisticsApi.js';
 import { reviewApi } from '../../features/services/reviewApi.js';
 import { wishlistApi } from '../../features/services/wishlistApi.js';
@@ -25,6 +27,8 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
     [orderApi.reducerPath]: orderApi.reducer,
     [statisticsApi.reducerPath]: statisticsApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
+    [brandApi.reducerPath]: brandApi.reducer,
+    [typeApi.reducerPath]: typeApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,
     [wishlistApi.reducerPath]: wishlistApi.reducer,
     cart: cartReducer,
@@ -37,6 +41,8 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
   .concat(orderApi.middleware)
   .concat(statisticsApi.middleware)
   .concat(categoryApi.middleware)
+  .concat(brandApi.middleware)
+  .concat(typeApi.middleware)
   .concat(reviewApi.middleware)
   .concat(wishlistApi.middleware)
 });

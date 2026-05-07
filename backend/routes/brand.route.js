@@ -1,9 +1,27 @@
-import { fetchAllBrand } from '../controllers/brand.controller.js'
-import express from 'express'
+import express from 'express';
+import { 
+    fetchAllBrands, 
+    fetchBrandsAdmin, 
+    createBrand, 
+    updateBrand, 
+    deleteBrand,
+    exportBrandsExcel,
+    importBrandsExcel
+} from '../controllers/brand.controller.js';
+import multer from 'multer';
 
-const brandRouter = express.Router()
+const router = express.Router();
+const upload = multer(); // For excel import
 
-// Lấy danh sách tất cả Category
-brandRouter.get("/",fetchAllBrand)
+// Public
+router.get('/', fetchAllBrands);
 
-export default brandRouter
+// Admin
+router.get('/admin', fetchBrandsAdmin);
+router.post('/', createBrand);
+router.put('/:id', updateBrand);
+router.delete('/:id', deleteBrand);
+router.get('/export', exportBrandsExcel);
+router.post('/import', upload.single('file'), importBrandsExcel);
+
+export default router;
