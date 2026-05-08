@@ -19,26 +19,30 @@ const AdminEditProduct = () => {
   const handleUpdate = async (data) => {
     setLoading(true);
     try {
-      const { images, ...productData } = data;
+      const { images, remainingOldImages, ...productData } = data;
 
-      // B1: Cập nhật sản phẩm
-      await updateProduct({ id, productData }).unwrap();
+      const formData = new FormData();
+      Object.keys(productData).forEach(key => {
+        formData.append(key, productData[key]);
+      });
 
-      // B2: Upload ảnh mới nếu có
-      const newImages = images.filter((img) => img instanceof File);
-
-        
-      if (newImages.length > 0) {
-        // Xóa toàn bộ ảnh cũ trước
-        await deleteImages(id).unwrap();
-        for (let i = 0; i < newImages.length; i++) {
-          const formData = new FormData();
-          formData.append('image', newImages[i]);
-          formData.append('prod_id', id);
-          formData.append('is_primary_image', i === 0 ? 'true' : 'false');
-          await uploadImage(formData).unwrap();
-        }
+      // Thêm danh sách ảnh cũ còn lại
+      if (remainingOldImages && remainingOldImages.length > 0) {
+        remainingOldImages.forEach(url => {
+          formData.append('remainingOldImages', url);
+        });
       }
+
+      // Thêm ảnh mới nếu có
+      const newImages = images.filter((img) => img instanceof File);
+      if (newImages.length > 0) {
+        newImages.forEach(img => {
+          formData.append('image', img);
+        });
+      }
+
+      await updateProduct({ id, productData: formData }).unwrap();
+      
       await refetch();
       if (window.confirm("Cập nhật thành công! Quay lại danh sách?")) {
         navigate('/admin/products');

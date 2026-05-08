@@ -27,7 +27,7 @@ const AdminProductDetail = () => {
     images
   } = product;
 
-  const primaryImage = images.find(img => img.is_primary_image)?.image;
+  const primaryImage = images?.[0]?.image?.[0];
 
   const handleExportExcel = () => {
     if (!products || products.length === 0) {
@@ -37,7 +37,7 @@ const AdminProductDetail = () => {
 
     const dataToExport = products.map((product, index) => ({
       "STT": index + 1,
-      "Ảnh": product.images?.filter(img => img.is_primary_image)[0]?.image || "",
+      "Ảnh": product.images?.[0]?.image?.[0] || "",
       "Tên sản phẩm": product.prod_name,
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",

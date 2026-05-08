@@ -24,7 +24,13 @@
   display: flex;
   gap: 40px;
   padding: 20px;
+}
 
+.product-images-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 300px; /* Khớp với độ rộng ảnh chính */
 }
 
 .image-zoom-container {
@@ -77,6 +83,46 @@
   border: 4px solid #fff;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 100px rgba(0,0,0,0.05);
   background-color: #fff;
+}
+
+.product-thumbnails-carousel {
+  width: 100%;
+  padding: 0 10px;
+}
+
+.product-thumbnails-carousel .mySwiper {
+  padding: 10px 0;
+}
+
+.thumbnail-item {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border: 2px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.thumbnail-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.thumbnail-item:hover, .thumbnail-item.active {
+  border-color: #EAC427;
+}
+
+/* Tùy chỉnh nút Swiper */
+.swiper-button-next, .swiper-button-prev {
+  color: #EAC427 !important;
+  transform: scale(0.6);
+}
+
+.swiper-button-next:after, .swiper-button-prev:after {
+  font-weight: bold;
 }
 
 .info {

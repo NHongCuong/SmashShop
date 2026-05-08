@@ -129,7 +129,6 @@ export const fetchAllProducts = async (req, res) => {
             .populate({
                 path: 'images',
                 select: 'image is_primary_image -prod_id',
-                match: { is_primary_image: true }
             })
             .sort(sortOption)
             .skip(skip)
@@ -188,8 +187,23 @@ export const createProduct = async (req, res) => {
             type_id
         });
 
-        await newProduct.save();
-        return res.status(200).json({ success: true, data: newProduct });
+        const savedProduct = await newProduct.save();
+
+        // Xử lý nhiều ảnh
+        if (req.files && req.files.length > 0) {
+            const imageUrls = req.files.map(file => file.path); // Cloudinary paths
+            const productImageMaxId = await ProductImage.findOne({}).sort({ prod_image_id: -1 });
+            
+            const newProductImage = new ProductImage({
+                prod_image_id: productImageMaxId ? productImageMaxId.prod_image_id + 1 : 1,
+                prod_id: savedProduct._id,
+                image: imageUrls,
+                is_primary_image: true
+            });
+            await newProductImage.save();
+        }
+
+        return res.status(200).json({ success: true, data: savedProduct });
     } catch (e) {
         console.error("Error in creating product:", e.message);
         return res.status(500).json({ success: false, message: "Server Error" });
@@ -237,6 +251,33 @@ export const updateProduct = async (req, res) => {
         )
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        // Xử lý Ảnh: Kết hợp ảnh cũ còn lại và ảnh mới upload
+        const { remainingOldImages } = req.body;
+        // remainingOldImages có thể là String (nếu 1 ảnh) hoặc Array (nếu nhiều) do multer/form-data
+        let oldImages = [];
+        if (remainingOldImages) {
+            oldImages = Array.isArray(remainingOldImages) ? remainingOldImages : [remainingOldImages];
+        }
+
+        const newImages = req.files ? req.files.map(file => file.path) : [];
+        const allImages = [...oldImages, ...newImages];
+
+        // Chỉ cập nhật nếu có sự thay đổi (có ảnh mới hoặc người dùng đã xóa bớt ảnh cũ)
+        // Hoặc đơn giản là luôn cập nhật lại bản ghi ProductImage cho chắc chắn
+        if (allImages.length > 0 || (req.body.remainingOldImages !== undefined)) {
+            await ProductImage.deleteMany({ prod_id: new mongoose.Types.ObjectId(productId) });
+
+            const productImageMaxId = await ProductImage.findOne({}).sort({ prod_image_id: -1 });
+            
+            const newProductImage = new ProductImage({
+                prod_image_id: productImageMaxId ? productImageMaxId.prod_image_id + 1 : 1,
+                prod_id: product._id,
+                image: allImages,
+                is_primary_image: true
+            });
+            await newProductImage.save();
         }
 
         return res.status(200).json({ success: true, data: product });

@@ -74,7 +74,7 @@ const AdminOrderDetail = () => {
           "Email": order.user_id?.email || "",
           "Số điện thoại": order.user_id?.phone_number || "",
           "Địa chỉ": order.shipping?.address || "",
-          "Ảnh": item.product?.images?.filter(img => img.is_primary_image)[0]?.image || "",
+          "Ảnh": item.product?.images?.[0]?.image?.[0] || "",
           "Tên sản phẩm": item.product?.prod_name || "",
           "Đơn giá": item.price,
           "Số lượng": item.quantity,
@@ -200,7 +200,7 @@ const AdminOrderDetail = () => {
                     <td>
                       <img
                         src={
-                          item.product?.images?.filter(img => img.is_primary_image)[0]?.image ||
+                          item.product?.images?.[0]?.image?.[0] ||
                           'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'
                         }
                         loading="lazy"
@@ -283,7 +283,7 @@ const AdminOrderDetail = () => {
               <label>Ảnh sản phẩm:</label>
               <div style={{ marginTop: '5px' }}>
                 <img 
-                  src={selectedProduct?.images?.filter(img => img.is_primary_image)[0]?.image || 'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'} 
+                  src={selectedProduct?.images?.[0]?.image?.[0] || 'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'} 
                   alt="Product preview" 
                   style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                 />

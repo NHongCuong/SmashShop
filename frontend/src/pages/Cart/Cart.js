@@ -85,7 +85,7 @@ export default function Cart() {
           <div className="cart-item" key={item.product._id}>
             
             <div className="product-info">
-              <img src={item.product.image} alt={item.product.prod_name} />
+              <img src={item.product.image?.[0] || ''} alt={item.product.prod_name} />
 
               <span>{item.product.prod_name}</span>
             </div>

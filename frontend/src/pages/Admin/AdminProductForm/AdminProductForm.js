@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams  } from 'react-router-dom';
 import { useGetProductsQuery, useGetAllBrandsQuery, useGetAllTypesQuery, useImportProductsMutation } from '../../../features/product/productApi';
 import { useGetCategoriesQuery } from '../../../features/services/categoryApi';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import './AdminProductForm.css';
 
 const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading = false }) => {
@@ -34,8 +36,9 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
 
   useEffect(() => {
     if (isEdit && initialData) {
-      const existingImages = (initialData.images || []).map(img =>
-        typeof img === 'string' ? img : img.image
+      // Flatten arrays if necessary, as our new model stores image: [String]
+      const existingImages = (initialData.images || []).flatMap(img =>
+        Array.isArray(img.image) ? img.image : [img.image]
       );
   
       setFormData({
@@ -59,20 +62,49 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
+    // Lưu trữ files gốc để upload
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
     
-    setImagePreview(previews);
-    setFormData((prev) => ({ ...prev, images: files }));
+    // Tạo preview cho các file mới
+    const newPreviews = files.map((file) => ({
+      url: URL.createObjectURL(file),
+      file: file
+    }));
+    setImagePreview((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeImage = (index) => {
+    const removedItem = imagePreview[index];
+    
+    // Nếu là file mới upload (có thuộc tính file), cần xóa trong formData
+    if (removedItem.file) {
+      setFormData(prev => ({
+        ...prev,
+        images: prev.images.filter(f => f !== removedItem.file)
+      }));
+    }
+    
+    // Nếu là ảnh cũ trên server (item là string hoặc không có .file), 
+    // chúng ta chỉ cần xóa khỏi imagePreview. 
+    // Khi submit, chúng ta sẽ lấy những cái còn lại trong imagePreview mà là string.
+    setImagePreview(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Lấy danh sách URL ảnh cũ còn lại
+    const remainingOldImages = imagePreview
+      .filter(item => typeof item === 'string')
+      .map(url => url);
+
     const formattedData = {
       ...formData,
       price: Number(formData.price),
       stock: Number(formData.stock),
       quantity_sold: Number(formData.quantity_sold),
       discount: Number(formData.discount || 0),
+      remainingOldImages: remainingOldImages // Truyền danh sách ảnh cũ chưa bị xóa
     };
     if (!formData.prod_name || !formData.price || !formData.description || !formData.stock ||
         !formData.category_id || !formData.brand_id || !formData.type_id) {
@@ -179,8 +211,13 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
       <label>Tải lên hình ảnh sản phẩm</label>
       <input type="file" multiple accept="image/*" onChange={handleImageChange} />
       <div className="image-preview">
-        {imagePreview.map((src, idx) => (
-          <img key={idx} src={src} alt={`img-${idx}`} />
+        {imagePreview.map((item, idx) => (
+          <div key={idx} className="preview-item">
+            <img src={typeof item === 'string' ? item : item.url} alt={`img-${idx}`} />
+            <button type="button" className="remove-img-btn" onClick={() => removeImage(idx)}>
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
         ))}
       </div>
 

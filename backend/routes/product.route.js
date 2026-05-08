@@ -13,12 +13,12 @@ productRouter.get("/:id", fetchProductById);
 productRouter.get("/", fetchAllProducts);
 
 // Cập nhật thông tin sản phẩm
-productRouter.put("/:id", updateProduct);
+productRouter.put("/:id", parser.array('image', 10), updateProduct);
 
 // Deactive sản phẩm
 productRouter.put("/deactive/:id", deactiveProduct);
 // Thêm sản phẩm
-productRouter.post("/", parser.single('image'), createProduct)
+productRouter.post("/", parser.array('image', 10), createProduct)
 
 // Import sản phẩm từ Excel
 productRouter.post("/import", excelUpload.single('file'), importProducts);

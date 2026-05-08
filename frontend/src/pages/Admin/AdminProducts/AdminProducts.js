@@ -36,7 +36,7 @@ export default function AdminProducts() {
 
     const dataToExport = allProductsData.map((product, index) => ({
       "STT": index + 1,
-      "Ảnh": product.images?.filter(img => img.is_primary_image)[0]?.image || "",
+      "Ảnh": product.images?.[0]?.image?.[0] || "",
       "Tên sản phẩm": product.prod_name,
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",
@@ -144,7 +144,14 @@ export default function AdminProducts() {
             {products.map((product, idx) => (
               <tr key={product.id} onClick={() => navigate(`/admin/products/${product.id}`)}>
                 <td>{(page - 1) * limit + idx + 1}</td>
-                <td className="prod-img-cell"><img src={`${product.images?.filter(prod => prod.is_primary_image)[0]?.image || ''}`} loading='lazy' alt={product.prod_name} className="product-img" /></td>
+                <td className="prod-img-cell">
+                  <img 
+                    src={`${product.images?.[0]?.image?.[0] || ''}`} 
+                    loading='lazy' 
+                    alt={product.prod_name} 
+                    className="product-img" 
+                  />
+                </td>
                 <td className="prod-name-cell">{product.prod_name}</td>
                 <td>{product.category_id?.category_name || '---'}</td>
                 <td>{product.brand_id?.brand_name || '---'}</td>
