@@ -9,6 +9,7 @@ import { typeApi } from '../../features/services/typeApi.js';
 import { statisticsApi } from '../../features/statistics/statisticsApi.js';
 import { reviewApi } from '../../features/services/reviewApi.js';
 import { wishlistApi } from '../../features/services/wishlistApi.js';
+import { voucherApi } from '../../features/services/voucherApi.js';
 import searchReducer from '../../features/search/searchSlice';
 // import productsReducer from '../features/products/productsSlice';
 import cartReducer from '../store/cartSlice.js'
@@ -31,6 +32,7 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
     [typeApi.reducerPath]: typeApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,
     [wishlistApi.reducerPath]: wishlistApi.reducer,
+    [voucherApi.reducerPath]: voucherApi.reducer,
     cart: cartReducer,
     search: searchReducer,
     // products: productsReducer,
@@ -45,4 +47,5 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
   .concat(typeApi.middleware)
   .concat(reviewApi.middleware)
   .concat(wishlistApi.middleware)
+  .concat(voucherApi.middleware)
 });

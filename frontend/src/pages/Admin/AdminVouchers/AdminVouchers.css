@@ -1,0 +1,174 @@
+.admin-vouchers {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.admin-vouchers .admin-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-vouchers .admin-header-flex h1 {
+    font-size: 24px;
+    color: #333;
+    font-weight: 700;
+}
+
+.admin-vouchers .admin-header-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-vouchers .admin-header-btns button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-add-voucher { background-color: #f1c40f; color: #000; }
+.btn-add-voucher:hover { background-color: #d4ac0d; }
+
+.admin-vouchers .btn-export-excel { background-color: #27ae60; color: #fff; }
+.admin-vouchers .btn-export-excel:hover { background-color: #1e8449; }
+
+.admin-vouchers .btn-import-excel { background-color: #2980b9; color: #fff; }
+.admin-vouchers .btn-import-excel:hover { background-color: #1f6391; }
+
+.admin-vouchers .admin-controls-wrapper {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.controls-left-voucher, .controls-right-voucher {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-vouchers .admin-controls-wrapper select, .admin-vouchers .admin-controls-wrapper input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.admin-vouchers .search-input { width: 300px; }
+
+.admin-vouchers .admin-table-wrapper {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.admin-vouchers .admin-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-vouchers .admin-table-wrapper th {
+    background-color: #f1f2f6;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+}
+
+.admin-vouchers .admin-table-wrapper td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+}
+
+.admin-vouchers .actions-cell {
+    display: flex;
+    gap: 15px;
+    font-size: 18px;
+}
+
+.admin-vouchers .icon-edit { color: #3498db; cursor: pointer; }
+.admin-vouchers .icon-delete { color: #e74c3c; cursor: pointer; }
+
+.admin-vouchers .admin-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.admin-vouchers .admin-pagination button {
+    padding: 6px 15px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-vouchers .admin-pagination button:disabled {
+    background: #eee;
+    cursor: not-allowed;
+}
+
+.admin-vouchers .admin-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.admin-vouchers .admin-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 500px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.admin-vouchers .admin-modal-content h2 { margin-top: 0; margin-bottom: 20px; }
+
+.admin-vouchers .form-group { margin-bottom: 15px; }
+.admin-vouchers .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+.admin-vouchers .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+
+.admin-vouchers .required { color: #e74c3c; }
+
+.admin-vouchers .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.admin-vouchers .btn-save { background: #f1c40f; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+.admin-vouchers .btn-cancel { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+
+.discount-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 45px;
+    text-align: center;
+}

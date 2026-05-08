@@ -21,6 +21,7 @@ import cookieParser from 'cookie-parser';
 import cartRouter from "./routes/cart.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 import paymentRoutes from "./routes/payment.route.js";
+import voucherRoutes from "./routes/voucher.route.js";
 import initChatSocket from "./socket/chatSocket.js";
 
 dotenv.config();
@@ -103,6 +104,7 @@ app.use('/api/auth', Authrouter);
 app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/vnpay', paymentRoutes);
+app.use("/api/v1/voucher", voucherRoutes);
 
 import { generateToken } from "./middleware/jwt.js";
 

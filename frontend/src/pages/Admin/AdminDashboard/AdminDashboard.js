@@ -17,6 +17,7 @@ import {
   faTrademark,
   faThumbsUp,
   faTags,
+  faTicket,
 } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
@@ -31,6 +32,7 @@ import { typeApi } from '../../../features/services/typeApi.js';
 import { reviewApi } from '../../../features/services/reviewApi';
 import { statisticsApi } from '../../../features/statistics/statisticsApi';
 import { wishlistApi } from '../../../features/services/wishlistApi';
+import { voucherApi } from '../../../features/services/voucherApi';
 
 const NOTIF_STORAGE_KEY = 'admin_chat_notifications';
 
@@ -77,6 +79,7 @@ export default function AdminDashboard() {
     dispatch(reviewApi.util.resetApiState());
     dispatch(statisticsApi.util.resetApiState());
     dispatch(wishlistApi.util.resetApiState());
+    dispatch(voucherApi.util.resetApiState());
 
     navigate('/admin-login');
   };
@@ -232,6 +235,9 @@ export default function AdminDashboard() {
             </NavLink>
             <NavLink to="/admin/types" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faTags} /> Phân loại
+            </NavLink>
+            <NavLink to="/admin/vouchers" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faTicket} /> Khuyến mãi
             </NavLink>
             <NavLink to="/admin/products" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faBox} /> Sản phẩm hiện có

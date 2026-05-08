@@ -31,6 +31,7 @@ import AdminCustomers from '../pages/Admin/AdminCustomers/AdminCustomers';
 import AdminCategory from '../pages/Admin/AdminCategories/AdminCategory';
 import AdminBrands from '../pages/Admin/AdminBrands/AdminBrands';
 import AdminTypes from '../pages/Admin/AdminTypes/AdminTypes';
+import AdminVouchers from '../pages/Admin/AdminVouchers/AdminVouchers';
 
 
 import { Navigate } from "react-router-dom";
@@ -78,6 +79,7 @@ const pages = [
             { path: 'categories', Component: AdminCategory },
             { path: 'brands', Component: AdminBrands },
             { path: 'types', Component: AdminTypes },
+            { path: 'vouchers', Component: AdminVouchers },
             { path: 'orders', Component: AdminOrders },
             { path: 'orders/:id', Component: AdminOrderDetail },
             { path: 'users', Component: AdminUsers },
