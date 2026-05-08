@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './AdminOrderDetail.css';
-import { 
-  useGetOrderByIdQuery, 
-  useUpdateOrderStatusMutation, 
+import {
+  useGetOrderByIdQuery,
+  useUpdateOrderStatusMutation,
   useGetAllOrdersQuery,
   useUpdateOrderItemMutation,
   useDeleteOrderItemMutation
@@ -214,13 +214,13 @@ const AdminOrderDetail = () => {
                     <td className="ad-order-product-total">{(item.price * item.quantity).toLocaleString()} đ</td>
                     <td>
                       <div style={{ display: 'flex', gap: '5px' }}>
-                        <button 
+                        <button
                           onClick={() => handleEditClick(item)}
                           style={{ padding: '5px', backgroundColor: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                         >
                           Sửa
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteItem(item._id)}
                           style={{ padding: '5px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                         >
@@ -238,6 +238,11 @@ const AdminOrderDetail = () => {
             <p>Tạm tính: {
               order.items.reduce((sum, i) => sum + i.price * i.quantity, 0).toLocaleString()
             } đ</p>
+            {order.discount_amount > 0 && (
+              <p style={{ color: '#dc3545', fontStyle: 'italic' }}>
+                Giảm giá: -{order.discount_amount.toLocaleString()} đ
+              </p>
+            )}
             <p>Phí vận chuyển: 0 đ</p>
             <p><strong>Tổng cộng: {order.total.toLocaleString()} đ</strong></p>
           </div>
@@ -282,17 +287,17 @@ const AdminOrderDetail = () => {
             <div className="edit-field">
               <label>Ảnh sản phẩm:</label>
               <div style={{ marginTop: '5px' }}>
-                <img 
-                  src={selectedProduct?.images?.[0]?.image?.[0] || 'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'} 
-                  alt="Product preview" 
+                <img
+                  src={selectedProduct?.images?.[0]?.image?.[0] || 'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'}
+                  alt="Product preview"
                   style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                 />
               </div>
             </div>
             <div className="edit-field">
               <label>Sản phẩm:</label>
-              <select 
-                value={editProductId} 
+              <select
+                value={editProductId}
                 onChange={(e) => {
                   const p = allProducts.find(prod => prod._id === e.target.value);
                   setEditProductId(e.target.value);
@@ -306,17 +311,17 @@ const AdminOrderDetail = () => {
             </div>
             <div className="edit-field">
               <label>Đơn giá:</label>
-              <input 
-                type="number" 
-                value={editPrice} 
+              <input
+                type="number"
+                value={editPrice}
                 onChange={(e) => setEditPrice(Number(e.target.value))}
               />
             </div>
             <div className="edit-field">
               <label>Số lượng:</label>
-              <input 
-                type="number" 
-                value={editQuantity} 
+              <input
+                type="number"
+                value={editQuantity}
                 onChange={(e) => setEditQuantity(Number(e.target.value))}
               />
             </div>
@@ -331,4 +336,4 @@ const AdminOrderDetail = () => {
   );
 };
 
-export default AdminOrderDetail;
+export default AdminOrderDetail;

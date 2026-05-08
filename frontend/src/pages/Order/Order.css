@@ -44,10 +44,24 @@
   
   .order-summary .order-item,
   .order-summary .discount-code,
+  .order-summary .total-row,
   .order-summary .order-total {
     display: flex;
     justify-content: space-between;
     margin: 10px 0;
+  }
+
+  .total-row.discount {
+    color: #e44d26;
+    font-style: italic;
+  }
+  
+  .order-total {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px !important;
+    font-weight: bold;
+    font-size: 1.1rem;
   }
   
   .order-button {

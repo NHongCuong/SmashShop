@@ -1,6 +1,7 @@
 import Header from "../../components/Header/Header";
-import { useEffect} from "react";
-import { useNavigate} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useGetVouchersQuery } from "../../features/services/voucherApi";
 import "./Cart.css";
 import { useDispatch, useSelector } from "react-redux";
 import { removeCartItemThunk, changeCartItemThunk } from "../../app/store/cartThunks";
@@ -22,6 +23,10 @@ export default function Cart() {
   }, [isAuthenticated, navigate]);
   const dispatch = useDispatch();
   const cartItemsWithDetails = useSelector(state => state.cart?.cart || EMPTY_CART);
+
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const { data: vouchers = [] } = useGetVouchersQuery();
 
   // console.log("detail",cartItemsWithDetails);
   const handleQuantityChange = (productId, changeAmount) => {
@@ -54,14 +59,67 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
-    navigate('/order');
+    if (cartItemsWithDetails.length === 0) {
+      alert("Giỏ hàng của bạn đang trống.");
+      return;
+    }
+    navigate('/order', { 
+      state: { 
+        cartItems: cartItemsWithDetails,
+        totalPrice,
+        discountAmount,
+        finalPrice,
+        appliedVoucher 
+      } 
+    });
+  };
+
+  const handleApplyVoucher = () => {
+    if (!voucherCode.trim()) {
+      alert("Vui lòng nhập mã giảm giá.");
+      return;
+    }
+
+    const voucher = vouchers.find(
+      (v) => v.voucher_name.toLowerCase() === voucherCode.trim().toLowerCase()
+    );
+
+    if (voucher) {
+      // Kiểm tra xem có sản phẩm nào trong giỏ hàng áp dụng mã này không
+      const isEligible = cartItemsWithDetails.some(item => {
+        const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
+        return productVoucherId === voucher._id;
+      });
+
+      if (isEligible) {
+        setAppliedVoucher(voucher);
+        alert(`Áp dụng mã giảm giá thành công! Giảm ${voucher.discount_percent}% cho các sản phẩm hợp lệ.`);
+      } else {
+        setAppliedVoucher(null);
+        alert("Mã giảm giá này không áp dụng cho các sản phẩm trong giỏ hàng của bạn.");
+      }
+    } else {
+      setAppliedVoucher(null);
+      alert("Mã giảm giá không hợp lệ.");
+    }
   };
 
 
   const totalQuantity = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity, 0);
-  // const totalQuantity = 0;
-  // const totalPrice = 0;
   const totalPrice = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity * item.product.price, 0);
+  
+  // Tính tiền giảm giá chỉ cho các sản phẩm có voucher_id khớp với appliedVoucher
+  const discountAmount = appliedVoucher 
+    ? cartItemsWithDetails.reduce((sum, item) => {
+        const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
+        if (productVoucherId === appliedVoucher._id) {
+          return sum + (item.quantity * item.product.price * appliedVoucher.discount_percent) / 100;
+        }
+        return sum;
+      }, 0)
+    : 0;
+
+  const finalPrice = totalPrice - discountAmount;
 
 
   return (
@@ -88,6 +146,11 @@ export default function Cart() {
               <img src={item.product.image?.[0] || ''} alt={item.product.prod_name} />
 
               <span>{item.product.prod_name}</span>
+              {appliedVoucher && (item.product.voucher_id?._id === appliedVoucher._id || item.product.voucher_id === appliedVoucher._id) && (
+                <span className="voucher-tag" style={{ color: 'green', fontSize: '0.8rem', marginLeft: '5px' }}>
+                  (-{appliedVoucher.discount_percent}%)
+                </span>
+              )}
             </div>
             <div>{formatCurrency(item.product.price)}</div>
             <div className="quantity-control">
@@ -111,12 +174,23 @@ export default function Cart() {
       <div className="bottom-section">
         <div className="discount-box">
           <label>Mã giảm giá</label>
-          <input type="text" placeholder="Nhập mã giảm giá" />
-          <button>ÁP DỤNG</button>
+          <input 
+            type="text" 
+            placeholder="Nhập mã giảm giá" 
+            value={voucherCode}
+            onChange={(e) => setVoucherCode(e.target.value)}
+          />
+          <button onClick={handleApplyVoucher}>ÁP DỤNG</button>
         </div>
         <div className="summary-box">
           <p><strong>Số lượng:</strong> {totalQuantity}</p>
           <p><strong>Thành tiền:</strong> {formatCurrency(totalPrice)}</p>
+          {appliedVoucher && (
+            <p className="discount-text">
+              <strong>Giảm giá ({appliedVoucher.discount_percent}%):</strong> -{formatCurrency(discountAmount)}
+            </p>
+          )}
+          <p className="final-total"><strong>Tổng cộng:</strong> {formatCurrency(finalPrice)}</p>
           <button className="checkout-button"  onClick={() => handleCheckout()}>THANH TOÁN</button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams  } from 'react-router-dom';
 import { useGetProductsQuery, useGetAllBrandsQuery, useGetAllTypesQuery, useImportProductsMutation } from '../../../features/product/productApi';
 import { useGetCategoriesQuery } from '../../../features/services/categoryApi';
+import { useGetVouchersQuery } from '../../../features/services/voucherApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import './AdminProductForm.css';
@@ -14,8 +15,10 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
   const { data: categories = [] } = useGetCategoriesQuery();
   const { data: brandsData } = useGetAllBrandsQuery();
   const { data: typesData } = useGetAllTypesQuery();
+  const { data: vouchersData } = useGetVouchersQuery();
 
   const brands = brandsData || [];
+  const vouchers = vouchersData || [];
   const types = typesData || [];
   const [importProducts, { isLoading: isImporting }] = useImportProductsMutation();
 
@@ -28,6 +31,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
     category_id: '',
     brand_id: '',
     type_id: '',
+    voucher_id: '',
     discount: '',
     images: [],
   });
@@ -46,6 +50,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
         category_id: initialData.category_id?._id,
         brand_id: initialData.brand_id?._id,
         type_id: initialData.type_id?._id,
+        voucher_id: initialData.voucher_id?._id || '',
         quantity_sold: Number(initialData.quantity_sold || 0),
         images: [],
       });
@@ -202,6 +207,14 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
         <option value="">Chọn loại</option>
         {types.map((type) => (
           <option key={type._id} value={type._id}>{type.type_name}</option>
+        ))}
+      </select>
+
+      <label>Khuyến mãi</label>
+      <select name="voucher_id" value={formData.voucher_id} onChange={handleChange}>
+        <option value="">Không có khuyến mãi</option>
+        {vouchers.map((voucher) => (
+          <option key={voucher._id} value={voucher._id}>{voucher.voucher_name}</option>
         ))}
       </select>
 

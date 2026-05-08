@@ -177,31 +177,31 @@ const AdminOrders = () => {
               <th>STT</th>
               <th>ID đơn hàng</th>
               <th>Giá trị đơn</th>
+              <th>Giảm giá</th>
               <th>Khách hàng</th>
               <th>Số điện thoại</th>
               <th>Ngày tạo</th>
-              <th>Ngày sửa</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={8}>Đang tải...</td></tr>
+               <tr><td colSpan={9}>Đang tải...</td></tr>
             ) : (
               orders.map((order, idx) => (
                 <tr key={order._id} onClick={() => navigate(`/admin/orders/${order._id}`)}>
                   <td>{(page - 1) * limit + idx + 1}</td>
                   <td>{order.order_id}</td>
-                  <td>{typeof (order.total_price ?? order.total) === 'number'
+                   <td>{typeof (order.total_price ?? order.total) === 'number'
                     ? (order.total_price ?? order.total).toLocaleString('vi-VN') + '₫'
                     : '0₫'}</td>
+                  <td style={{ color: '#dc3545' }}>{order.discount_amount ? `-${order.discount_amount.toLocaleString('vi-VN')}₫` : '0₫'}</td>
                   {/* <td>{order.user_id?.name || "Không rõ"}</td>
                   <td>{order.user_id?.phone_number || "Không rõ"}</td> */}
                   <td>{order.shipping?.name || "Không rõ"}</td>
                   <td>{order.shipping?.phone || "Không rõ"}</td>
                   <td>{order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : '---'}</td>
-                  <td>{order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : '---'}</td>
                   <td>
                     <span className={`status-label ${statuses[order.status] || 'unknown'}`}>
                       {order.status}

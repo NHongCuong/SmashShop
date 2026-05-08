@@ -124,8 +124,13 @@ export const createOrder = async (req, res) => {
             }));
         }
 
-        // Tính tổng
-        const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+        // Tính tổng tạm tính
+        const subtotal = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
+        // Lấy thông tin voucher từ body
+        const { voucher_id, discountAmount } = req.body;
+        const discountVal = Number(discountAmount) || 0;
+        const finalTotal = subtotal - discountVal;
 
         // Kiểm tra và trừ tồn kho (atomic) trước khi tạo đơn hàng
         const updatedItems = [];
@@ -154,7 +159,9 @@ export const createOrder = async (req, res) => {
             user_id,
             items,
             shipping: { name, address, phone, email, note },
-            total,
+            total: finalTotal,
+            voucher_id: voucher_id || null,
+            discount_amount: discountVal,
             status: paymentMethod === 'vnpay' ? "Pending" : "Succeeded",
             paymentmethod: paymentMethod,
         });
@@ -352,9 +359,9 @@ export const updateOrderItem = async (req, res) => {
         // Cập nhật tồn kho và số lượng đã bán của sản phẩm nếu số lượng thay đổi
         if (quantityDiff !== 0) {
             await Product.findByIdAndUpdate(productId, {
-                $inc: { 
-                    stock: -quantityDiff, 
-                    quantity_sold: quantityDiff 
+                $inc: {
+                    stock: -quantityDiff,
+                    quantity_sold: quantityDiff
                 }
             });
         }
@@ -408,9 +415,9 @@ export const deleteOrderItem = async (req, res) => {
         if (deletedItem) {
             // Hoàn tác tồn kho và số lượng đã bán
             await Product.findByIdAndUpdate(deletedItem.product, {
-                $inc: { 
-                    stock: deletedItem.quantity, 
-                    quantity_sold: -deletedItem.quantity 
+                $inc: {
+                    stock: deletedItem.quantity,
+                    quantity_sold: -deletedItem.quantity
                 }
             });
         }

@@ -3,6 +3,7 @@ import Category from '../models/category.model.js';
 import Brand from '../models/brand.model.js';
 import ProductImage from '../models/productImage.model.js';
 import Type from '../models/type.model.js'
+import Voucher from '../models/voucher.model.js'
 import mongoose from 'mongoose';
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -65,6 +66,7 @@ export const fetchProductById = async (req, res) => {
             .populate('category_id')
             .populate('brand_id')
             .populate('type_id')
+            .populate('voucher_id')
             .populate({
                 path: 'images',
                 select: 'image is_primary_image -prod_id',
@@ -126,6 +128,7 @@ export const fetchAllProducts = async (req, res) => {
             .populate('category_id')
             .populate('brand_id')
             .populate('type_id')
+            .populate('voucher_id')
             .populate({
                 path: 'images',
                 select: 'image is_primary_image -prod_id',
@@ -150,7 +153,7 @@ export const fetchAllProducts = async (req, res) => {
 
 // Tạo sản phẩm mới
 export const createProduct = async (req, res) => {
-    const { prod_name, description, price, stock, discount, category_id, brand_id, type_id } = req.body;
+    const { prod_name, description, price, stock, discount, category_id, brand_id, type_id, voucher_id } = req.body;
 
     if (!prod_name || !price || !description || !stock || !category_id || !brand_id || !type_id) {
         return res.status(400).json({ success: false, message: "Please fill full required information" });
@@ -184,7 +187,8 @@ export const createProduct = async (req, res) => {
             discount: discount || 0,
             category_id,
             brand_id,
-            type_id
+            type_id,
+            voucher_id: voucher_id || null
         });
 
         const savedProduct = await newProduct.save();
@@ -213,7 +217,7 @@ export const createProduct = async (req, res) => {
 // Cập nhật thông tin sản phẩm
 export const updateProduct = async (req, res) => {
     const productId = req.params.id;
-    let { prod_name, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id } = req.body;
+    let { prod_name, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id } = req.body;
 
     if (!prod_name || !price || !description || !stock || !discount || quantity_sold === undefined || !category_id || !brand_id || !type_id) {
         return res.status(400).json({ success: false, message: "Please fill full required information" });
@@ -245,6 +249,7 @@ export const updateProduct = async (req, res) => {
                 category_id, 
                 brand_id, 
                 type_id, 
+                voucher_id: voucher_id || null,
                 update_at: Date.now() 
             },
             { new: true }

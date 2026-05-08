@@ -27,6 +27,8 @@ const orderSchema = new mongoose.Schema({
         note: { type: String }
     },
     total: { type: Number, required: true },
+    voucher_id: { type: mongoose.Types.ObjectId, ref: 'Voucher', default: null },
+    discount_amount: { type: Number, default: 0 },
     status: { type: String, default: 'Pending' }, // Pending, Confirmed, Shipped...
     createdAt: { type: Date, default: getVietnamTime },
     updatedAt: { type: Date },

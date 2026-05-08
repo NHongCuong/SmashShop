@@ -16,16 +16,24 @@ export default function Cart() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart?.cart || EMPTY_CART);
 
-  // Check if this is a "Buy Now" flow
+  // Check if this is a "Buy Now" flow or coming from Cart with voucher
   const buyNowItem = location.state?.buyNowItem || null;
+  const stateCartItems = location.state?.cartItems || null;
+  const stateTotalPrice = location.state?.totalPrice || null;
+  const stateDiscountAmount = location.state?.discountAmount || 0;
+  const stateFinalPrice = location.state?.finalPrice || null;
+  const appliedVoucher = location.state?.appliedVoucher || null;
 
   // Determine which items to display in the order
   const orderItems = useMemo(() => {
     if (buyNowItem) {
       return [buyNowItem];
     }
+    if (stateCartItems) {
+      return stateCartItems;
+    }
     return cartItems;
-  }, [buyNowItem, cartItems]);
+  }, [buyNowItem, stateCartItems, cartItems]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -40,8 +48,11 @@ export default function Cart() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const total = orderItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  const finalTotal = total;
+  const total = stateTotalPrice !== null
+    ? stateTotalPrice
+    : orderItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const discount = stateDiscountAmount;
+  const finalTotal = stateFinalPrice !== null ? stateFinalPrice : (total - discount);
 
   const handleSubmit = async () => {
     const requiredShippingFields = ['name', 'address', 'phone', 'email'];
@@ -78,7 +89,9 @@ export default function Cart() {
       shipping,
       items,
       paymentMethod: paymentMethod,
-      isBuyNow: !!buyNowItem
+      isBuyNow: !!buyNowItem,
+      voucher_id: appliedVoucher?._id || null,
+      discountAmount: discount
     };
 
 
@@ -201,9 +214,21 @@ export default function Cart() {
                 <span>{(item.product.price * item.quantity).toLocaleString()} đ</span>
               </div>
             ))}
-            <div className="order-total">
-              <span>Tổng đơn</span>
-              <span className="total-amount">{finalTotal.toLocaleString()} đ</span>
+            <div className="order-total-detail">
+              <div className="total-row">
+                <span>Tạm tính</span>
+                <span>{total.toLocaleString()} đ</span>
+              </div>
+              {discount > 0 && (
+                <div className="total-row discount">
+                  <span>Giảm giá {appliedVoucher ? `(${appliedVoucher.discount_percent}%)` : ''}</span>
+                  <span>-{discount.toLocaleString()} đ</span>
+                </div>
+              )}
+              <div className="order-total">
+                <span>Tổng đơn</span>
+                <span className="total-amount">{finalTotal.toLocaleString()} đ</span>
+              </div>
             </div>
             <button
               className="order-button"

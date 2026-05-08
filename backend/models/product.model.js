@@ -12,6 +12,7 @@ const ProductSchema = new mongoose.Schema({
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   brand_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
   type_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Type' },
+  voucher_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Voucher', default: null },
   discount: { type: Number },
   is_active: { type: Boolean, default: true },
   create_at: { type: Date, default: getVietnamTime },
