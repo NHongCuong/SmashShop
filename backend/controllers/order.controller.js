@@ -341,10 +341,23 @@ export const updateOrderItem = async (req, res) => {
             return res.status(404).json({ success: false, message: "Item not found in order" });
         }
 
+        const oldQuantity = order.items[itemIndex].quantity;
+        const quantityDiff = quantity - oldQuantity;
+
         // Cập nhật thông tin item trong Order
         order.items[itemIndex].product = productId;
         order.items[itemIndex].quantity = quantity;
         order.items[itemIndex].price = price;
+
+        // Cập nhật tồn kho và số lượng đã bán của sản phẩm nếu số lượng thay đổi
+        if (quantityDiff !== 0) {
+            await Product.findByIdAndUpdate(productId, {
+                $inc: { 
+                    stock: -quantityDiff, 
+                    quantity_sold: quantityDiff 
+                }
+            });
+        }
 
         // Tính lại tổng cho Order
         order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -389,6 +402,17 @@ export const deleteOrderItem = async (req, res) => {
         // Kiểm tra quyền
         if (req.user.role !== 'admin' && order.user_id.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: "Bạn không có quyền chỉnh sửa đơn hàng này." });
+        }
+
+        const deletedItem = order.items.find(item => item._id.toString() === itemId);
+        if (deletedItem) {
+            // Hoàn tác tồn kho và số lượng đã bán
+            await Product.findByIdAndUpdate(deletedItem.product, {
+                $inc: { 
+                    stock: deletedItem.quantity, 
+                    quantity_sold: -deletedItem.quantity 
+                }
+            });
         }
 
         order.items = order.items.filter(item => item._id.toString() !== itemId);

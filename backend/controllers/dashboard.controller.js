@@ -37,7 +37,7 @@ export const dashboardStatistics = async (req, res) => {
                     },
                     totalRevenue: { $sum: "$total" },
                     totalOrders: { $sum: 1 },
-                    totalSold: { $sum: { $size: "$items" } }
+                    totalSold: { $sum: { $sum: "$items.quantity" } }
                 }
             },
             {
@@ -66,7 +66,7 @@ export const dashboardStatistics = async (req, res) => {
                     _id: null,
                     totalRevenue: { $sum: "$total" },
                     totalOrders: { $sum: 1 },
-                    totalSold: { $sum: { $size: "$items" } }
+                    totalSold: { $sum: { $sum: "$items.quantity" } }
                 }
             }
         ]);
