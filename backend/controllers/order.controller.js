@@ -367,8 +367,9 @@ export const updateOrderItem = async (req, res) => {
             });
         }
 
-        // Tính lại tổng cho Order
-        order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        // Tính lại tổng cho Order (có trừ discountAmount)
+        const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        order.total = Math.max(0, subtotal - (order.discount_amount || 0));
         order.updatedAt = getVietnamTime();
         await order.save();
 
@@ -425,8 +426,9 @@ export const deleteOrderItem = async (req, res) => {
 
         order.items = order.items.filter(item => item._id.toString() !== itemId);
 
-        // Tính lại tổng cho Order
-        order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        // Tính lại tổng cho Order (có trừ discountAmount)
+        const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        order.total = Math.max(0, subtotal - (order.discount_amount || 0));
         order.updatedAt = getVietnamTime();
         await order.save();
 
