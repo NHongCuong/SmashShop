@@ -248,6 +248,9 @@ export default function AdminDashboard() {
             <NavLink to="/admin/orders" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faCartShopping} /> Đơn hàng
             </NavLink>
+            <NavLink to="/admin/reviews" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faThumbsUp} /> Đánh giá sản phẩm
+            </NavLink>
             <NavLink to="/admin/users" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faUsers} /> Người dùng hiện có
             </NavLink>

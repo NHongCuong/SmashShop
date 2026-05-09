@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as XLSX from 'xlsx';
+import { getVietnamTime } from '../utils/dayjs.js';
 const ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();
@@ -250,7 +251,7 @@ export const updateProduct = async (req, res) => {
                 brand_id, 
                 type_id, 
                 voucher_id: voucher_id || null,
-                update_at: Date.now() 
+                update_at: getVietnamTime() 
             },
             { new: true }
         )

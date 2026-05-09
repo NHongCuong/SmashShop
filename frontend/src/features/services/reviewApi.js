@@ -16,10 +16,19 @@ export const reviewApi = createApi({
     },
   }),
   tagTypes: ['Review'],
+  keepUnusedDataFor: 0,
   endpoints: (builder) => ({
     getReviewsByProduct: builder.query({
-      query: (productId) => `reviews/${productId}`,
+      query: (productId) => `reviews/product/${productId}`,
       providesTags: (result, error, productId) => [{ type: 'Review', id: productId }],
+    }),
+    getAdminReviews: builder.query({
+      query: ({ page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '' } = {}) => {
+        let url = `reviews/admin?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        return url;
+      },
+      providesTags: ['Review'],
     }),
     createReview: builder.mutation({
       query: (reviewData) => ({
@@ -27,16 +36,30 @@ export const reviewApi = createApi({
         method: 'POST',
         body: reviewData,
       }),
-      invalidatesTags: (result, error, { prod_id }) => [{ type: 'Review', id: prod_id }],
+      invalidatesTags: (result, error, { prod_id }) => [{ type: 'Review', id: prod_id }, 'Review'],
+    }),
+    updateReviewAdmin: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `reviews/admin/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Review'],
     }),
     deleteReview: builder.mutation({
-      query: ({ reviewId, productId }) => ({
-        url: `reviews/${reviewId}`,
+      query: (id) => ({
+        url: `reviews/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { productId }) => [{ type: 'Review', id: productId }],
+      invalidatesTags: ['Review'],
     }),
   }),
 });
 
-export const { useGetReviewsByProductQuery, useCreateReviewMutation, useDeleteReviewMutation } = reviewApi;
+export const { 
+  useGetReviewsByProductQuery, 
+  useCreateReviewMutation, 
+  useDeleteReviewMutation,
+  useGetAdminReviewsQuery,
+  useUpdateReviewAdminMutation
+} = reviewApi;

@@ -4,6 +4,7 @@ import OrderDetail from '../models/order_detail.js';
 import Product from '../models/product.model.js';
 import ProductImage from "../models/productImage.model.js";
 import logger from "../utils/logger.js";
+import { getVietnamTime } from '../utils/dayjs.js';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -246,7 +247,7 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: "Status just be one of Processing, Cancelled, Succeeded" });
         }
 
-        const order = await Order.findByIdAndUpdate(orderId, { status: status }, { new: true });
+        const order = await Order.findByIdAndUpdate(orderId, { status: status, updatedAt: getVietnamTime() }, { new: true });
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
@@ -368,7 +369,7 @@ export const updateOrderItem = async (req, res) => {
 
         // Tính lại tổng cho Order
         order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        order.updatedAt = Date.now();
+        order.updatedAt = getVietnamTime();
         await order.save();
 
         // Đồng bộ sang OrderDetail
@@ -426,7 +427,7 @@ export const deleteOrderItem = async (req, res) => {
 
         // Tính lại tổng cho Order
         order.total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        order.updatedAt = Date.now();
+        order.updatedAt = getVietnamTime();
         await order.save();
 
         // Đồng bộ sang OrderDetail

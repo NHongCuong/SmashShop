@@ -32,6 +32,7 @@ import AdminCategory from '../pages/Admin/AdminCategories/AdminCategory';
 import AdminBrands from '../pages/Admin/AdminBrands/AdminBrands';
 import AdminTypes from '../pages/Admin/AdminTypes/AdminTypes';
 import AdminVouchers from '../pages/Admin/AdminVouchers/AdminVouchers';
+import AdminReviews from '../pages/Admin/AdminReviews/AdminReviews';
 
 
 import { Navigate } from "react-router-dom";
@@ -87,6 +88,7 @@ const pages = [
             { path: 'users/:id', Component: AdminUserDetail },
             { path: 'users/edit/:id', Component: AdminEditUser },
             { path: 'customers', Component: AdminCustomers },
+            { path: 'reviews', Component: AdminReviews },
 
         ],
     },

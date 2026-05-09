@@ -18,6 +18,7 @@ export const orderApi = createApi({
     }
   }),
   tagTypes: ['Orders'],
+  keepUnusedDataFor: 0,
   endpoints: (builder) => ({
     getOrders: builder.query({
       query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search = '' } = {}) => {

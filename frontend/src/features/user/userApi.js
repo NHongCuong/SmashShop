@@ -16,6 +16,7 @@ export const userApi = createApi({
     },
   }),
   tagTypes: ['User'],
+  keepUnusedDataFor: 0,
   endpoints: (builder) => ({
     getProfile: builder.query({
       query: () => 'users/profile',

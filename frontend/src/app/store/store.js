@@ -16,6 +16,7 @@ import cartReducer from '../store/cartSlice.js'
 import authReducer from './authSlice.js';
 import adminAuthReducer from './adminAuthSlice.js';
 import orderReducer from './orderSlice.js';
+import { rtkQueryErrorLogger } from '../middleware/rtkQueryErrorLogger.js';
 
 export const store = configureStore({ // Khai báo store để lưu trữ state 
   reducer: {
@@ -38,6 +39,7 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
     // products: productsReducer,
   },  
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+  .concat(rtkQueryErrorLogger)
   .concat(userApi.middleware)
   .concat(productApi.middleware)
   .concat(orderApi.middleware)

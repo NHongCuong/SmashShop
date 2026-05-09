@@ -82,7 +82,7 @@ export const updateCategory = async (req, res) => {
         const { category_name } = req.body;
         const image = req.file ? req.file.path : req.body.image;
 
-        const updateData = { category_name, update_at: Date.now() };
+        const updateData = { category_name, update_at: getVietnamTime() };
         if (image) updateData.image = image;
 
         const updatedCategory = await Category.findByIdAndUpdate(id, updateData, { new: true });

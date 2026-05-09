@@ -47,7 +47,11 @@ const AdminOrders = () => {
       "Giá trị đơn": order.total_price ?? order.total,
       // "Khách hàng": order.user_id?.name || "Không rõ",
       "Khách hàng": order.shipping?.name || "Không rõ",
+      "Email": order.shipping?.email || "",
+      "Số điện thoại": order.shipping?.phone || "",
+      "Địa chỉ": order.shipping?.address || "",
       "Ngày tạo": order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : "",
+      "Ngày sửa": order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : "---",
       "Trạng thái": order.status,
     }));
 
@@ -92,6 +96,7 @@ const AdminOrders = () => {
           "Phí vận chuyển": 0,
           "Trạng thái đơn hàng": order.status,
           "Ngày đặt hàng": order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : "",
+          "Ngày sửa": order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : "---",
           "Tổng cộng": order.total,
         });
       });
@@ -181,19 +186,20 @@ const AdminOrders = () => {
               <th>Khách hàng</th>
               <th>Số điện thoại</th>
               <th>Ngày tạo</th>
+              <th>Ngày sửa</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-               <tr><td colSpan={9}>Đang tải...</td></tr>
+              <tr><td colSpan={9}>Đang tải...</td></tr>
             ) : (
               orders.map((order, idx) => (
                 <tr key={order._id} onClick={() => navigate(`/admin/orders/${order._id}`)}>
                   <td>{(page - 1) * limit + idx + 1}</td>
                   <td>{order.order_id}</td>
-                   <td>{typeof (order.total_price ?? order.total) === 'number'
+                  <td>{typeof (order.total_price ?? order.total) === 'number'
                     ? (order.total_price ?? order.total).toLocaleString('vi-VN') + '₫'
                     : '0₫'}</td>
                   <td style={{ color: '#dc3545' }}>{order.discount_amount ? `-${order.discount_amount.toLocaleString('vi-VN')}₫` : '0₫'}</td>
@@ -202,6 +208,7 @@ const AdminOrders = () => {
                   <td>{order.shipping?.name || "Không rõ"}</td>
                   <td>{order.shipping?.phone || "Không rõ"}</td>
                   <td>{order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : '---'}</td>
+                  <td>{order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : '---'}</td>
                   <td>
                     <span className={`status-label ${statuses[order.status] || 'unknown'}`}>
                       {order.status}
