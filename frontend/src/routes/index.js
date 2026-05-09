@@ -33,6 +33,7 @@ import AdminBrands from '../pages/Admin/AdminBrands/AdminBrands';
 import AdminTypes from '../pages/Admin/AdminTypes/AdminTypes';
 import AdminVouchers from '../pages/Admin/AdminVouchers/AdminVouchers';
 import AdminReviews from '../pages/Admin/AdminReviews/AdminReviews';
+import Contact from '../pages/Contact/Contact';
 
 
 import { Navigate } from "react-router-dom";
@@ -44,6 +45,7 @@ const pages = [
     { path: "/forgot-password", Component: ForgotPassword },
     { path: "/resetpassword/:token", Component: ResetPasswordFromEmail },
     { path: routes.register, Component: Register },
+    { path: routes.contact, Component: Contact },
     { path: routes.products, Component: Products },
     { path: routes.product, Component: ProductDetail },
     { path: routes.cart, Component: Cart },

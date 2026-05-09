@@ -185,6 +185,13 @@ export default function Header() {
           )}
         </div>
 
+        <Link
+          to="/contact"
+          className="nav-link"
+        >
+          LIÊN HỆ
+        </Link>
+
         {/* Search Bar */}
         <div className="search-bar">
           <input
