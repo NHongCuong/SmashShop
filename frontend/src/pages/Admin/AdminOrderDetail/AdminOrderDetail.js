@@ -26,6 +26,7 @@ const AdminOrderDetail = () => {
   const [editProductId, setEditProductId] = useState('');
   const [editQuantity, setEditQuantity] = useState(1);
   const [editPrice, setEditPrice] = useState(0);
+  const [editVariants, setEditVariants] = useState({});
 
   const { data: allOrders = [] } = useGetAllOrdersQuery();
 
@@ -76,6 +77,7 @@ const AdminOrderDetail = () => {
           "Địa chỉ": order.shipping?.address || "",
           "Ảnh": item.product?.images?.[0]?.image?.[0] || "",
           "Tên sản phẩm": item.product?.prod_name || "",
+          "Biến thể": item.selected_variants ? Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ') : "",
           "Đơn giá": item.price,
           "Số lượng": item.quantity,
           "Tạm tính": item.price * item.quantity,
@@ -126,6 +128,7 @@ const AdminOrderDetail = () => {
     setEditProductId(item.product?._id);
     setEditQuantity(item.quantity);
     setEditPrice(item.price);
+    setEditVariants(item.selected_variants || {});
     setShowEditDialog(true);
   };
 
@@ -136,7 +139,8 @@ const AdminOrderDetail = () => {
         itemId: editingItem._id,
         productId: editProductId,
         quantity: editQuantity,
-        price: editPrice
+        price: editPrice,
+        variants: editVariants
       }).unwrap();
       alert("Cập nhật sản phẩm thành công!");
       setShowEditDialog(false);
@@ -187,6 +191,7 @@ const AdminOrderDetail = () => {
                   <th>STT</th>
                   <th>Ảnh</th>
                   <th>Tên</th>
+                  <th>Phiên bản</th>
                   <th>Đơn giá</th>
                   <th>Số lượng</th>
                   <th>Tổng</th>
@@ -209,6 +214,11 @@ const AdminOrderDetail = () => {
                       />
                     </td>
                     <td className="ad-order-product-name">{item.product?.prod_name || `Sản phẩm ${idx + 1}`}</td>
+                    <td>
+                      {item.selected_variants ? Object.entries(item.selected_variants).map(([k, v]) => (
+                        <div key={k}>{k}: {v}</div>
+                      )) : '---'}
+                    </td>
                     <td className="ad-order-product-price">{item.price.toLocaleString()} đ</td>
                     <td className="ad-order-product-qty">{item.quantity}</td>
                     <td className="ad-order-product-total">{(item.price * item.quantity).toLocaleString()} đ</td>
@@ -290,7 +300,7 @@ const AdminOrderDetail = () => {
                 <img
                   src={selectedProduct?.images?.[0]?.image?.[0] || 'https://miro.medium.com/v2/resize:fit:754/1*JSehLO-i1Q6ZoeWdFj2YEA.png'}
                   alt="Product preview"
-                  style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                  style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }}
                 />
               </div>
             </div>
@@ -325,6 +335,30 @@ const AdminOrderDetail = () => {
                 onChange={(e) => setEditQuantity(Number(e.target.value))}
               />
             </div>
+            {selectedProduct?.colors && selectedProduct.colors.length > 0 && (
+              <div className="edit-field">
+                <label>Màu sắc:</label>
+                <select 
+                  value={editVariants['Màu sắc'] || ''} 
+                  onChange={(e) => setEditVariants({ ...editVariants, 'Màu sắc': e.target.value })}
+                >
+                  <option value="">Chọn Màu sắc</option>
+                  {selectedProduct.colors.map((c, oIdx) => <option key={oIdx} value={c.color}>{c.color}</option>)}
+                </select>
+              </div>
+            )}
+            {selectedProduct?.sizes && selectedProduct.sizes.length > 0 && (
+              <div className="edit-field">
+                <label>Kích cỡ:</label>
+                <select 
+                  value={editVariants['Kích cỡ'] || ''} 
+                  onChange={(e) => setEditVariants({ ...editVariants, 'Kích cỡ': e.target.value })}
+                >
+                  <option value="">Chọn Kích cỡ</option>
+                  {selectedProduct.sizes.map((s, oIdx) => <option key={oIdx} value={s.size}>{s.size}</option>)}
+                </select>
+              </div>
+            )}
             <div className="edit-actions">
               <button className="btn-cancel" onClick={() => setShowEditDialog(false)}>Thoát</button>
               <button className="btn-save" onClick={handleEditSave}>Lưu</button>

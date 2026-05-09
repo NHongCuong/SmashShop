@@ -36,8 +36,11 @@ export default function Cart() {
   const { data: vouchers = [] } = useGetVouchersQuery();
 
   // console.log("detail",cartItemsWithDetails);
-  const handleQuantityChange = (productId, changeAmount) => {
-    const item = cartItemsWithDetails.find(item => item.product._id === productId);
+  const handleQuantityChange = (productId, changeAmount, variants) => {
+    const item = cartItemsWithDetails.find(item => 
+      item.product._id === productId && 
+      compareVariants(item.selected_variants, variants)
+    );
     if (!item) return;
   
     const newQuantity = item.quantity + changeAmount;
@@ -54,15 +57,26 @@ export default function Cart() {
       dispatch(changeCartItemThunk({
         product_id: productId,
         quantity: newQuantity,
+        variants
       }));
     }
   };
   
   
-  const handleRemove = (productId) => {
+  const handleRemove = (productId, variants) => {
     dispatch(removeCartItemThunk({
-      product_id: productId
+      product_id: productId,
+      variants
     }));
+  };
+
+  const compareVariants = (v1, v2) => {
+    if (!v1 && !v2) return true;
+    if (!v1 || !v2) return false;
+    const k1 = Object.keys(v1);
+    const k2 = Object.keys(v2);
+    if (k1.length !== k2.length) return false;
+    return k1.every(k => v1[k] === v2[k]);
   };
 
   const handleCheckout = () => {
@@ -152,7 +166,14 @@ export default function Cart() {
             <div className="product-info">
               <img src={item.product.image?.[0] || ''} alt={item.product.prod_name} />
 
-              <span>{item.product.prod_name}</span>
+              <div className="cart-product-details">
+                <span className="cart-product-name">{item.product.prod_name}</span>
+                <div className="cart-item-variants">
+                  {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
+                    <span key={name} className="variant-label">{name}: {value}</span>
+                  ))}
+                </div>
+              </div>
               {appliedVoucher && (item.product.voucher_id?._id === appliedVoucher._id || item.product.voucher_id === appliedVoucher._id) && (
                 <span className="voucher-tag" style={{ color: 'green', fontSize: '0.8rem', marginLeft: '5px' }}>
                   (-{appliedVoucher.discount_percent}%)
@@ -171,15 +192,15 @@ export default function Cart() {
               )}
             </div>
             <div className="quantity-control">
-              <button onClick={() => handleQuantityChange(item.product._id, -1)}>-</button>
+              <button onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants)}>-</button>
               <span>{item.quantity}</span>
               <button
-                onClick={() => handleQuantityChange(item.product._id, 1)}
+                onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants)}
                 disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
               >+</button>
             </div>
             <div>{formatCurrency(getDiscountedPrice(item.product) * item.quantity)}</div>
-            <button className="delete-button" onClick={() => handleRemove(item.product._id)}>Xóa</button>
+            <button className="delete-button" onClick={() => handleRemove(item.product._id, item.selected_variants)}>Xóa</button>
           </div>
         ))}
 

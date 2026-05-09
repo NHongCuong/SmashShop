@@ -82,7 +82,8 @@ export default function Cart() {
     const shipping = { ...formData };
     const items = orderItems.map(i => ({
       product: i.product._id,
-      quantity: i.quantity
+      quantity: i.quantity,
+      variants: i.selected_variants || i.variants // Handle both cart and buyNow formats
     }));
 
     const orderData = {
@@ -210,7 +211,17 @@ export default function Cart() {
             <h3>Đơn hàng</h3>
             {orderItems.map(item => (
               <div key={item.product._id} className="order-item">
-                <span>{item.product.prod_name} ×{item.quantity}</span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span>{item.product.prod_name} ×{item.quantity}</span>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
+                      <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
+                    ))}
+                    {(item.variants && !item.selected_variants) && Object.entries(item.variants).map(([name, value]) => (
+                      <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
+                    ))}
+                  </div>
+                </div>
                 <span>{(item.product.price * item.quantity).toLocaleString()} đ</span>
               </div>
             ))}

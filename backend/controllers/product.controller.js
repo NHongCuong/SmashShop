@@ -154,7 +154,15 @@ export const fetchAllProducts = async (req, res) => {
 
 // Tạo sản phẩm mới
 export const createProduct = async (req, res) => {
-    const { prod_name, description, price, stock, discount, category_id, brand_id, type_id, voucher_id } = req.body;
+    let { prod_name, description, price, stock, discount, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
+
+    // Sửa lại lưu theo từng object
+    if (typeof colors === 'string') {
+        colors = colors.split(',').map(c => ({ color: c.trim() })).filter(c => c.color !== '');
+    }
+    if (typeof sizes === 'string') {
+        sizes = sizes.split(',').map(s => ({ size: s.trim() })).filter(s => s.size !== '');
+    }
 
     if (!prod_name || !price || !description || !stock || !category_id || !brand_id || !type_id) {
         return res.status(400).json({ success: false, message: "Please fill full required information" });
@@ -189,7 +197,9 @@ export const createProduct = async (req, res) => {
             category_id,
             brand_id,
             type_id,
-            voucher_id: voucher_id || null
+            voucher_id: voucher_id || null,
+            colors: colors || [],
+            sizes: sizes || []
         });
 
         const savedProduct = await newProduct.save();
@@ -218,7 +228,14 @@ export const createProduct = async (req, res) => {
 // Cập nhật thông tin sản phẩm
 export const updateProduct = async (req, res) => {
     const productId = req.params.id;
-    let { prod_name, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id } = req.body;
+    let { prod_name, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
+
+    if (typeof colors === 'string') {
+        colors = colors.split(',').map(c => ({ color: c.trim() })).filter(c => c.color !== '');
+    }
+    if (typeof sizes === 'string') {
+        sizes = sizes.split(',').map(s => ({ size: s.trim() })).filter(s => s.size !== '');
+    }
 
     if (!prod_name || !price || !description || !stock || !discount || quantity_sold === undefined || !category_id || !brand_id || !type_id) {
         return res.status(400).json({ success: false, message: "Please fill full required information" });
@@ -251,7 +268,9 @@ export const updateProduct = async (req, res) => {
                 brand_id, 
                 type_id, 
                 voucher_id: voucher_id || null,
-                update_at: getVietnamTime() 
+                update_at: getVietnamTime(),
+                colors: colors || [],
+                sizes: sizes || []
             },
             { new: true }
         )

@@ -12,6 +12,7 @@ const CartSchema = mongoose.Schema({
             },
             product_name: String,
             price: Number,
+            selected_variants: { type: mongoose.Schema.Types.Mixed }, // { "Màu sắc": "Đỏ", ... }
             quantity: Number,
             subtotal: Number
         }

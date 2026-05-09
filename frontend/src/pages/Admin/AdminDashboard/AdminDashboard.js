@@ -19,6 +19,7 @@ import {
   faThumbsUp,
   faTags,
   faTicket,
+  faHeart,
 } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
@@ -253,6 +254,9 @@ export default function AdminDashboard() {
             </NavLink>
             <NavLink to="/admin/reviews" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faThumbsUp} /> Đánh giá sản phẩm
+            </NavLink>
+            <NavLink to="/admin/wishlists" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faHeart} /> Ưa thích
             </NavLink>
             <NavLink to="/admin/users" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faUsers} /> Người dùng hiện có

@@ -33,6 +33,8 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
     type_id: '',
     voucher_id: '',
     discount: '',
+    colors: [],
+    sizes: [],
     images: [],
   });
 
@@ -56,8 +58,14 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
       });
   
       setImagePreview(existingImages);
+  
+      setColorsInput(initialData.colors ? initialData.colors.map(c => c.color).join(', ') : '');
+      setSizesInput(initialData.sizes ? initialData.sizes.map(s => s.size).join(', ') : '');
     }
   }, [initialData, isEdit]);
+  
+  const [colorsInput, setColorsInput] = useState('');
+  const [sizesInput, setSizesInput] = useState('');
   
 
   const handleChange = (e) => {
@@ -109,7 +117,9 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
       stock: Number(formData.stock),
       quantity_sold: Number(formData.quantity_sold),
       discount: Number(formData.discount || 0),
-      remainingOldImages: remainingOldImages // Truyền danh sách ảnh cũ chưa bị xóa
+      colors: colorsInput, 
+      sizes: sizesInput,
+      remainingOldImages: remainingOldImages
     };
     if (!formData.prod_name || !formData.price || !formData.description || !formData.stock ||
         !formData.category_id || !formData.brand_id || !formData.type_id) {
@@ -220,6 +230,22 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
 
       <label>Giảm giá (%)</label>
       <input name="discount" type="number" value={formData.discount} onChange={handleChange} />
+
+      <label>Màu sắc (Phân tách bằng dấu phẩy)</label>
+      <input 
+        name="colors" 
+        value={colorsInput} 
+        onChange={(e) => setColorsInput(e.target.value)} 
+        placeholder="VD: Đỏ, Xanh, Đen"
+      />
+
+      <label>Kích cỡ (Phân tách bằng dấu phẩy)</label>
+      <input 
+        name="sizes" 
+        value={sizesInput} 
+        onChange={(e) => setSizesInput(e.target.value)} 
+        placeholder="VD: S, M, L, XL hoặc 37, 38, 39"
+      />
 
       <label>Tải lên hình ảnh sản phẩm</label>
       <input type="file" multiple accept="image/*" onChange={handleImageChange} />

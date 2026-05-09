@@ -78,3 +78,104 @@ export const removeFromWishlist = async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+// ===== ADMIN =====
+
+// Lấy tất cả wishlists (Admin) với phân trang, search, sort
+export const fetchAllWishlistsAdmin = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '', sortBy = 'create_at', sortOrder = 'desc' } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const pipeline = [
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'user_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'prod_id',
+                    foreignField: '_id',
+                    as: 'product'
+                }
+            },
+            { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+        ];
+
+        if (search) {
+            pipeline.push({
+                $match: {
+                    $or: [
+                        { 'user.name': { $regex: search, $options: 'i' } },
+                        { 'product.prod_name': { $regex: search, $options: 'i' } }
+                    ]
+                }
+            });
+        }
+
+        // Count total
+        const countPipeline = [...pipeline, { $count: 'total' }];
+        const countResult = await Wishlist.aggregate(countPipeline);
+        const totalItems = countResult[0]?.total || 0;
+
+        // Sort
+        let sortOption = {};
+        if (sortBy === 'create_at') {
+            sortOption = { create_at: sortOrder === 'asc' ? 1 : -1 };
+        } else if (sortBy === 'user_name') {
+            sortOption = { 'user.name': sortOrder === 'asc' ? 1 : -1 };
+        } else if (sortBy === 'prod_name') {
+            sortOption = { 'product.prod_name': sortOrder === 'asc' ? 1 : -1 };
+        } else {
+            sortOption = { create_at: -1 };
+        }
+
+        pipeline.push({ $sort: sortOption });
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: parseInt(limit) });
+
+        pipeline.push({
+            $project: {
+                _id: 1,
+                whishlist_id: 1,
+                create_at: 1,
+                update_at: 1,
+                user: { _id: 1, name: 1, email: 1 },
+                product: { _id: 1, prod_name: 1 }
+            }
+        });
+
+        const wishlists = await Wishlist.aggregate(pipeline);
+
+        res.status(200).json({
+            success: true,
+            data: wishlists,
+            totalItems,
+            totalPages: Math.ceil(totalItems / parseInt(limit)),
+            currentPage: parseInt(page)
+        });
+    } catch (e) {
+        console.error("Error fetching admin wishlists:", e.message);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+// Xóa wishlist (Admin)
+export const deleteWishlistAdmin = async (req, res) => {
+    try {
+        const item = await Wishlist.findByIdAndDelete(req.params.id);
+        if (!item) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy" });
+        }
+        res.status(200).json({ success: true, message: "Đã xóa thành công" });
+    } catch (e) {
+        console.error("Error deleting wishlist (admin):", e.message);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};

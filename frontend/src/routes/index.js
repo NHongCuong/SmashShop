@@ -35,6 +35,7 @@ import AdminVouchers from '../pages/Admin/AdminVouchers/AdminVouchers';
 import AdminReviews from '../pages/Admin/AdminReviews/AdminReviews';
 import AdminContacts from '../pages/Admin/AdminContacts/AdminContacts';
 import Contact from '../pages/Contact/Contact';
+import AdminWishlists from '../pages/Admin/AdminWishlists/AdminWishlists';
 
 
 import { Navigate } from "react-router-dom";
@@ -53,15 +54,15 @@ const pages = [
     { path: routes.order, Component: Order },
     { path: routes.paymentSuccess, Component: PaymentSuccess },
     { path: `${routes.products}/:category`, Component: Products },
-    { 
+    {
         path: routes.user,
         Component: () => (
-          <RequireUserAuth>
-            <User />
-          </RequireUserAuth>
+            <RequireUserAuth>
+                <User />
+            </RequireUserAuth>
         ),
         children: [
-            { path: "", Component: () => <Navigate to="/user/profile" replace /> }, 
+            { path: "", Component: () => <Navigate to="/user/profile" replace /> },
             { path: "profile", Component: Profile },
             { path: "orders", Component: OrdersHistory },
             { path: "reset-password", Component: ResetPassword },
@@ -71,7 +72,7 @@ const pages = [
         path: routes.admin,
         Component: () => (
             <RequireAdminAuth>
-            <AdminDashboard />
+                <AdminDashboard />
             </RequireAdminAuth>
         ),
         children: [
@@ -93,6 +94,7 @@ const pages = [
             { path: 'customers', Component: AdminCustomers },
             { path: 'reviews', Component: AdminReviews },
             { path: 'contacts', Component: AdminContacts },
+            { path: 'wishlists', Component: AdminWishlists },
 
         ],
     },

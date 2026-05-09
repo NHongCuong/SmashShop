@@ -10,10 +10,10 @@ import { apiAddItem } from '../../apis/cart';
     // Gửi request lên server để thêm sản phẩm vào giỏ
 export const addToCart = createAsyncThunk(
     'cart/addToCart',
-    async ({ product_id, quantity }, { rejectWithValue }) => {
+    async ({ product_id, quantity, variants }, { rejectWithValue }) => {
         try {
             
-            const response = await apiAddItem({ product_id, quantity });
+            const response = await apiAddItem({ product_id, quantity, variants });
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data || err.message);

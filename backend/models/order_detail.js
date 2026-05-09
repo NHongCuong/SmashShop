@@ -11,6 +11,7 @@ const OrderDetailSchema = new mongoose.Schema({
             product_name: { type: String },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
+            selected_variants: { type: mongoose.Schema.Types.Mixed },
             total: { type: Number, required: true },
         }
     ],

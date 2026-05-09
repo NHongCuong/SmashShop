@@ -23,6 +23,7 @@ import 'swiper/css/navigation';
 
 export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariants, setSelectedVariants] = useState({});
   const [zoomStyle, setZoomStyle] = useState({ display: 'none' });
   const [lensStyle, setLensStyle] = useState({ display: 'none' });
   const imgRef = useRef(null);
@@ -59,10 +60,16 @@ export default function ProductDetail() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const handleAddToCart = async (e) => {
-    if (!isAuthenticated) {
-      setShowLoginModal(true);
+    // Kiểm tra đã chọn đầy đủ các biến thể chưa
+    if (product.colors && product.colors.length > 0 && !selectedVariants['Màu sắc']) {
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn màu sắc' });
       return;
     }
+    if (product.sizes && product.sizes.length > 0 && !selectedVariants['Kích cỡ']) {
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn kích cỡ' });
+      return;
+    }
+
     // Kiểm tra tồn kho trước khi thêm vào giỏ
     if (!product.stock || product.stock <= 0 || quantity > product.stock) {
       Swal.fire({
@@ -75,7 +82,11 @@ export default function ProductDetail() {
     }
     setLoading(true);
     try {
-      await dispatch(addToCart({ product_id: product._id, quantity }))
+      await dispatch(addToCart({ 
+        product_id: product._id, 
+        quantity,
+        variants: selectedVariants // Gửi object chứa các lựa chọn
+      }))
         .unwrap()
         .then((res) => {
           Swal.fire({
@@ -103,6 +114,16 @@ export default function ProductDetail() {
       setShowLoginModal(true);
       return;
     }
+
+    if (product.colors && product.colors.length > 0 && !selectedVariants['Màu sắc']) {
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn màu sắc' });
+      return;
+    }
+    if (product.sizes && product.sizes.length > 0 && !selectedVariants['Kích cỡ']) {
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn kích cỡ' });
+      return;
+    }
+
     // Kiểm tra tồn kho trước khi mua ngay
     if (!product.stock || product.stock <= 0 || quantity > product.stock) {
       Swal.fire({
@@ -125,6 +146,7 @@ export default function ProductDetail() {
             price: discountedPrice,
           },
           quantity: quantity,
+          variants: selectedVariants
         }
       }
     });
@@ -238,6 +260,54 @@ export default function ProductDetail() {
               </div>
             ) : (
               <div className="price">{product.price.toLocaleString('vi-VN')} ₫</div>
+            )}
+
+            {product.colors && product.colors.length > 0 && (
+              <div className="variant-selection">
+                <label>Màu sắc:</label>
+                <div className="variant-options">
+                  {product.colors.map((c, idx) => (
+                    <label 
+                      key={idx} 
+                      className={`variant-item ${selectedVariants['Màu sắc'] === c.color ? 'selected' : ''}`}
+                      onClick={() => setSelectedVariants(prev => ({ ...prev, 'Màu sắc': c.color }))}
+                    >
+                      <input 
+                        type="radio" 
+                        name="color" 
+                        value={c.color} 
+                        checked={selectedVariants['Màu sắc'] === c.color}
+                        readOnly
+                      />
+                      {c.color}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="variant-selection">
+                <label>Kích cỡ:</label>
+                <div className="variant-options">
+                  {product.sizes.map((s, idx) => (
+                    <label 
+                      key={idx} 
+                      className={`variant-item ${selectedVariants['Kích cỡ'] === s.size ? 'selected' : ''}`}
+                      onClick={() => setSelectedVariants(prev => ({ ...prev, 'Kích cỡ': s.size }))}
+                    >
+                      <input 
+                        type="radio" 
+                        name="size" 
+                        value={s.size} 
+                        checked={selectedVariants['Kích cỡ'] === s.size}
+                        readOnly
+                      />
+                      {s.size}
+                    </label>
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className="quantity">

@@ -15,6 +15,7 @@ export const wishlistApi = createApi({
       return headers;
     },
   }),
+  keepUnusedDataFor: 0,
   tagTypes: ['Wishlist'],
   endpoints: (builder) => ({
     getUserWishlist: builder.query({
@@ -36,7 +37,26 @@ export const wishlistApi = createApi({
       }),
       invalidatesTags: ['Wishlist'],
     }),
+    // ===== ADMIN ENDPOINTS =====
+    getAdminWishlists: builder.query({
+      query: ({ page = 1, limit = 10, sortBy = 'create_at', sortOrder = 'desc', search = '' }) =>
+        `wishlist/admin?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}&search=${search}`,
+      providesTags: ['Wishlist'],
+    }),
+    deleteWishlistAdmin: builder.mutation({
+      query: (id) => ({
+        url: `wishlist/admin/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Wishlist'],
+    }),
   }),
 });
 
-export const { useGetUserWishlistQuery, useAddToWishlistMutation, useRemoveFromWishlistMutation } = wishlistApi;
+export const { 
+  useGetUserWishlistQuery, 
+  useAddToWishlistMutation, 
+  useRemoveFromWishlistMutation,
+  useGetAdminWishlistsQuery,
+  useDeleteWishlistAdminMutation,
+} = wishlistApi;

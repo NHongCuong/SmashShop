@@ -96,13 +96,17 @@ export const createOrder = async (req, res) => {
                 items.push({
                     product: product._id,
                     quantity: bi.quantity,
-                    price: finalPrice
+                    price: finalPrice,
+                    color: bi.color,
+                    price: finalPrice,
+                    selected_variants: bi.variants
                 });
                 orderDetailProducts.push({
                     product_id: product._id,
                     product_name: product.prod_name,
                     quantity: bi.quantity,
                     price: finalPrice,
+                    selected_variants: bi.variants,
                     total: finalPrice * bi.quantity
                 });
             }
@@ -120,7 +124,8 @@ export const createOrder = async (req, res) => {
                 return {
                     product: ci.product._id,
                     quantity: ci.quantity,
-                    price: finalPrice
+                    price: finalPrice,
+                    selected_variants: ci.selected_variants
                 };
             });
 
@@ -133,6 +138,7 @@ export const createOrder = async (req, res) => {
                     product_name: ci.product.prod_name,
                     quantity: ci.quantity,
                     price: finalPrice,
+                    selected_variants: ci.selected_variants,
                     total: finalPrice * ci.quantity
                 };
             });
@@ -345,7 +351,7 @@ export const deleteOrder = async (req, res) => {
 
 export const updateOrderItem = async (req, res) => {
     try {
-        const { orderId, itemId, productId, quantity, price } = req.body;
+        const { orderId, itemId, productId, quantity, price, variants } = req.body;
 
         const order = await Order.findById(orderId);
         if (!order) {
@@ -369,6 +375,7 @@ export const updateOrderItem = async (req, res) => {
         order.items[itemIndex].product = productId;
         order.items[itemIndex].quantity = quantity;
         order.items[itemIndex].price = price;
+        order.items[itemIndex].selected_variants = variants;
 
         // Cập nhật tồn kho và số lượng đã bán của sản phẩm nếu số lượng thay đổi
         if (quantityDiff !== 0) {
@@ -397,6 +404,7 @@ export const updateOrderItem = async (req, res) => {
                     product_name: product?.prod_name || "Sản phẩm không rõ",
                     quantity: item.quantity,
                     price: item.price,
+                    selected_variants: item.selected_variants,
                     total: item.price * item.quantity
                 };
             }));

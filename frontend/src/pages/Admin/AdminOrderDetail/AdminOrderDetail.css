@@ -195,7 +195,26 @@
     padding: 24px;
     border-radius: 12px;
     width: 450px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Tùy chỉnh thanh cuộn cho dialog */
+  .edit-dialog::-webkit-scrollbar {
+    width: 6px;
+  }
+  .edit-dialog::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  .edit-dialog::-webkit-scrollbar-thumb {
+    background: #f3c43e;
+    border-radius: 10px;
+  }
+  .edit-dialog::-webkit-scrollbar-thumb:hover {
+    background: #e0b832;
   }
   
   .edit-dialog h3 {

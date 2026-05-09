@@ -109,4 +109,91 @@
   .form-actions .import-btn:hover {
     background-color: #218838;
   }
+
+.variations-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-bottom: 20px;
+}
+
+.variation-group {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.variation-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.variation-header input {
+  flex: 1;
+  font-weight: bold;
+}
+
+.remove-var-btn {
+  background-color: #ffefef;
+  color: #ff3b30;
+  border: 1px solid #ff3b30;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.option-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.option-item input {
+  flex: 1;
+  font-size: 14px;
+  padding: 6px;
+}
+
+.remove-opt-btn {
+  background: none;
+  border: none;
+  color: #ff3b30;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.add-opt-btn, .add-var-btn {
+  background: none;
+  border: 1px dashed #EAC427;
+  color: #EAC427;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.add-opt-btn:hover, .add-var-btn:hover {
+  background-color: #fff9e6;
+}
+
+.add-var-btn {
+  width: 100%;
+  margin-top: 5px;
+}
   

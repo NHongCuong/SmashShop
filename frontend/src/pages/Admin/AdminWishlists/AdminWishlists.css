@@ -1,0 +1,127 @@
+.admin-wishlists {
+    padding: 20px;
+}
+
+.admin-wishlists h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.wishlists-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.controls-left-wishlist,
+.controls-right-wishlist {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.wishlists-controls select,
+.wishlists-controls input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.wishlists-controls input {
+    width: 250px;
+}
+
+.btn-export-excel {
+    padding: 8px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-export-excel:hover {
+    background-color: #218838;
+}
+
+.wishlist-table {
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wishlist-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wishlist-table thead {
+    background-color: #EAC427;
+    color: white;
+}
+
+.wishlist-table th,
+.wishlist-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.wishlist-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.action-icons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.icon-delete {
+    cursor: pointer;
+    color: #dc3545;
+    font-size: 16px;
+    transition: transform 0.2s;
+}
+
+.icon-delete:hover {
+    transform: scale(1.2);
+}
+
+.admin-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.admin-pagination button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.admin-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.admin-pagination button:hover:not(:disabled) {
+    background-color: #EAC427;
+    color: white;
+    border-color: #EAC427;
+}

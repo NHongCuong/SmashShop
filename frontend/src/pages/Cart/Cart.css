@@ -42,6 +42,23 @@
     object-fit: contain;
     border-radius: 5px;
   }
+
+  .cart-product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cart-product-name {
+    font-weight: 500;
+  }
+
+  .cart-item-variants {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    color: #666;
+  }
   
   .quantity-control {
     display: flex;

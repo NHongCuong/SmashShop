@@ -17,6 +17,7 @@ const orderSchema = new mongoose.Schema({
             product: { type: mongoose.Types.ObjectId, ref: 'Product', required: true },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true }, // snapshot giá khi đặt
+            selected_variants: { type: mongoose.Schema.Types.Mixed },
         }
     ],
     shipping: {
