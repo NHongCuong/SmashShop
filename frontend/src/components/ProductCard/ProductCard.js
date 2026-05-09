@@ -20,6 +20,9 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="product-card" onClick={() => navigate(`/product/${product._id || product.id}`)}>
+      {product.discount > 0 && (
+        <div className="product-discount-badge">-{Math.round(product.discount)}%</div>
+      )}
       <div className="product-card-wishlist">
         <WishlistButton productId={product._id || product.id} size="small" />
       </div>
@@ -42,7 +45,18 @@ const ProductCard = ({ product }) => {
       </div>
 
       <h3 className="product-name">{product.prod_name}</h3>
-      <p className="product-price">{product.price.toLocaleString()} đ</p>
+      {product.discount > 0 ? (
+        <div className="product-price-wrapper">
+          <span className="product-price-discounted">
+            {Math.round(product.price * (1 - product.discount / 100)).toLocaleString()}đ
+          </span>
+          <span className="product-price-original">
+            {product.price.toLocaleString()}đ
+          </span>
+        </div>
+      ) : (
+        <p className="product-price">{product.price.toLocaleString()} đ</p>
+      )}
     </div>
   );
 };

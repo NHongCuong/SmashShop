@@ -90,17 +90,20 @@ export const createOrder = async (req, res) => {
                 if (!product) {
                     return res.status(400).json({ success: false, message: `Sản phẩm không tồn tại.` });
                 }
+                const finalPrice = product.discount > 0
+                    ? Math.round(product.price * (1 - product.discount / 100))
+                    : product.price;
                 items.push({
                     product: product._id,
                     quantity: bi.quantity,
-                    price: product.price
+                    price: finalPrice
                 });
                 orderDetailProducts.push({
                     product_id: product._id,
                     product_name: product.prod_name,
                     quantity: bi.quantity,
-                    price: product.price,
-                    total: product.price * bi.quantity
+                    price: finalPrice,
+                    total: finalPrice * bi.quantity
                 });
             }
         } else {
@@ -110,19 +113,29 @@ export const createOrder = async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Giỏ hàng trống.' });
             }
 
-            items = cartDoc.cart.map(ci => ({
-                product: ci.product._id,
-                quantity: ci.quantity,
-                price: ci.product.price
-            }));
+            items = cartDoc.cart.map(ci => {
+                const finalPrice = ci.product.discount > 0
+                    ? Math.round(ci.product.price * (1 - ci.product.discount / 100))
+                    : ci.product.price;
+                return {
+                    product: ci.product._id,
+                    quantity: ci.quantity,
+                    price: finalPrice
+                };
+            });
 
-            orderDetailProducts = cartDoc.cart.map(ci => ({
-                product_id: ci.product._id,
-                product_name: ci.product.prod_name,
-                quantity: ci.quantity,
-                price: ci.product.price,
-                total: ci.product.price * ci.quantity
-            }));
+            orderDetailProducts = cartDoc.cart.map(ci => {
+                const finalPrice = ci.product.discount > 0
+                    ? Math.round(ci.product.price * (1 - ci.product.discount / 100))
+                    : ci.product.price;
+                return {
+                    product_id: ci.product._id,
+                    product_name: ci.product.prod_name,
+                    quantity: ci.quantity,
+                    price: finalPrice,
+                    total: finalPrice * ci.quantity
+                };
+            });
         }
 
         // Tính tổng tạm tính

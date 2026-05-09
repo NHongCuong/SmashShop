@@ -207,7 +207,13 @@ export default function Header() {
                   onClick={() => handleSelectProduct(product._id)}
                 >
                   <img
-                    src={product.images?.find((img) => img?.is_primary_image)?.image || ''}
+                    src={(() => {
+                      const primaryImg = product.images?.find((img) => img?.is_primary_image);
+                      const firstImg = product.images?.[0];
+                      const imgData = primaryImg || firstImg;
+                      const imgUrl = Array.isArray(imgData?.image) ? imgData.image[0] : imgData?.image;
+                      return imgUrl || '';
+                    })()}
                     alt={product.prod_name}
                     className="search-product-image"
                   />

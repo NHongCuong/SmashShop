@@ -11,6 +11,13 @@ const formatCurrency = (amount) => {
   return amount.toLocaleString('vi-VN') + ' đ';
 };
 
+const getDiscountedPrice = (product) => {
+  if (product.discount > 0) {
+    return Math.round(product.price * (1 - product.discount / 100));
+  }
+  return product.price;
+};
+
 const EMPTY_CART = [];
 
 export default function Cart() {
@@ -106,14 +113,14 @@ export default function Cart() {
 
 
   const totalQuantity = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity * item.product.price, 0);
+  const totalPrice = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity * getDiscountedPrice(item.product), 0);
   
   // Tính tiền giảm giá chỉ cho các sản phẩm có voucher_id khớp với appliedVoucher
   const discountAmount = appliedVoucher 
     ? cartItemsWithDetails.reduce((sum, item) => {
         const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
         if (productVoucherId === appliedVoucher._id) {
-          return sum + (item.quantity * item.product.price * appliedVoucher.discount_percent) / 100;
+          return sum + (item.quantity * getDiscountedPrice(item.product) * appliedVoucher.discount_percent) / 100;
         }
         return sum;
       }, 0)
@@ -152,7 +159,17 @@ export default function Cart() {
                 </span>
               )}
             </div>
-            <div>{formatCurrency(item.product.price)}</div>
+            <div>
+              {item.product.discount > 0 ? (
+                <>
+                  <span style={{ color: '#e44d26', fontWeight: 'bold' }}>{formatCurrency(getDiscountedPrice(item.product))}</span>
+                  <br />
+                  <span style={{ color: '#999', textDecoration: 'line-through', fontSize: '0.85rem' }}>{formatCurrency(item.product.price)}</span>
+                </>
+              ) : (
+                <span>{formatCurrency(item.product.price)}</span>
+              )}
+            </div>
             <div className="quantity-control">
               <button onClick={() => handleQuantityChange(item.product._id, -1)}>-</button>
               <span>{item.quantity}</span>
@@ -161,7 +178,7 @@ export default function Cart() {
                 disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
               >+</button>
             </div>
-            <div>{formatCurrency(item.product.price * item.quantity)}</div>
+            <div>{formatCurrency(getDiscountedPrice(item.product) * item.quantity)}</div>
             <button className="delete-button" onClick={() => handleRemove(item.product._id)}>Xóa</button>
           </div>
         ))}

@@ -113,13 +113,16 @@ export default function ProductDetail() {
       });
       return;
     }
+    const discountedPrice = product.discount > 0
+      ? Math.round(product.price * (1 - product.discount / 100))
+      : product.price;
     navigate('/order', {
       state: {
         buyNowItem: {
           product: {
             _id: product._id,
             prod_name: product.prod_name,
-            price: product.price,
+            price: discountedPrice,
           },
           quantity: quantity,
         }
@@ -223,7 +226,19 @@ export default function ProductDetail() {
               <h1>{product.prod_name}</h1>
               <WishlistButton productId={product._id} size="normal" />
             </div>
-            <div className="price">{product.price.toLocaleString('vi-VN')} ₫</div>
+            {product.discount > 0 ? (
+              <div className="detail-price-wrapper">
+                <span className="price detail-price-discounted">
+                  {Math.round(product.price * (1 - product.discount / 100)).toLocaleString('vi-VN')} ₫
+                </span>
+                <span className="detail-price-original">
+                  {product.price.toLocaleString('vi-VN')} ₫
+                </span>
+                <span className="detail-discount-tag">-{Math.round(product.discount)}%</span>
+              </div>
+            ) : (
+              <div className="price">{product.price.toLocaleString('vi-VN')} ₫</div>
+            )}
 
             <div className="quantity">
               <label>Số lượng: </label>

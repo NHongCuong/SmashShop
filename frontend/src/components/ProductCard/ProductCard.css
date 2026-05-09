@@ -19,6 +19,41 @@
     right: 5px;
     z-index: 10;
   }
+
+  .product-discount-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #00b14f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 0 0 8px 0;
+    z-index: 10;
+    line-height: 1.3;
+  }
+
+  .product-price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .product-price-discounted {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e44d26;
+  }
+
+  .product-price-original {
+    font-size: 13px;
+    color: #999;
+    text-decoration: line-through;
+  }
   
   .product-card:hover {
     transform: scale(1.05);

@@ -24,6 +24,7 @@ const AdminProductDetail = () => {
     brand_id,
     type_id,
     discount,
+    voucher_id,
     images
   } = product;
 
@@ -47,6 +48,7 @@ const AdminProductDetail = () => {
       "Giảm giá": product.discount || 0,
       "Loại": product.type_id?.type_name || "",
       "Thương hiệu ": product.brand_id?.brand_name || "",
+      "Mã voucher": product.voucher_id?.voucher_name || "",
     }));
 
     const totalPrice = products.reduce((sum, p) => sum + (p.price || 0), 0);
@@ -87,7 +89,8 @@ const AdminProductDetail = () => {
           <p><strong>Loại:</strong> {type_id?.type_name}</p>
           <p><strong>Danh mục:</strong> {category_id?.category_name}</p>
           <p><strong>Thương hiệu:</strong> {brand_id?.brand_name}</p>
-          
+          <p><strong>Mã voucher:</strong> {voucher_id?.voucher_name}</p>
+
         </div>
       </div>
       <div className="ad-product-des details">

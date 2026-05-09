@@ -149,6 +149,37 @@
   margin: 15px 0;
 }
 
+.detail-price-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.detail-price-discounted {
+  color: #d10000;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.detail-price-original {
+  font-size: 16px;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: normal;
+}
+
+.detail-discount-tag {
+  background-color: #00b14f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
 .quantity {
   display: flex;
   align-items: center;
