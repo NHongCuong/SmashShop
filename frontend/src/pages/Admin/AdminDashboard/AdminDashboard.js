@@ -13,6 +13,7 @@ import {
   faXmark,
   faRightFromBracket,
   faHeadset,
+  faEnvelope,
   faFolder,
   faTrademark,
   faThumbsUp,
@@ -33,6 +34,7 @@ import { reviewApi } from '../../../features/services/reviewApi';
 import { statisticsApi } from '../../../features/statistics/statisticsApi';
 import { wishlistApi } from '../../../features/services/wishlistApi';
 import { voucherApi } from '../../../features/services/voucherApi';
+import { contactApi } from '../../../features/contact/contactApi.js';
 
 const NOTIF_STORAGE_KEY = 'admin_chat_notifications';
 
@@ -80,6 +82,7 @@ export default function AdminDashboard() {
     dispatch(statisticsApi.util.resetApiState());
     dispatch(wishlistApi.util.resetApiState());
     dispatch(voucherApi.util.resetApiState());
+    dispatch(contactApi.util.resetApiState());
 
     navigate('/admin-login');
   };
@@ -259,6 +262,9 @@ export default function AdminDashboard() {
             </NavLink>
             <NavLink to="/admin/customers" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faHeadset} /> Chăm sóc khách hàng
+            </NavLink>
+            <NavLink to="/admin/contacts" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faEnvelope} /> Tin nhắn liên hệ
             </NavLink>
             <button className="ad-nav-item-logout" onClick={handleLogout}>
               <FontAwesomeIcon icon={faRightFromBracket} /> Đăng xuất

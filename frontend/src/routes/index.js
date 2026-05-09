@@ -33,6 +33,7 @@ import AdminBrands from '../pages/Admin/AdminBrands/AdminBrands';
 import AdminTypes from '../pages/Admin/AdminTypes/AdminTypes';
 import AdminVouchers from '../pages/Admin/AdminVouchers/AdminVouchers';
 import AdminReviews from '../pages/Admin/AdminReviews/AdminReviews';
+import AdminContacts from '../pages/Admin/AdminContacts/AdminContacts';
 import Contact from '../pages/Contact/Contact';
 
 
@@ -91,6 +92,7 @@ const pages = [
             { path: 'users/edit/:id', Component: AdminEditUser },
             { path: 'customers', Component: AdminCustomers },
             { path: 'reviews', Component: AdminReviews },
+            { path: 'contacts', Component: AdminContacts },
 
         ],
     },

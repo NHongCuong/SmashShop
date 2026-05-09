@@ -19,8 +19,7 @@ const routes = {
     adminAddProduct: '/admin/products/add',
     adminOrders: '/admin/orders',
     adminOrderDetail: '/admin/orders/:id',
-
-
+    adminContacts: '/admin/contacts',
 };
 
 export default routes;

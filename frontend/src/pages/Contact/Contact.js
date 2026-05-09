@@ -1,11 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Contact.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faEnvelope, faLocationDot, faClock } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import api from '../../apis/axios';
 
 const Contact = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+    });
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState({ type: '', message: '' });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ type: '', message: '' });
+
+        try {
+            const response = await api.post('/api/v1/contacts', formData);
+            if (response.success) {
+                setStatus({ type: 'success', message: response.message });
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    subject: '',
+                    message: ''
+                });
+            }
+        } catch (error) {
+            setStatus({ 
+                type: 'error', 
+                message: error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.' 
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -61,21 +106,66 @@ const Contact = () => {
                         </div>
 
                         <div className="contact-form-container">
-                            <form className="contact-form">
+                            <form className="contact-form" onSubmit={handleSubmit}>
                                 <h2>Gửi Tin Nhắn</h2>
+                                {status.message && (
+                                    <div className={`status-message ${status.type}`}>
+                                        {status.message}
+                                    </div>
+                                )}
                                 <div className="form-group">
-                                    <input type="text" placeholder="Họ và tên" required />
+                                    <input 
+                                        type="text" 
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Họ và tên" 
+                                        required 
+                                    />
                                 </div>
                                 <div className="form-group">
-                                    <input type="email" placeholder="Email" required />
+                                    <input 
+                                        type="email" 
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="Email" 
+                                        required 
+                                    />
                                 </div>
                                 <div className="form-group">
-                                    <input type="text" placeholder="Chủ đề" required />
+                                    <input 
+                                        type="tel" 
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="Số điện thoại" 
+                                        required 
+                                    />
                                 </div>
                                 <div className="form-group">
-                                    <textarea placeholder="Nội dung tin nhắn" rows="5" required></textarea>
+                                    <input 
+                                        type="text" 
+                                        name="subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        placeholder="Chủ đề" 
+                                        required 
+                                    />
                                 </div>
-                                <button type="submit" className="submit-btn">Gửi Liên Hệ</button>
+                                <div className="form-group">
+                                    <textarea 
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        placeholder="Nội dung tin nhắn" 
+                                        rows="5" 
+                                        required
+                                    ></textarea>
+                                </div>
+                                <button type="submit" className="submit-btn" disabled={loading}>
+                                    {loading ? 'Đang gửi...' : 'Gửi Liên Hệ'}
+                                </button>
                             </form>
                         </div>
                     </div>
