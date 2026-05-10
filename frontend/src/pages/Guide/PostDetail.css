@@ -1,0 +1,258 @@
+.post-detail-page {
+    background-color: #fff;
+}
+
+.post-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px 80px;
+}
+
+.post-detail-layout {
+    display: grid;
+    grid-template-columns: 8fr 4fr;
+    gap: 50px;
+}
+
+.post-main-content {
+    background: white;
+}
+
+.post-header {
+    margin-bottom: 35px;
+}
+
+.post-category-tag {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #2b9d00;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.post-full-title {
+    font-size: 38px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.post-meta-strip {
+    display: flex;
+    gap: 25px;
+    color: #666;
+    font-size: 14px;
+}
+
+.post-meta-strip span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* TABLE OF CONTENTS */
+.post-toc {
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    border: 1px solid #eee;
+}
+
+.toc-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #1a1a1a;
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-list li {
+    margin-bottom: 15px;
+}
+
+.toc-list li:last-child {
+    margin-bottom: 0;
+}
+
+.toc-list a {
+    text-decoration: none;
+    color: #444;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+.toc-list a:hover {
+    color: #2b9d00;
+    padding-left: 5px;
+}
+
+/* CONTENT BODY */
+.content-section {
+    margin-bottom: 50px;
+}
+
+.section-headling {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+    border-left: 4px solid #2b9d00;
+    padding-left: 15px;
+}
+
+.section-text {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.section-image {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.section-image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.additional-images {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.additional-images img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+/* SIDEBAR */
+.sidebar-box {
+    background: white;
+    border: 1px solid #f0f0f0;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.sidebar-box-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    color: #1a1a1a;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.sidebar-box-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: #2b9d00;
+}
+
+.sidebar-recent-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+}
+
+.sidebar-recent-item:hover {
+    transform: translateX(5px);
+}
+
+.sidebar-recent-item img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.sidebar-recent-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.sidebar-recent-date {
+    font-size: 12px;
+    color: #999;
+}
+
+.sidebar-ad-box {
+    background: #1a1a1a;
+    color: white;
+    padding: 35px 25px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.sidebar-ad-box img {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+.sidebar-ad-box p {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.shop-now-btn {
+    display: inline-block;
+    background: #2b9d00;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.shop-now-btn:hover {
+    background: #238000;
+    transform: scale(1.05);
+}
+
+@media (max-width: 992px) {
+    .post-detail-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .post-full-title {
+        font-size: 28px;
+    }
+}

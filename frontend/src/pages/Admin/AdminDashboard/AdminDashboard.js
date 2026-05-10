@@ -20,6 +20,7 @@ import {
   faTags,
   faTicket,
   faHeart,
+  faNewspaper,
 } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
@@ -36,6 +37,7 @@ import { statisticsApi } from '../../../features/statistics/statisticsApi';
 import { wishlistApi } from '../../../features/services/wishlistApi';
 import { voucherApi } from '../../../features/services/voucherApi';
 import { contactApi } from '../../../features/contact/contactApi.js';
+import { postApi } from '../../../features/post/postApi.js';
 
 const NOTIF_STORAGE_KEY = 'admin_chat_notifications';
 
@@ -84,6 +86,7 @@ export default function AdminDashboard() {
     dispatch(wishlistApi.util.resetApiState());
     dispatch(voucherApi.util.resetApiState());
     dispatch(contactApi.util.resetApiState());
+    dispatch(postApi.util.resetApiState());
 
     navigate('/admin-login');
   };
@@ -257,6 +260,9 @@ export default function AdminDashboard() {
             </NavLink>
             <NavLink to="/admin/wishlists" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faHeart} /> Ưa thích
+            </NavLink>
+            <NavLink to="/admin/posts" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faNewspaper} /> Bài viết
             </NavLink>
             <NavLink to="/admin/users" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faUsers} /> Người dùng hiện có

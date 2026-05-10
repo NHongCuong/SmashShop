@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+// eslint-disable-next-line no-unused-vars
 import productReducer from '../../features/product/productSlice'
 import { productApi } from '../../features/product/productApi';
 import { orderApi } from '../../features/order/orderApi.js';
@@ -11,6 +12,7 @@ import { reviewApi } from '../../features/services/reviewApi.js';
 import { wishlistApi } from '../../features/services/wishlistApi.js';
 import { voucherApi } from '../../features/services/voucherApi.js';
 import { contactApi } from '../../features/contact/contactApi.js';
+import { postApi } from '../../features/post/postApi.js';
 import searchReducer from '../../features/search/searchSlice';
 // import productsReducer from '../features/products/productsSlice';
 import cartReducer from '../store/cartSlice.js'
@@ -36,6 +38,7 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
     [wishlistApi.reducerPath]: wishlistApi.reducer,
     [voucherApi.reducerPath]: voucherApi.reducer,
     [contactApi.reducerPath]: contactApi.reducer,
+    [postApi.reducerPath]: postApi.reducer,
     cart: cartReducer,
     search: searchReducer,
     // products: productsReducer,
@@ -53,4 +56,5 @@ export const store = configureStore({ // Khai báo store để lưu trữ state
   .concat(wishlistApi.middleware)
   .concat(voucherApi.middleware)
   .concat(contactApi.middleware)
+  .concat(postApi.middleware)
 });

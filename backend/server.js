@@ -24,6 +24,8 @@ import paymentRoutes from "./routes/payment.route.js";
 import voucherRoutes from "./routes/voucher.route.js";
 import initChatSocket from "./socket/chatSocket.js";
 import contactRoutes from "./routes/contact.route.js";
+import postRoutes from "./routes/post.route.js";
+
 
 dotenv.config();
 
@@ -107,6 +109,7 @@ app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/vnpay', paymentRoutes);
 app.use("/api/v1/voucher", voucherRoutes);
 app.use("/api/v1/contacts", contactRoutes);
+app.use("/api/v1/posts", postRoutes);
 
 import { generateToken } from "./middleware/jwt.js";
 

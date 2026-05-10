@@ -36,6 +36,10 @@ import AdminReviews from '../pages/Admin/AdminReviews/AdminReviews';
 import AdminContacts from '../pages/Admin/AdminContacts/AdminContacts';
 import Contact from '../pages/Contact/Contact';
 import AdminWishlists from '../pages/Admin/AdminWishlists/AdminWishlists';
+import AdminPosts from '../pages/Admin/AdminPosts/AdminPosts';
+import AdminPostForm from '../pages/Admin/AdminPosts/AdminPostForm';
+import Guide from '../pages/Guide/Guide';
+import PostDetail from '../pages/Guide/PostDetail';
 
 
 import { Navigate } from "react-router-dom";
@@ -48,6 +52,8 @@ const pages = [
     { path: "/resetpassword/:token", Component: ResetPasswordFromEmail },
     { path: routes.register, Component: Register },
     { path: routes.contact, Component: Contact },
+    { path: "/huong-dan", Component: Guide },
+    { path: "/huong-dan/:id", Component: PostDetail },
     { path: routes.products, Component: Products },
     { path: routes.product, Component: ProductDetail },
     { path: routes.cart, Component: Cart },
@@ -95,6 +101,9 @@ const pages = [
             { path: 'reviews', Component: AdminReviews },
             { path: 'contacts', Component: AdminContacts },
             { path: 'wishlists', Component: AdminWishlists },
+            { path: 'posts', Component: AdminPosts },
+            { path: 'posts/add', Component: AdminPostForm },
+            { path: 'posts/edit/:id', Component: AdminPostForm },
 
         ],
     },
