@@ -68,6 +68,30 @@ export default function Cart() {
       }
     }
 
+    // Validation regex
+    const phoneRegex = /^\d{10}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!phoneRegex.test(formData.phone)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Số điện thoại không hợp lệ',
+        text: 'Số điện thoại phải bao gồm đúng 10 chữ số.',
+        timer: 2000
+      });
+      return;
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Email không hợp lệ',
+        text: 'Vui lòng nhập đúng định dạng email (ví dụ: abc@gmail.com).',
+        timer: 2000
+      });
+      return;
+    }
+
     // Check if order items are empty
     if (orderItems.length === 0) {
       Swal.fire({

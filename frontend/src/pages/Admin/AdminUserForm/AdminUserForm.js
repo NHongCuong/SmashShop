@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import './AdminUserForm.css'; // Will create or reuse product form CSS
-
+import Swal from "sweetalert2";
 const AdminUserForm = ({ onSubmit, loading, initialData }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -16,7 +16,7 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
     gender: 'Nam',
     dob: ''
   });
-  
+
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
 
@@ -65,16 +65,39 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
       alert("Vui lòng nhập mật khẩu cho người dùng mới!");
       return;
     }
-    
+
+    const phoneRegex = /^\d{10}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Email không hợp lệ',
+        text: 'Vui lòng nhập đúng định dạng email (ví dụ: abc@gmail.com).',
+        timer: 2000
+      });
+      return;
+    }
+
+    if (formData.phone_number && !phoneRegex.test(formData.phone_number)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Số điện thoại không hợp lệ',
+        text: 'Số điện thoại phải bao gồm đúng 10 chữ số.',
+        timer: 2000
+      });
+      return;
+    }
+
     const submitData = new FormData();
     Object.keys(formData).forEach(key => {
-        if (formData[key]) submitData.append(key, formData[key]);
+      if (formData[key]) submitData.append(key, formData[key]);
     });
-    
+
     if (avatarFile) {
-        submitData.append('avatar', avatarFile);
+      submitData.append('avatar', avatarFile);
     }
-    
+
     onSubmit(submitData);
   };
 
@@ -171,11 +194,11 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
           <label>Ảnh đại diện (Avatar)</label>
           <input type="file" accept="image/*" onChange={handleImageChange} className="pd-form-input" />
           {avatarPreview && (
-            <div className="image-preview" style={{marginTop: '10px', position: 'relative', width: '150px'}}>
-              <img 
-                src={avatarPreview} 
-                alt="Preview" 
-                style={{width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%'}} 
+            <div className="image-preview" style={{ marginTop: '10px', position: 'relative', width: '150px' }}>
+              <img
+                src={avatarPreview}
+                alt="Preview"
+                style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
@@ -184,7 +207,7 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                style={{position: 'absolute', top: 0, right: 0, background: 'red', color: 'white', border: 'none', padding: '5px', borderRadius: '50%', cursor: 'pointer'}}
+                style={{ position: 'absolute', top: 0, right: 0, background: 'red', color: 'white', border: 'none', padding: '5px', borderRadius: '50%', cursor: 'pointer' }}
               >
                 <FontAwesomeIcon icon={faTrash} />
               </button>
