@@ -1,78 +1,98 @@
 .product-page {
-    display: flex;
-    margin: 0;
-    background-color: #F5F5F5;
-  }
-  
-  .filter-section {
-    width: 25%;
-    padding: 4px;
-    margin: 0px;
-  }
-  
-  .products-header-container{
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    /* gap: 10px; */
+  display: flex;
+  margin: 0;
+  background-color: #F5F5F5;
+  box-sizing: border-box;
 }
-.products-header{
-   margin: 0px;
-   width: 24%;
-   padding: 10px 10px 10px 10px;
-   height: 25px;
-   align-content: center;
-   border-radius: 10px 0px 0px 0px;
-   background-color: #EAC427;
-   font-size: 16px;
-   font-weight: bold;
-   color: white;
+
+.filter-section {
+  width: 25%;
+  padding: 10px;
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.products-header-container {
+  margin-top: 20px;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.products-header {
+  margin: 0px;
+  width: 20.3%;
+  /* Đồng bộ chuẩn với width của .filter-section */
+  padding: 5px 5px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px 0px 0px 0px;
+  background-color: #EAC427;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Styles for product filter top */
 
-.products-filter-top{
-    background-color: #E9E9E9;
-    justify-content: flex-end;
-    display: flex;
-    height: 25px;
-    padding: 10px 30px 10px 10px;
-    align-content: center;
-    gap: 20px;
-    flex: 1;
-    
+.products-filter-top {
+  background-color: #E9E9E9;
+  justify-content: flex-end;
+  align-items: center;
+  display: flex;
+  padding: 10px 15px;
+  gap: 5px;
+  flex: 1;
+  border-radius: 0px 4px 0px 0px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ddd;
 }
 
 
 .products-filter-top label {
-  margin-right: 8px;
+  margin-right: 5px;
+  font-weight: 500;
+  color: #333;
 }
 
 .products-filter-top button {
-  margin: 0 4px;
-  padding: 6px 12px;
+  padding: 4px 12px;
   background-color: #fff;
-  border: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
 
+.products-filter-top button:hover {
+  background-color: #f9f9f9;
+  border-color: #EAC427;
 }
 
 .products-filter-top button.active {
   background-color: #EAC427;
   color: #fff;
+  border-color: #EAC427;
   font-weight: bold;
 }
 
 .products-filter-top select {
-  padding: 6px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
 }
 
-/* Styles for filter section */
-.filter-section {
-  padding: 16px;
-  border-right: 1px solid #e0e0e0;
+.products-filter-top select:focus {
+  border-color: #EAC427;
 }
 
 .price-filter,
@@ -83,25 +103,35 @@
 .price-filter h3,
 .category-filter h3 {
   margin-bottom: 8px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #333;
+  font-weight: bold;
 }
 
 .price-filter label,
 .category-filter label {
   margin-bottom: 4px;
+  font-size: 13px;
+  color: #555;
 }
 
 .price-filter input {
   width: 100%;
-  padding: 6px;
-  margin: 4px 0;
-  border: 1px solid #ccc;
+  padding: 6px 8px;
+  margin: 4px 0 10px;
+  border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+
+.price-filter input:focus {
+  border-color: #EAC427;
+  outline: none;
 }
 
 .price-filter button {
-  margin-top: 8px;
+  margin-top: 4px;
   padding: 6px 12px;
   background-color: #EAC427;
   color: #fff;
@@ -109,6 +139,12 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 13px;
+}
+
+.price-filter button:hover {
+  background-color: #d1b020;
 }
 
 .category-filter ul {
@@ -121,29 +157,42 @@
   background-color: #fff;
   border: 1px solid #ddd;
   cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
 }
 
 .category-filter li:hover {
   background-color: #EAC427;
   color: #fff;
   font-weight: bold;
+  border-color: #EAC427;
 }
+
 /* Nhóm checkbox */
 .brand-type-filter label {
   display: flex;
   align-items: center;
-  gap: 6px; 
-  margin: 6px 0;
+  gap: 8px;
+  margin: 10px 0;
   color: #555;
-  padding-left: 0;      
-  margin-left: 0;        
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.brand-type-filter h3 {
+  margin: 20px 0 12px;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
 }
 
 .brand-type-filter input[type="checkbox"] {
-  margin: 0;             
+  margin: 0;
   width: 16px;
   height: 16px;
-  accent-color: #007bff; 
+  accent-color: #EAC427;
+  cursor: pointer;
 }
 
 /* --- Responsive Breakpoint --- */
@@ -166,7 +215,7 @@
     font-size: 20px;
   }
 
-   .products-filter-top {
+  .products-filter-top {
     justify-content: flex-start;
     padding: 10px 0;
   }
@@ -175,13 +224,15 @@
   .products-filter-top button {
     width: auto;
     padding: 8px 12px;
-  } 
+  }
+
   .products-header-container {
     flex-direction: column;
     align-items: stretch;
     padding: 0;
     margin-right: 20px;
   }
+
   .products-header {
     border-radius: 10px 10px 0 0;
     text-align: center;
@@ -192,6 +243,7 @@
     padding: 10px;
     background-color: #E9E9E9;
   }
+
   .price-filter input {
     width: 100%;
     max-width: 95%;
@@ -213,10 +265,12 @@
 
   .products-filter-top select,
   .products-filter-top button {
-    width: 100%; /* Nút và select full width */
+    width: 100%;
+    /* Nút và select full width */
     font-size: 13px;
     margin: 5px 0px;
-}
+  }
+
   .price-filter input {
     width: 100%;
     max-width: 90%;
@@ -229,6 +283,3 @@
     padding: 10px;
   }
 }
-
-
-
