@@ -36,8 +36,53 @@ export const createContact = asyncHandler(async (req, res) => {
 // @route   GET /api/contacts
 // @access  Private/Admin
 export const getContacts = asyncHandler(async (req, res) => {
-    const contacts = await Contact.find({}).sort({ createdAt: -1 });
-    res.json(contacts);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const sort = req.query.sort || 'newest';
+
+    const query = {};
+    if (search) {
+        query.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
+            { subject: { $regex: search, $options: 'i' } }
+        ];
+    }
+
+    let sortOptions = {};
+    switch (sort) {
+        case 'oldest':
+            sortOptions = { createdAt: 1 };
+            break;
+        case 'az':
+            sortOptions = { name: 1 };
+            break;
+        case 'za':
+            sortOptions = { name: -1 };
+            break;
+        case 'newest':
+        default:
+            sortOptions = { createdAt: -1 };
+            break;
+    }
+
+    const startIndex = (page - 1) * limit;
+    const total = await Contact.countDocuments(query);
+
+    const contacts = await Contact.find(query)
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(limit);
+
+    res.json({
+        data: contacts,
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+    });
 });
 
 // @desc    Update contact status

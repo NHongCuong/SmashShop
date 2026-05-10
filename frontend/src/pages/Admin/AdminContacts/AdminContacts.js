@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './AdminContacts.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExport, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -10,9 +10,17 @@ import * as XLSX from 'xlsx';
 dayjs.extend(utc);
 
 const AdminContacts = () => {
-    const { data: contacts = [], isLoading } = useGetContactsQuery();
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState('newest');
+    const [search, setSearch] = useState('');
+
+    const { data: contactData, isLoading, refetch } = useGetContactsQuery({ page, limit, search, sort });
     const [updateStatus] = useUpdateContactStatusMutation();
     const [deleteContact] = useDeleteContactMutation();
+
+    const contacts = contactData?.data || [];
+    const totalPages = contactData?.totalPages || 1;
 
     const handleStatusChange = async (id, currentStatus) => {
         const newStatus = currentStatus === 'pending' ? 'processed' : 'pending';
@@ -42,7 +50,7 @@ const AdminContacts = () => {
         }
 
         const exportData = contacts.map((contact, index) => ({
-            'STT': index + 1,
+            'STT': (page - 1) * limit + index + 1,
             'Họ và tên': contact.name,
             'Email': contact.email,
             'Số điện thoại': contact.phone,
@@ -83,6 +91,39 @@ const AdminContacts = () => {
                 </div>
             </div>
 
+            <div className="admin-controls-wrapper">
+                <div className="controls-left">
+                    <label>
+                        Hiển thị:
+                        <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
+                        </select>
+                    </label>
+                </div>
+                <div className="controls-right">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm liên hệ..."
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        className="search-input"
+                    />
+                    <label>
+                        Sắp xếp:
+                        <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}>
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="az">A-Z</option>
+                            <option value="za">Z-A</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
             <div className="admin-table-wrapper">
                 <table>
                     <thead>
@@ -102,11 +143,11 @@ const AdminContacts = () => {
                         {isLoading ? (
                             <tr><td colSpan={9}>Đang tải...</td></tr>
                         ) : contacts.length === 0 ? (
-                            <tr><td colSpan={9}>Không có tin nhắn liên hệ nào.</td></tr>
+                            <tr><td colSpan={9} style={{ textAlign: 'center' }}>Không có tin nhắn liên hệ nào.</td></tr>
                         ) : (
                             contacts.map((contact, idx) => (
                                 <tr key={contact._id}>
-                                    <td>{idx + 1}</td>
+                                    <td>{(page - 1) * limit + idx + 1}</td>
                                     <td>{contact.name}</td>
                                     <td>{contact.email}</td>
                                     <td>{contact.phone}</td>
@@ -135,6 +176,14 @@ const AdminContacts = () => {
                     </tbody>
                 </table>
             </div>
+
+            {totalPages > 1 && (
+                <div className="admin-pagination">
+                    <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Trước</button>
+                    <span>Trang {page} / {totalPages}</span>
+                    <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Sau</button>
+                </div>
+            )}
         </div>
     );
 };

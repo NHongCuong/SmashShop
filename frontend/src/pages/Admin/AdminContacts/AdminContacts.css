@@ -106,3 +106,49 @@
     color: #166534;
     border: 1px solid #dcfce7;
 }
+
+.admin-controls-wrapper {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.controls-left, .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-controls-wrapper select, .admin-controls-wrapper input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.search-input { width: 300px; }
+
+.admin-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.admin-pagination button {
+    padding: 6px 15px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-pagination button:disabled {
+    background: #eee;
+    cursor: not-allowed;
+}

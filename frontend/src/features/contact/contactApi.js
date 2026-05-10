@@ -18,7 +18,10 @@ export const contactApi = createApi({
   tagTypes: ['Contacts'],
   endpoints: (builder) => ({
     getContacts: builder.query({
-      query: () => 'contacts',
+      query: (params) => ({
+        url: 'contacts',
+        params: params,
+      }),
       providesTags: ['Contacts'],
     }),
     updateContactStatus: builder.mutation({
