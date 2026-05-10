@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartShopping, faUser, faSearch, faBars, faTimes, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+import { faCartShopping, faUser, faSearch, faBars, faTimes, faCaretDown, faCaretUp, faPhone } from '@fortawesome/free-solid-svg-icons';
 import "./Header.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,8 +13,8 @@ import { categoryApi, useGetCategoriesQuery } from "../../features/services/cate
 import { reviewApi } from "../../features/services/reviewApi.js";
 import { wishlistApi } from "../../features/services/wishlistApi.js";
 import { logout, selectIsAuthenticated } from "../../app/store/authSlice.js";
-import { clearCart } from "../../app/store/cartSlice"; // ✅ thêm dòng này
-
+import { clearCart } from "../../app/store/cartSlice";
+import logo from "../../assets/logohcshop.png";
 
 export default function Header() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -22,14 +22,11 @@ export default function Header() {
     isAuthenticated ? (state.cart?.cart?.length || 0) : 0
   );
   const [showLoginModal, setShowLoginModal] = useState(false);
-  // lấy số lượng sản phẩm trong giỏ hàng từ Redux store
-  // const count = 0 // lấy số lượng sản phẩm trong giỏ hàng từ Redux store
-  // console.log(count, "statr");
   const { data: categories, isLoading, isError } = useGetCategoriesQuery();
-  // SEARCH BAR
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { data: allProducts = [] } = useGetProductsQuery(); // lấy tất cả sản phẩm
+  const { data: allProducts = [], isLoading: productsLoading } = useGetProductsQuery();
   const searchTerm = useSelector((state) => state.search.searchTerm);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -58,224 +55,176 @@ export default function Header() {
     }
   };
 
-  const handleKeyDown = (e, path, isDropdown = false) => {
-    if (e.key === "Enter") {
-      if (isDropdown) {
-        setProductDropdown(prev => !prev);
-      } else if (path === "/" && window.location.pathname === "/") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        navigate(path);
-      }
-    }
-  };
-
-  // Lọc sản phẩm theo tên
-  const filteredProducts = allProducts.filter((p) =>
-    p.prod_name.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 5); // giới hạn 5 kết quả
-
   const [productDropdown, setProductDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
-  // Hàm chuyển tiếng Việt có dấu sang không dấu và format URL-friendly
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const slugify = (str) => {
     return str
-      .normalize('NFD')                   // tách dấu khỏi ký tự gốc
-      .replace(/[\u0300-\u036f]/g, '')    // xóa các dấu
-      .replace(/đ/g, 'd')                 // đ -> d
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
       .replace(/Đ/g, 'D')
-      .replace(/\s+/g, '-')               // space -> dấu gạch ngang
+      .replace(/\s+/g, '-')
       .toLowerCase();
   };
 
-  // LOGOUT
   const handleLogout = () => {
-    // console.log("Logout")
-    // Xóa token và thông tin người dùng khỏi localStorage
     dispatch(logout());
     dispatch(clearCart());
-
-    // Reset RTK Query caches to prevent data leak between users
     dispatch(userApi.util.resetApiState());
     dispatch(orderApi.util.resetApiState());
     dispatch(productApi.util.resetApiState());
     dispatch(categoryApi.util.resetApiState());
     dispatch(reviewApi.util.resetApiState());
     dispatch(wishlistApi.util.resetApiState());
-
     navigate("/");
-    localStorage.removeItem("isAuthenticated"); // Xóa dữ liệu đăng nhập
+    localStorage.removeItem("isAuthenticated");
   };
-  // MOBILE MENU CONTROLLER
-  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!isMobileMenuOpen);
-  };
+
+  const filteredProducts = allProducts.filter((p) =>
+    p.prod_name.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(0, 5);
 
   return (
-    <header className="header" >
-      {/* Logo + Menu Button */}
-      <div className="header-left">
-        <Link
-          to="/"
-          className="logo"
-          onClick={handleLogoClick}
-          onKeyDown={(e) => handleKeyDown(e, "/")}
-        >
-          Smash Shop
-        </Link>
-        <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
-          <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} />
-        </button>
-      </div>
+    <header className="header">
+      {/* TOP ROW: DYNAMIC BACKGROUND */}
+      <div className="header-top">
+        <div className="header-container">
+          {/* Logo */}
+          <div className="header-left">
+            <Link to="/" className="logo-link" onClick={handleLogoClick}>
+              <img src={logo} alt="HC Shop" className="header-logo-img" />
+            </Link>
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
+              <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} />
+            </button>
+          </div>
 
-      {/* Navigation + SearchBar */}
-      <div className={`header-center ${isMobileMenuOpen ? 'active' : ''}`}>
-        {/* Các link Nav */}
-        <Link
-          to="/"
-          className="nav-link"
-          onClick={handleLogoClick}
-          onKeyDown={(e) => handleKeyDown(e, "/")}
-        >
-          TRANG CHỦ
-        </Link>
-
-        <div
-          className="nav-dropdown"
-          onMouseEnter={() => setProductDropdown(true)}
-          onMouseLeave={() => setProductDropdown(false)}
-        >
-          <button className="dropdown-btn nav-link">
-            {/* Phần chữ: Bấm vào để navigate */}
-            <span
-              onClick={() => navigate("/products")}
-              onKeyDown={(e) => handleKeyDown(e, "/products", true)}
-              tabIndex="0"
-              style={{ cursor: 'pointer', outline: 'none' }}
-            >
-              SẢN PHẨM
-            </span>
-
-            {/* Icon: Bấm vào để toggle dropdown */}
-            <FontAwesomeIcon
-              icon={productDropdown ? faCaretUp : faCaretDown}
-              onClick={(e) => {
-                e.stopPropagation(); // chặn sự kiện lan ra button
-                setProductDropdown(prev => !prev); // toggle mở/đóng
-              }}
-
-            />
-          </button>
-
-          {productDropdown && (
-            <div className="dropdown-menu">
-              {isLoading && <p className="dropdown-item">Đang tải...</p>}
-              {isError && <p className="dropdown-item">Lỗi khi tải danh mục</p>}
-              {!isLoading && !isError && categories?.map((cat) => (
-                <Link
-                  key={cat._id}
-                  to={`/products/${encodeURIComponent(slugify(cat.category_name))}`}
-                  className="dropdown-item"
-                >
-                  {cat.category_name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <Link
-          to="/contact"
-          className="nav-link"
-        >
-          LIÊN HỆ
-        </Link>
-
-        {/* Search Bar */}
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Bạn đang tìm gì?"
-            className="search-bar-input"
-            value={searchTerm}
-            onChange={handleInputChange}
-            onKeyDown={handleEnter}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // delay để click chọn không bị mất dropdown
-            onFocus={() => searchTerm && setShowDropdown(true)}
-          />
-          <FontAwesomeIcon icon={faSearch} className="search-icon" onClick={() => handleEnter({ key: "Enter" })} />
-          {showDropdown && searchTerm && (
-            <div className="search-dropdown">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product._id}
-                  className="dropdown-item"
-                  onClick={() => handleSelectProduct(product._id)}
-                >
-                  <img
-                    src={(() => {
-                      const primaryImg = product.images?.find((img) => img?.is_primary_image);
-                      const firstImg = product.images?.[0];
-                      const imgData = primaryImg || firstImg;
-                      const imgUrl = Array.isArray(imgData?.image) ? imgData.image[0] : imgData?.image;
-                      return imgUrl || '';
-                    })()}
-                    alt={product.prod_name}
-                    className="search-product-image"
-                  />
-                  <span className="search-product-name">{product.prod_name}</span>
+          {/* Search Bar */}
+          <div className="header-center-top">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Tìm kiếm thương hiệu, sản phẩm, bài viết..."
+                className="search-bar-input"
+                value={searchTerm}
+                onChange={handleInputChange}
+                onKeyDown={handleEnter}
+                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                onFocus={() => searchTerm && setShowDropdown(true)}
+              />
+              <div className="search-btn" onClick={() => handleEnter({ key: "Enter" })}>
+                <FontAwesomeIcon icon={faSearch} className="search-icon-svg" />
+              </div>
+              {showDropdown && searchTerm && (
+                <div className="search-dropdown">
+                  {productsLoading ? (
+                    <div className="search-no-result">Đang tải sản phẩm...</div>
+                  ) : filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div
+                        key={product._id}
+                        className="search-suggestion-item"
+                        onClick={() => handleSelectProduct(product._id)}
+                      >
+                        <img
+                          src={(() => {
+                            const firstImg = product.images?.[0];
+                            const imgUrl = Array.isArray(firstImg?.image) ? firstImg.image[0] : firstImg?.image;
+                            return imgUrl || '';
+                          })()}
+                          alt={product.prod_name}
+                          className="search-product-image"
+                        />
+                        <span className="search-product-name">{product.prod_name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="search-no-result">Không tìm thấy sản phẩm "{searchTerm}"</div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-      </div>
-
-
-      {/* Icons */}
-      <div className="header-icons">
-        <button
-          className="cart-link"
-          onClick={() => {
-            if (isAuthenticated) {
-              navigate("/cart");
-            } else {
-              setShowLoginModal(true);
-            }
-          }}
-        >
-          <FontAwesomeIcon icon={faCartShopping} className="icon" />
-          {count > 0 && <span className="cart-badge">{count}</span>}
-        </button>
-
-        {/* User Menu */}
-        <div
-          className="user-menu"
-          onMouseEnter={() => setUserDropdown(true)}
-          onMouseLeave={() => setUserDropdown(false)}
-          onClick={() => setUserDropdown(prev => !prev)}
-        >
-          <FontAwesomeIcon icon={faUser} className="icon" />
-          {userDropdown && (
-            <div className="dropdown-menu user-dropdown user-dropdown-left">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/user" className="dropdown-item">Thông tin cá nhân</Link>
-                  <button onClick={handleLogout} className="dropdown-item logout-btn">Đăng xuất</button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" className="dropdown-item">Đăng nhập</Link>
-                  <Link to="/register" className="dropdown-item">Đăng ký</Link>
-                </>
               )}
             </div>
-          )}
-        </div>
+          </div>
 
+
+          {/* Icons/Info Section (No white boxes, as per new screenshot) */}
+          <div className="header-right-top">
+            <div className="header-info-item phone-item">
+              <FontAwesomeIcon icon={faPhone} />
+              <span className="info-text">0776856666</span>
+            </div>
+
+            <div className="header-info-item user-item"
+              onMouseEnter={() => setUserDropdown(true)}
+              onMouseLeave={() => setUserDropdown(false)}>
+              <FontAwesomeIcon icon={faUser} />
+              <span className="info-text">{isAuthenticated ? "Tài Khoản" : "Tài Khoản"}</span>
+              {userDropdown && (
+                <div className="dropdown-menu user-dropdown">
+                  {isAuthenticated ? (
+                    <>
+                      <Link to="/user" className="dropdown-item">Thông tin cá nhân</Link>
+                      <button onClick={handleLogout} className="dropdown-item logout-btn">Đăng xuất</button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" className="dropdown-item">Đăng nhập</Link>
+                      <Link to="/register" className="dropdown-item">Đăng ký</Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="header-info-item header-cart-item" onClick={() => isAuthenticated ? navigate("/cart") : setShowLoginModal(true)}>
+              <FontAwesomeIcon icon={faCartShopping} />
+              <span className="info-text">Giỏ Hàng ({count})</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* BOTTOM ROW: BLACK BACKGROUND */}
+      <div className={`header-bottom ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
+        <div className="header-container">
+          <nav className="nav-links">
+            <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>TRANG CHỦ</Link>
+
+            <div className="nav-dropdown"
+              onMouseEnter={() => setProductDropdown(true)}
+              onMouseLeave={() => setProductDropdown(false)}>
+              <span className="nav-link dropdown-toggle" onClick={() => navigate("/products")}>
+                SẢN PHẨM <FontAwesomeIcon icon={productDropdown ? faCaretUp : faCaretDown} />
+              </span>
+              {productDropdown && (
+                <div className="dropdown-menu">
+                  {isLoading && <p className="dropdown-item">Đang tải...</p>}
+                  {!isLoading && !isError && categories?.map((cat) => (
+                    <Link
+                      key={cat._id}
+                      to={`/products/${encodeURIComponent(slugify(cat.category_name))}`}
+                      className="dropdown-item"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {cat.category_name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/khuyen-mai" className="nav-link">KHUYẾN MÃI</Link>
+            <Link to="/thuong-hieu" className="nav-link">THƯƠNG HIỆU</Link>
+            <Link to="/hop-tac" className="nav-link">HỢP TÁC KINH DOANH</Link>
+            <Link to="/huong-dan" className="nav-link">HƯỚNG DẪN / REVIEW</Link>
+            <Link to="/dich-vu" className="nav-link">DỊCH VỤ</Link>
+            <Link to="/contact" className="nav-link">VỀ CHÚNG TÔI</Link>
+          </nav>
+        </div>
+      </div>
+
       {showLoginModal && (
         <div className="modal-backdrop">
           <div className="modal">
