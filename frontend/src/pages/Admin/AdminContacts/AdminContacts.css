@@ -1,11 +1,76 @@
 .admin-contacts {
     padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
 }
 
-.admin-contacts h2 {
+.admin-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
-    color: #333;
 }
+
+.admin-header-flex h1 {
+    font-size: 24px;
+    color: #333;
+    font-weight: 700;
+    margin: 0;
+}
+
+.admin-header-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-header-btns button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-export-excel { background-color: #27ae60; color: #fff; }
+.btn-export-excel:hover { background-color: #1e8449; }
+
+.admin-table-wrapper {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.admin-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table-wrapper th {
+    background-color: #f1f2f6;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+}
+
+.admin-table-wrapper td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    vertical-align: middle;
+}
+
+.actions-cell {
+    font-size: 18px;
+}
+
+.icon-delete { color: #e74c3c; cursor: pointer; transition: color 0.2s; }
+.icon-delete:hover { color: #c0392b; }
 
 .contact-message-cell {
     max-width: 250px;
@@ -27,6 +92,7 @@
     border-radius: 4px;
     font-size: 0.85rem;
     font-weight: 600;
+    display: inline-block;
 }
 
 .status-label.pending {
@@ -39,19 +105,4 @@
     background-color: #f0fdf4;
     color: #166534;
     border: 1px solid #dcfce7;
-}
-
-.btn-delete {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    padding: 5px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background-color 0.2s;
-}
-
-.btn-delete:hover {
-    background-color: #dc2626;
 }
