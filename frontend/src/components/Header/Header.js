@@ -58,6 +58,7 @@ export default function Header() {
   const [productDropdown, setProductDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const slugify = (str) => {
     return str
@@ -91,18 +92,32 @@ export default function Header() {
       {/* TOP ROW: DYNAMIC BACKGROUND */}
       <div className="header-top">
         <div className="header-container">
-          {/* Logo */}
-          <div className="header-left">
+          {/* Desktop Logo */}
+          <div className="header-left desktop-only">
             <Link to="/" className="logo-link" onClick={handleLogoClick}>
               <img src={logo} alt="HC Shop" className="header-logo-img" />
             </Link>
+          </div>
+
+          {/* Mobile Left: Menu & Search Icons */}
+          <div className="header-mobile-controls">
             <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
               <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} />
             </button>
+            <button className="mobile-search-btn" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <FontAwesomeIcon icon={isSearchOpen ? faTimes : faSearch} />
+            </button>
           </div>
 
-          {/* Search Bar */}
-          <div className="header-center-top">
+          {/* Mobile Center: Logo */}
+          <div className="header-mobile-logo">
+            <Link to="/" className="logo-link" onClick={handleLogoClick}>
+              <img src={logo} alt="HC Shop" className="header-logo-img" />
+            </Link>
+          </div>
+
+          {/* Search Bar (Desktop) */}
+          <div className="header-center-top desktop-only">
             <div className="search-bar">
               <input
                 type="text"
@@ -149,9 +164,10 @@ export default function Header() {
           </div>
 
 
-          {/* Icons/Info Section (No white boxes, as per new screenshot) */}
+
+          {/* Icons/Info Section */}
           <div className="header-right-top">
-            <div className="header-info-item phone-item">
+            <div className="header-info-item phone-item desktop-only">
               <FontAwesomeIcon icon={faPhone} />
               <span className="info-text">0776856666</span>
             </div>
@@ -160,7 +176,7 @@ export default function Header() {
               onMouseEnter={() => setUserDropdown(true)}
               onMouseLeave={() => setUserDropdown(false)}>
               <FontAwesomeIcon icon={faUser} />
-              <span className="info-text">{isAuthenticated ? "Tài Khoản" : "Tài Khoản"}</span>
+              <span className="info-text desktop-only">{isAuthenticated ? "Tài Khoản" : "Tài Khoản"}</span>
               {userDropdown && (
                 <div className="dropdown-menu user-dropdown">
                   {isAuthenticated ? (
@@ -180,11 +196,66 @@ export default function Header() {
 
             <div className="header-info-item header-cart-item" onClick={() => isAuthenticated ? navigate("/cart") : setShowLoginModal(true)}>
               <FontAwesomeIcon icon={faCartShopping} />
-              <span className="info-text">Giỏ Hàng ({count})</span>
+              <span className="info-text desktop-only">Giỏ Hàng ({count})</span>
+              {count > 0 && <span className="mobile-cart-badge">{count}</span>}
             </div>
           </div>
         </div>
+
+        {/* Mobile Search Input (Expandable) */}
+        {isSearchOpen && (
+          <div className="mobile-search-container">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                className="search-bar-input"
+                value={searchTerm}
+                onChange={handleInputChange}
+                onKeyDown={handleEnter}
+                autoFocus
+                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                onFocus={() => searchTerm && setShowDropdown(true)}
+              />
+              <div className="search-btn" onClick={() => handleEnter({ key: "Enter" })}>
+                <FontAwesomeIcon icon={faSearch} className="search-icon-svg" />
+              </div>
+              {showDropdown && searchTerm && (
+                <div className="search-dropdown">
+                  {productsLoading ? (
+                    <div className="search-no-result">Đang tải sản phẩm...</div>
+                  ) : filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div
+                        key={product._id}
+                        className="search-suggestion-item"
+                        onClick={() => {
+                          handleSelectProduct(product._id);
+                          setIsSearchOpen(false);
+                        }}
+                      >
+                        <img
+                          src={(() => {
+                            const firstImg = product.images?.[0];
+                            const imgUrl = Array.isArray(firstImg?.image) ? firstImg.image[0] : firstImg?.image;
+                            return imgUrl || '';
+                          })()}
+                          alt={product.prod_name}
+                          className="search-product-image"
+                        />
+                        <span className="search-product-name">{product.prod_name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="search-no-result">Không tìm thấy sản phẩm "{searchTerm}"</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
 
       {/* BOTTOM ROW: BLACK BACKGROUND */}
       <div className={`header-bottom ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
