@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import './AdminVouchers.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash, faPlus, faFileExport, faFileImport } from '@fortawesome/free-solid-svg-icons';
-import { 
-  useGetVouchersAdminQuery, 
+import {
+  useGetVouchersAdminQuery,
   useDeleteVoucherMutation,
-  useImportVouchersMutation 
+  useImportVouchersMutation
 } from '../../../features/services/voucherApi';
 import AdminVoucherForm from './AdminVoucherForm';
 import Swal from 'sweetalert2';
@@ -89,22 +89,22 @@ export default function AdminVouchers() {
       <div className="admin-header-flex">
         <h1>Quản lý khuyến mãi</h1>
         <div className="admin-header-btns">
-            <button className="btn-add-voucher" onClick={openAddForm}>
-                <FontAwesomeIcon icon={faPlus} /> Thêm khuyến mãi
-            </button>
-            <button className="btn-export-excel" onClick={handleExportExcel}>
-                <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
-            </button>
-            <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
-                <FontAwesomeIcon icon={faFileImport} /> Import Excel
-            </button>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                accept=".xlsx, .xls" 
-                onChange={handleImportExcel}
-            />
+          <button className="btn-add-voucher" onClick={openAddForm}>
+            <FontAwesomeIcon icon={faPlus} /> Thêm khuyến mãi
+          </button>
+          <button className="btn-export-excel" onClick={handleExportExcel}>
+            <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
+          </button>
+          <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
+            <FontAwesomeIcon icon={faFileImport} /> Import Excel
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".xlsx, .xls"
+            onChange={handleImportExcel}
+          />
         </div>
       </div>
 
@@ -155,16 +155,16 @@ export default function AdminVouchers() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan="6" style={{textAlign:'center'}}>Đang tải...</td></tr>
+              <tr><td colSpan="6" style={{ textAlign: 'center' }}>Đang tải...</td></tr>
             ) : vouchers.length === 0 ? (
-                <tr><td colSpan="6" style={{textAlign:'center'}}>Không tìm thấy khuyến mãi nào.</td></tr>
+              <tr><td colSpan="6" style={{ textAlign: 'center' }}>Không tìm thấy khuyến mãi nào.</td></tr>
             ) : vouchers.map((voucher, idx) => (
               <tr key={voucher._id}>
                 <td>{(page - 1) * limit + idx + 1}</td>
                 <td>{voucher.voucher_name}</td>
                 <td><span className="discount-badge">{voucher.discount_percent}%</span></td>
-                <td>{voucher.create_at ? dayjs(voucher.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
-                <td>{voucher.update_at ? dayjs(voucher.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{voucher.create_at ? dayjs(voucher.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                <td>{voucher.update_at ? dayjs(voucher.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td className="actions-cell">
                   <FontAwesomeIcon icon={faPenToSquare} className="icon-edit" onClick={() => openEditForm(voucher)} />
                   <FontAwesomeIcon icon={faTrash} className="icon-delete" onClick={() => handleDelete(voucher._id)} />
@@ -184,9 +184,9 @@ export default function AdminVouchers() {
       )}
 
       {showForm && (
-        <AdminVoucherForm 
-          voucher={editingVoucher} 
-          onClose={() => setShowForm(false)} 
+        <AdminVoucherForm
+          voucher={editingVoucher}
+          onClose={() => setShowForm(false)}
           refetch={refetch}
         />
       )}

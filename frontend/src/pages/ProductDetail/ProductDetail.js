@@ -32,7 +32,7 @@ export default function ProductDetail() {
   const product = products.find((p) => p._id === id);
 
   // Lấy tất cả ảnh từ model mới
-  const allImages = (product?.images || []).flatMap(img => 
+  const allImages = (product?.images || []).flatMap(img =>
     Array.isArray(img.image) ? img.image : [img.image]
   );
   const [mainImage, setMainImage] = useState('');
@@ -60,6 +60,10 @@ export default function ProductDetail() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const handleAddToCart = async (e) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     // Kiểm tra đã chọn đầy đủ các biến thể chưa
     if (product.colors && product.colors.length > 0 && !selectedVariants['Màu sắc']) {
       Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn màu sắc' });
@@ -82,8 +86,8 @@ export default function ProductDetail() {
     }
     setLoading(true);
     try {
-      await dispatch(addToCart({ 
-        product_id: product._id, 
+      await dispatch(addToCart({
+        product_id: product._id,
         quantity,
         variants: selectedVariants // Gửi object chứa các lựa chọn
       }))
@@ -160,7 +164,7 @@ export default function ProductDetail() {
 
   const handleMouseMove = (e) => {
     if (!imgRef.current) return;
-    
+
     const { left, top, width, height } = imgRef.current.getBoundingClientRect();
     const x = ((e.pageX - left - window.scrollX) / width) * 100;
     const y = ((e.pageY - top - window.scrollY) / height) * 100;
@@ -206,15 +210,15 @@ export default function ProductDetail() {
         <div className="product">
           <div className="product-images-section">
             <div className="image-zoom-container">
-              <div 
+              <div
                 className={`images ${zoomStyle.display === 'block' ? 'zoomed' : ''}`}
-                onMouseMove={handleMouseMove} 
+                onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >
-                <img 
+                <img
                   ref={imgRef}
-                  src={mainImage} 
-                  alt={product.prod_name} 
+                  src={mainImage}
+                  alt={product.prod_name}
                 />
                 <div className="zoom-lens" style={lensStyle}></div>
               </div>
@@ -231,7 +235,7 @@ export default function ProductDetail() {
               >
                 {allImages.map((img, idx) => (
                   <SwiperSlide key={idx}>
-                    <div 
+                    <div
                       className={`thumbnail-item ${mainImage === img ? 'active' : ''}`}
                       onClick={() => setMainImage(img)}
                     >
@@ -267,15 +271,15 @@ export default function ProductDetail() {
                 <label>Màu sắc:</label>
                 <div className="variant-options">
                   {product.colors.map((c, idx) => (
-                    <label 
-                      key={idx} 
+                    <label
+                      key={idx}
                       className={`variant-item ${selectedVariants['Màu sắc'] === c.color ? 'selected' : ''}`}
                       onClick={() => setSelectedVariants(prev => ({ ...prev, 'Màu sắc': c.color }))}
                     >
-                      <input 
-                        type="radio" 
-                        name="color" 
-                        value={c.color} 
+                      <input
+                        type="radio"
+                        name="color"
+                        value={c.color}
                         checked={selectedVariants['Màu sắc'] === c.color}
                         readOnly
                       />
@@ -291,15 +295,15 @@ export default function ProductDetail() {
                 <label>Kích cỡ:</label>
                 <div className="variant-options">
                   {product.sizes.map((s, idx) => (
-                    <label 
-                      key={idx} 
+                    <label
+                      key={idx}
                       className={`variant-item ${selectedVariants['Kích cỡ'] === s.size ? 'selected' : ''}`}
                       onClick={() => setSelectedVariants(prev => ({ ...prev, 'Kích cỡ': s.size }))}
                     >
-                      <input 
-                        type="radio" 
-                        name="size" 
-                        value={s.size} 
+                      <input
+                        type="radio"
+                        name="size"
+                        value={s.size}
                         checked={selectedVariants['Kích cỡ'] === s.size}
                         readOnly
                       />

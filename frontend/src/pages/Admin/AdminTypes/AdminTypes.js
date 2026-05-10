@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import './AdminTypes.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash, faPlus, faFileExport, faFileImport } from '@fortawesome/free-solid-svg-icons';
-import { 
-  useGetTypesAdminQuery, 
+import {
+  useGetTypesAdminQuery,
   useDeleteTypeMutation,
-  useImportTypesMutation 
+  useImportTypesMutation
 } from '../../../features/services/typeApi';
 import AdminTypeForm from './AdminTypeForm';
 import Swal from 'sweetalert2';
@@ -89,22 +89,22 @@ export default function AdminTypes() {
       <div className="admin-header-flex">
         <h1>Quản lý phân loại</h1>
         <div className="admin-header-btns">
-            <button className="btn-add-type" onClick={openAddForm}>
-                <FontAwesomeIcon icon={faPlus} /> Thêm phân loại
-            </button>
-            <button className="btn-export-excel" onClick={handleExportExcel}>
-                <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
-            </button>
-            <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
-                <FontAwesomeIcon icon={faFileImport} /> Import Excel
-            </button>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                accept=".xlsx, .xls" 
-                onChange={handleImportExcel}
-            />
+          <button className="btn-add-type" onClick={openAddForm}>
+            <FontAwesomeIcon icon={faPlus} /> Thêm phân loại
+          </button>
+          <button className="btn-export-excel" onClick={handleExportExcel}>
+            <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
+          </button>
+          <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
+            <FontAwesomeIcon icon={faFileImport} /> Import Excel
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".xlsx, .xls"
+            onChange={handleImportExcel}
+          />
         </div>
       </div>
 
@@ -154,15 +154,15 @@ export default function AdminTypes() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan="5" style={{textAlign:'center'}}>Đang tải...</td></tr>
+              <tr><td colSpan="5" style={{ textAlign: 'center' }}>Đang tải...</td></tr>
             ) : types.length === 0 ? (
-                <tr><td colSpan="5" style={{textAlign:'center'}}>Không tìm thấy phân loại nào.</td></tr>
+              <tr><td colSpan="5" style={{ textAlign: 'center' }}>Không tìm thấy phân loại nào.</td></tr>
             ) : types.map((type, idx) => (
               <tr key={type._id}>
                 <td>{(page - 1) * limit + idx + 1}</td>
                 <td>{type.type_name}</td>
-                <td>{type.create_at ? dayjs(type.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
-                <td>{type.update_at ? dayjs(type.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{type.create_at ? dayjs(type.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                <td>{type.update_at ? dayjs(type.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td className="actions-cell">
                   <FontAwesomeIcon icon={faPenToSquare} className="icon-edit" onClick={() => openEditForm(type)} />
                   <FontAwesomeIcon icon={faTrash} className="icon-delete" onClick={() => handleDelete(type._id)} />
@@ -182,9 +182,9 @@ export default function AdminTypes() {
       )}
 
       {showForm && (
-        <AdminTypeForm 
-          type={editingType} 
-          onClose={() => setShowForm(false)} 
+        <AdminTypeForm
+          type={editingType}
+          onClose={() => setShowForm(false)}
           refetch={refetch}
         />
       )}

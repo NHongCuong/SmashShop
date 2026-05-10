@@ -2,10 +2,10 @@ import React, { useState, useRef } from 'react';
 import './AdminBrands.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash, faPlus, faFileExport, faFileImport } from '@fortawesome/free-solid-svg-icons';
-import { 
-  useGetBrandsAdminQuery, 
+import {
+  useGetBrandsAdminQuery,
   useDeleteBrandMutation,
-  useImportBrandsMutation 
+  useImportBrandsMutation
 } from '../../../features/services/brandApi';
 import AdminBrandForm from './AdminBrandForm';
 import Swal from 'sweetalert2';
@@ -89,22 +89,22 @@ export default function AdminBrands() {
       <div className="admin-header-flex">
         <h1>Quản lý thương hiệu</h1>
         <div className="admin-header-btns">
-            <button className="btn-add-brand" onClick={openAddForm}>
-                <FontAwesomeIcon icon={faPlus} /> Thêm thương hiệu
-            </button>
-            <button className="btn-export-excel" onClick={handleExportExcel}>
-                <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
-            </button>
-            <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
-                <FontAwesomeIcon icon={faFileImport} /> Import Excel
-            </button>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                accept=".xlsx, .xls" 
-                onChange={handleImportExcel}
-            />
+          <button className="btn-add-brand" onClick={openAddForm}>
+            <FontAwesomeIcon icon={faPlus} /> Thêm thương hiệu
+          </button>
+          <button className="btn-export-excel" onClick={handleExportExcel}>
+            <FontAwesomeIcon icon={faFileExport} /> Xuất Excel
+          </button>
+          <button className="btn-import-excel" onClick={() => fileInputRef.current.click()}>
+            <FontAwesomeIcon icon={faFileImport} /> Import Excel
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".xlsx, .xls"
+            onChange={handleImportExcel}
+          />
         </div>
       </div>
 
@@ -154,15 +154,15 @@ export default function AdminBrands() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan="5" style={{textAlign:'center'}}>Đang tải...</td></tr>
+              <tr><td colSpan="5" style={{ textAlign: 'center' }}>Đang tải...</td></tr>
             ) : brands.length === 0 ? (
-                <tr><td colSpan="5" style={{textAlign:'center'}}>Không tìm thấy thương hiệu nào.</td></tr>
+              <tr><td colSpan="5" style={{ textAlign: 'center' }}>Không tìm thấy thương hiệu nào.</td></tr>
             ) : brands.map((brand, idx) => (
               <tr key={brand._id}>
                 <td>{(page - 1) * limit + idx + 1}</td>
                 <td>{brand.brand_name}</td>
-                <td>{brand.create_at ? dayjs(brand.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
-                <td>{brand.update_at ? dayjs(brand.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{brand.create_at ? dayjs(brand.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                <td>{brand.update_at ? dayjs(brand.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td className="actions-cell">
                   <FontAwesomeIcon icon={faPenToSquare} className="icon-edit" onClick={() => openEditForm(brand)} />
                   <FontAwesomeIcon icon={faTrash} className="icon-delete" onClick={() => handleDelete(brand._id)} />
@@ -182,9 +182,9 @@ export default function AdminBrands() {
       )}
 
       {showForm && (
-        <AdminBrandForm 
-          brand={editingBrand} 
-          onClose={() => setShowForm(false)} 
+        <AdminBrandForm
+          brand={editingBrand}
+          onClose={() => setShowForm(false)}
           refetch={refetch}
         />
       )}

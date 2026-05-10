@@ -198,8 +198,8 @@ const AdminReviews = () => {
                                     <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {r.comment}
                                     </td>
-                                    <td>{dayjs(r.create_at).utc().format('DD/MM/YYYY')}</td>
-                                    <td>{r.update_at ? dayjs(r.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                                    <td>{dayjs(r.create_at).utc().format('DD/MM/YYYY HH:mm:ss')}</td>
+                                    <td>{r.update_at ? dayjs(r.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                                     <td>
                                         <div className="action-icons">
                                             <FontAwesomeIcon

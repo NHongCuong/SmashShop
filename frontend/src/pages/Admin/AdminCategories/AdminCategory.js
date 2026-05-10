@@ -165,8 +165,8 @@ export default function AdminCategory() {
                   <img src={cat.image || 'https://via.placeholder.com/50'} alt={cat.category_name} className="cat-img-preview" />
                 </td>
                 <td>{cat.category_name}</td>
-                <td>{cat.create_at ? dayjs(cat.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
-                <td>{cat.update_at ? dayjs(cat.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{cat.create_at ? dayjs(cat.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                <td>{cat.update_at ? dayjs(cat.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td className="actions-cell">
                   <FontAwesomeIcon icon={faPenToSquare} className="icon-edit" onClick={() => openEditForm(cat)} />
                   <FontAwesomeIcon icon={faTrash} className="icon-delete" onClick={() => handleDelete(cat._id)} />

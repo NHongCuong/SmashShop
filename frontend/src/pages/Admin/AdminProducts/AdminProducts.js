@@ -145,19 +145,19 @@ export default function AdminProducts() {
               <tr key={product.id} onClick={() => navigate(`/admin/products/${product.id}`)}>
                 <td>{(page - 1) * limit + idx + 1}</td>
                 <td className="prod-img-cell">
-                  <img 
-                    src={`${product.images?.[0]?.image?.[0] || ''}`} 
-                    loading='lazy' 
-                    alt={product.prod_name} 
-                    className="product-img" 
+                  <img
+                    src={`${product.images?.[0]?.image?.[0] || ''}`}
+                    loading='lazy'
+                    alt={product.prod_name}
+                    className="product-img"
                   />
                 </td>
                 <td className="prod-name-cell">{product.prod_name}</td>
                 <td>{product.category_id?.category_name || '---'}</td>
                 <td>{product.brand_id?.brand_name || '---'}</td>
                 <td>{product.price.toLocaleString('vi-VN')}₫</td>
-                <td>{product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY') : '---'}</td>
-                <td>{product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                <td>{product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                <td>{product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td onClick={e => e.stopPropagation()} className='ad-product-edit-delete'>
                   <FontAwesomeIcon
                     icon={faPenToSquare}

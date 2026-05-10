@@ -150,8 +150,8 @@ const AdminWishlists = () => {
                                 <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {w.product?.prod_name || 'Không rõ'}
                                 </td>
-                                <td>{dayjs(w.create_at).utc().format('DD/MM/YYYY')}</td>
-                                <td>{w.update_at ? dayjs(w.update_at).utc().format('DD/MM/YYYY') : '---'}</td>
+                                <td>{dayjs(w.create_at).utc().format('DD/MM/YYYY HH:mm:ss')}</td>
+                                <td>{w.update_at ? dayjs(w.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                                 <td>
                                     <div className="action-icons">
                                         <FontAwesomeIcon

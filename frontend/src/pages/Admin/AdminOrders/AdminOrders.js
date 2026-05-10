@@ -207,8 +207,8 @@ const AdminOrders = () => {
                   <td>{order.user_id?.phone_number || "Không rõ"}</td> */}
                   <td>{order.shipping?.name || "Không rõ"}</td>
                   <td>{order.shipping?.phone || "Không rõ"}</td>
-                  <td>{order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY') : '---'}</td>
-                  <td>{order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY') : '---'}</td>
+                  <td>{order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
+                  <td>{order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                   <td>
                     <span className={`status-label ${statuses[order.status] || 'unknown'}`}>
                       {order.status}
