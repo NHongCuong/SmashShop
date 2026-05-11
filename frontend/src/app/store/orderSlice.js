@@ -8,15 +8,15 @@ const orderSlice = createSlice({
     reducers: {},
     extraReducers: builder => {
         builder
-        .addCase(createOrderThunk.pending, state => { state.status = 'loading'; })
-        .addCase(createOrderThunk.fulfilled, (state, action) => {
-            state.status = 'succeeded';
-            state.lastOrder = action.payload;
-        })
-        .addCase(createOrderThunk.rejected, (state, action) => {
-            state.status = 'failed';
-            state.error = action.payload;
-        });
+            .addCase(createOrderThunk.pending, state => { state.status = 'loading'; })
+            .addCase(createOrderThunk.fulfilled, (state, action) => {
+                state.status = 'Succeeded';
+                state.lastOrder = action.payload;
+            })
+            .addCase(createOrderThunk.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
+            });
     }
 });
 export default orderSlice.reducer;

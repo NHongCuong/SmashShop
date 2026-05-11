@@ -45,6 +45,11 @@ export const productApi = createApi({
             transformResponse: (response) => response.data,
             providesTags: ['Product'],
         }),
+        getProductById: builder.query({
+            query: (id) => `products/${id}`,
+            transformResponse: (response) => response.data,
+            providesTags: (result, error, id) => [{ type: 'Product', id }],
+        }),
         createProduct: builder.mutation({
             query: (productData) => ({
                 url: 'products',
@@ -86,4 +91,14 @@ export const productApi = createApi({
         }),
     })
 })
-export const { useGetProductsQuery, useGetAllProductsQuery, useCreateProductMutation, useUpdateProductMutation, useGetAllBrandsQuery, useGetAllTypesQuery, useDeactiveProductMutation, useImportProductsMutation } = productApi;
+export const { 
+    useGetProductsQuery, 
+    useGetAllProductsQuery, 
+    useGetProductByIdQuery,
+    useCreateProductMutation, 
+    useUpdateProductMutation, 
+    useGetAllBrandsQuery, 
+    useGetAllTypesQuery, 
+    useDeactiveProductMutation, 
+    useImportProductsMutation 
+} = productApi;

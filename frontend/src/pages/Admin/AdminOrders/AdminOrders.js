@@ -5,6 +5,8 @@ import { useGetOrdersQuery, useGetAllOrdersQuery, useDeleteOrderMutation } from 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 
 dayjs.extend(utc);
 
@@ -131,7 +133,7 @@ const AdminOrders = () => {
     <div className="admin-orders">
       <h2>Danh sách đơn hàng</h2>
       <div className="orders-controls admin-controls">
-        <div className="controls-left">
+        <div className="controls-left-order">
           <label>
             Hiển thị:
             <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
@@ -142,15 +144,17 @@ const AdminOrders = () => {
               <option value={200}>200</option>
             </select>
           </label>
-          <button className="btn-export-excel" onClick={handleExportExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Download file excel tất cả đơn hàng
+          <button className="btn-export-excel" onClick={handleExportExcel} style={{ marginLeft: '10px', padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} />
+            Export Đơn Hàng
           </button>
-          <button className="btn-export-excel" onClick={handleExportDetailedExcel} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Download file excel chi tiết đơn hàng
+          <button className="btn-export-excel" onClick={handleExportDetailedExcel} style={{ marginLeft: '10px', padding: '8px 16px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} />
+            Export Đơn Hàng Chi Tiết
           </button>
 
         </div>
-        <div className="controls-right">
+        <div className="controls-right-order">
           <input
             type="text"
             placeholder="Tìm theo mã đơn, khách hàng, SĐT..."

@@ -3,7 +3,13 @@ import { useGetProductsQuery } from '../../../features/product/productApi';
 import { useParams } from 'react-router-dom';
 import './AdminProductDetail.css';
 import ReactMarkdown from 'react-markdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const AdminProductDetail = () => {
   const { id } = useParams();
@@ -38,17 +44,22 @@ const AdminProductDetail = () => {
 
     const dataToExport = products.map((product, index) => ({
       "STT": index + 1,
-      "Ảnh": product.images?.[0]?.image?.[0] || "",
       "Tên sản phẩm": product.prod_name,
+      "product-url": product.product_url || "",
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",
       "Giá": product.price,
+      "Ngày tạo": product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY') : "",
+      "Ngày sửa": product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY') : "",
       "Số lượng trong kho": product.stock,
       "Đã bán": product.quantity_sold,
       "Giảm giá": product.discount || 0,
       "Loại": product.type_id?.type_name || "",
-      "Thương hiệu ": product.brand_id?.brand_name || "",
       "Mã voucher": product.voucher_id?.voucher_name || "",
+      "Màu sắc": product.colors?.map(c => c.color).join(', ') || "",
+      "Kích cỡ": product.sizes?.map(s => s.size).join(', ') || "",
+      "Ảnh": product.images?.[0]?.image?.[0] || "",
+      "Mô tả": product.description || "",
     }));
 
     const totalPrice = products.reduce((sum, p) => sum + (p.price || 0), 0);
@@ -67,8 +78,11 @@ const AdminProductDetail = () => {
     <div className="admin-product-detail">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Thông tin sản phẩm</h1>
-        <button className="btn-export-excel" onClick={handleExportExcel} style={{ padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Download file excel tất cả sản phẩm
+        <button className="btn-export-excel" onClick={handleExportExcel} style={{ padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+          <>
+            <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} />
+            Export Sản Phẩm
+          </>
         </button>
       </div>
       <div className="product-detail-container">
@@ -82,6 +96,7 @@ const AdminProductDetail = () => {
         <div className="product-info">
           <p><strong>ID:</strong> {product.prod_id}</p>
           <p className="prod-name"><strong>Tên sản phẩm:</strong> {prod_name}</p>
+          <p><strong>URL:</strong> {product.product_url || 'Chưa có'}</p>
           <p className="price"><strong>Giá:</strong> {price.toLocaleString()} VND</p>
           <p><strong>Số lượng trong kho:</strong> {stock}</p>
           <p><strong>Đã bán:</strong> {quantity_sold}</p>
@@ -89,8 +104,9 @@ const AdminProductDetail = () => {
           <p><strong>Loại:</strong> {type_id?.type_name}</p>
           <p><strong>Danh mục:</strong> {category_id?.category_name}</p>
           <p><strong>Thương hiệu:</strong> {brand_id?.brand_name}</p>
-          <p><strong>Mã voucher:</strong> {voucher_id?.voucher_name}</p>
-
+          <p><strong>Màu sắc:</strong> {product.colors?.map(c => c.color).join(', ') || 'N/A'}</p>
+          <p><strong>Kích cỡ:</strong> {product.sizes?.map(s => s.size).join(', ') || 'N/A'}</p>
+          <p><strong>Mã voucher:</strong> {voucher_id?.voucher_name || 'Không có'}</p>
         </div>
       </div>
       <div className="ad-product-des details">

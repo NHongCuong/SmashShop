@@ -38,6 +38,7 @@ import Contact from '../pages/Contact/Contact';
 import AdminWishlists from '../pages/Admin/AdminWishlists/AdminWishlists';
 import AdminPosts from '../pages/Admin/AdminPosts/AdminPosts';
 import AdminPostForm from '../pages/Admin/AdminPosts/AdminPostForm';
+import AdminPostDetail from '../pages/Admin/AdminPostDetail/AdminPostDetail';
 import Guide from '../pages/Guide/Guide';
 import PostDetail from '../pages/Guide/PostDetail';
 
@@ -103,6 +104,7 @@ const pages = [
             { path: 'wishlists', Component: AdminWishlists },
             { path: 'posts', Component: AdminPosts },
             { path: 'posts/add', Component: AdminPostForm },
+            { path: 'posts/:id', Component: AdminPostDetail },
             { path: 'posts/edit/:id', Component: AdminPostForm },
 
         ],

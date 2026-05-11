@@ -7,10 +7,10 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-section">
-        <h2>SMASH SHOP</h2>
+        <h2>HC SHOP</h2>
         <p>Địa chỉ: 4 einstein Bình Thọ,<br />Thủ Đức Bình Dương</p>
         <p>Phone: 0557-843-408</p>
-        <p>Email: Smahshop@gmail.com</p>
+        <p>Email: hcshop@gmail.com</p>
       </div>
 
       <div className="footer-section">
@@ -23,9 +23,9 @@ const Footer = () => {
       <div className="footer-section">
         <h3>Kết nối với chúng tôi</h3>
         <div className="footer-social-icons">
-          <FontAwesomeIcon icon={faFacebook} className="footer-social-icon"/>
-          <FontAwesomeIcon icon={faYoutube} className="footer-social-icon"/>
-          <FontAwesomeIcon icon={faInstagram} className="footer-social-icon"/>
+          <FontAwesomeIcon icon={faFacebook} className="footer-social-icon" />
+          <FontAwesomeIcon icon={faYoutube} className="footer-social-icon" />
+          <FontAwesomeIcon icon={faInstagram} className="footer-social-icon" />
         </div>
       </div>
 

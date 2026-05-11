@@ -53,7 +53,7 @@ const AdminPosts = () => {
 
     const handleExportExcel = () => {
         if (!data?.posts) return;
-        
+
         const exportData = data.posts.map((post, index) => ({
             STT: (page - 1) * limit + index + 1,
             Title: post.title,
@@ -93,7 +93,7 @@ const AdminPosts = () => {
                 const cat = categories?.find(c => c.category_name === item.Category);
                 // Find User ID (Author)
                 const author = adminUsers?.find(u => u.name === item.Author);
-                
+
                 // Parse Content_Heading and Content_Body (separated by '; ')
                 const headings = item.Content_Heading ? item.Content_Heading.split('; ') : [];
                 const bodies = item.Content_Body ? item.Content_Body.split('; ') : [];
@@ -151,9 +151,9 @@ const AdminPosts = () => {
 
             <div className="admin-posts-filters">
                 <div className="filter-group">
-                    <input 
-                        type="text" 
-                        placeholder="Tìm kiếm tiêu đề hoặc danh mục..." 
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm tiêu đề hoặc danh mục..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
@@ -170,8 +170,8 @@ const AdminPosts = () => {
                     <select value={sort} onChange={(e) => setSort(e.target.value)}>
                         <option value="latest">Mới nhất</option>
                         <option value="oldest">Cũ nhất</option>
-                        <option value="a-z">A-Z (Tên danh mục)</option>
-                        <option value="z-a">Z-A (Tên danh mục)</option>
+                        <option value="a-z">A-Z (Tiêu đề)</option>
+                        <option value="z-a">Z-A (Tiêu đề)</option>
                     </select>
                     <select value={limit} onChange={(e) => { setLimit(e.target.value); setPage(1); }}>
                         <option value="10">Hiển thị 10</option>
@@ -203,7 +203,13 @@ const AdminPosts = () => {
                             <td>
                                 <img src={post.images?.[0] || 'https://via.placeholder.com/50'} alt={post.title} className="post-thumb" />
                             </td>
-                            <td className="post-title-cell">{post.title}</td>
+                            <td 
+                                className="post-title-cell" 
+                                onClick={() => navigate(`/admin/posts/${post._id}`)}
+                                style={{ cursor: 'pointer', color: '#007bff' }}
+                            >
+                                {post.title}
+                            </td>
                             <td>
                                 <div className="post-summary">
                                     <strong>{post.total_content?.[0]?.headling}</strong>: {post.total_content?.[0]?.content?.substring(0, 50)}...
@@ -213,8 +219,8 @@ const AdminPosts = () => {
                             <td>{post.user_id?.name}</td>
                             <td>{new Date(post.createdAt).toLocaleDateString()}</td>
                             <td title={new Date(post.updatedAt).toLocaleString()}>
-                                {new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 5000 
-                                    ? new Date(post.updatedAt).toLocaleDateString() 
+                                {new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 5000
+                                    ? new Date(post.updatedAt).toLocaleDateString()
                                     : '---'}
                             </td>
                             <td className="actions-cell">
@@ -231,15 +237,15 @@ const AdminPosts = () => {
             </table>
 
             <div className="pagination">
-                <button 
-                    disabled={page === 1} 
+                <button
+                    disabled={page === 1}
                     onClick={() => setPage(page - 1)}
                 >
                     Trước
                 </button>
                 <span>Trang {page} / {data.totalPages}</span>
-                <button 
-                    disabled={page === data.totalPages} 
+                <button
+                    disabled={page === data.totalPages}
                     onClick={() => setPage(page + 1)}
                 >
                     Sau

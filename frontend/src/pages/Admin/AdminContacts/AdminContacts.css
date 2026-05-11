@@ -35,13 +35,19 @@
     transition: all 0.3s ease;
 }
 
-.btn-export-excel { background-color: #27ae60; color: #fff; }
-.btn-export-excel:hover { background-color: #1e8449; }
+.btn-export-excel {
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.btn-export-excel:hover {
+    background-color: #1e8449;
+}
 
 .admin-table-wrapper {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -71,8 +77,15 @@
     font-size: 18px;
 }
 
-.icon-delete { color: #e74c3c; cursor: pointer; transition: color 0.2s; }
-.icon-delete:hover { color: #c0392b; }
+.icon-delete {
+    color: #e74c3c;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.icon-delete:hover {
+    color: #c0392b;
+}
 
 .contact-message-cell {
     max-width: 250px;
@@ -83,6 +96,7 @@
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     white-space: normal;
     font-size: 0.9rem;
@@ -113,26 +127,30 @@
     background: #fff;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
 }
 
-.controls-left, .controls-right {
+.controls-left-contact,
+.controls-right-contact {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.admin-controls-wrapper select, .admin-controls-wrapper input {
+.admin-controls-wrapper select,
+.admin-controls-wrapper input {
     padding: 6px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     outline: none;
 }
 
-.search-input { width: 300px; }
+.search-input {
+    width: 300px;
+}
 
 .admin-pagination {
     display: flex;

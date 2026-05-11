@@ -13,6 +13,35 @@ const ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();
 
+// Utility: generate slug from product name (max 100 chars)
+const generateSlug = (text) => {
+    if (!text) return "";
+    const vietnameseMap = {
+        à: "a", á: "a", ả: "a", ã: "a", ạ: "a",
+        ă: "a", ắ: "a", ằ: "a", ẳ: "a", ẵ: "a", ặ: "a",
+        â: "a", ấ: "a", ầ: "a", ẩ: "a", ẫ: "a", ậ: "a",
+        è: "e", é: "e", ẻ: "e", ẽ: "e", ẹ: "e",
+        ê: "e", ế: "e", ề: "e", ể: "e", ễ: "e", ệ: "e",
+        ì: "i", í: "i", ỉ: "i", ĩ: "i", ị: "i",
+        ò: "o", ó: "o", ỏ: "o", õ: "o", ọ: "o",
+        ô: "o", ố: "o", ồ: "o", ổ: "o", ỗ: "o", ộ: "o",
+        ơ: "o", ớ: "o", ờ: "o", ở: "o", ỡ: "o", ợ: "o",
+        ù: "u", ú: "u", ủ: "u", ũ: "u", ụ: "u",
+        ư: "u", ứ: "u", ừ: "u", ử: "u", ữ: "u", ự: "u",
+        ỳ: "y", ý: "y", ỷ: "y", ỹ: "y", ỵ: "y",
+        đ: "d",
+    };
+    return text
+        .toLowerCase()
+        .replace(/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/g,
+            (c) => vietnameseMap[c] || c)
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .substring(0, 100);
+};
+
 // Hàm hỗ trợ tạo mô tả bằng AI
 const exampleDescription = `Vợt cầu lông Yonex Astrox 99 Pro là một trong những cây vợt cao cấp nhất của Yonex, được thiết kế dành riêng cho người chơi theo phong cách tấn công mạnh mẽ và uy lực. Với hàng loạt công nghệ tiên tiến, cây vợt này mang đến hiệu suất vượt trội cho các vận động viên chuyên nghiệp và người chơi có kỹ thuật cao.
                 
@@ -59,19 +88,37 @@ const generateAIDescription = async (prod_name) => {
     return result.response.text();
 }
 
-// Lấy sản phẩm theo id 
+// Lấy sản phẩm theo id hoặc product_url (slug)
 export const fetchProductById = async (req, res) => {
-    const productId = req.params.id;
+    const param = req.params.id;
     try {
-        const product = await Product.findOne({ _id: productId, is_active: true })
-            .populate('category_id')
-            .populate('brand_id')
-            .populate('type_id')
-            .populate('voucher_id')
-            .populate({
-                path: 'images',
-                select: 'image is_primary_image -prod_id',
-            })
+        let product = null;
+
+        // Kiểm tra xem param có phải là ObjectId hay không
+        if (mongoose.Types.ObjectId.isValid(param)) {
+            product = await Product.findOne({ _id: param, is_active: true })
+                .populate('category_id')
+                .populate('brand_id')
+                .populate('type_id')
+                .populate('voucher_id')
+                .populate({
+                    path: 'images',
+                    select: 'image is_primary_image -prod_id',
+                });
+        }
+
+        // Nếu không phải hoặc không tìm thấy theo id, tìm theo product_url (slug)
+        if (!product) {
+            product = await Product.findOne({ product_url: param, is_active: true })
+                .populate('category_id')
+                .populate('brand_id')
+                .populate('type_id')
+                .populate('voucher_id')
+                .populate({
+                    path: 'images',
+                    select: 'image is_primary_image -prod_id',
+                });
+        }
 
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
@@ -186,9 +233,18 @@ export const createProduct = async (req, res) => {
     }
 
     try {
+        const slug = generateSlug(prod_name);
+        // Ensure slug uniqueness
+        let finalSlug = slug;
+        const existing = await Product.findOne({ product_url: slug });
+        if (existing) {
+            finalSlug = `${slug}-${Date.now().toString().slice(-4)}`;
+        }
+
         const newProduct = new Product({
             prod_id: productMaxId ? productMaxId.prod_id + 1 : 1,
             prod_name,
+            product_url: finalSlug,
             price,
             description: finalDescription,
             quantity_sold,
@@ -228,7 +284,7 @@ export const createProduct = async (req, res) => {
 // Cập nhật thông tin sản phẩm
 export const updateProduct = async (req, res) => {
     const productId = req.params.id;
-    let { prod_name, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
+    let { prod_name, product_url, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
 
     if (typeof colors === 'string') {
         colors = colors.split(',').map(c => ({ color: c.trim() })).filter(c => c.color !== '');
@@ -255,28 +311,41 @@ export const updateProduct = async (req, res) => {
     }
 
     try {
-        const product = await Product.findByIdAndUpdate(
-            productId,
-            { 
-                prod_name, 
-                price, 
-                description, 
-                quantity_sold, 
-                stock, 
-                discount: discount || 0, 
-                category_id, 
-                brand_id, 
-                type_id, 
-                voucher_id: voucher_id || null,
-                update_at: getVietnamTime(),
-                colors: colors || [],
-                sizes: sizes || []
-            },
-            { new: true }
-        )
+        const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
+
+        // Cập nhật các trường
+        product.prod_name = prod_name;
+        product.price = price;
+        product.description = description;
+        product.quantity_sold = quantity_sold;
+        product.stock = stock;
+        product.discount = discount || 0;
+        product.category_id = category_id;
+        product.brand_id = brand_id;
+        product.type_id = type_id;
+        product.voucher_id = voucher_id || null;
+        product.update_at = getVietnamTime();
+        product.colors = colors || [];
+        product.sizes = sizes || [];
+
+        // Xử lý product_url (slug)
+        if (product_url !== undefined) {
+            const newSlug = product_url.trim() || generateSlug(prod_name);
+            // Check uniqueness if slug changed
+            if (newSlug !== product.product_url) {
+                const conflict = await Product.findOne({ product_url: newSlug, _id: { $ne: product._id } });
+                product.product_url = conflict ? `${newSlug}-${Date.now().toString().slice(-4)}` : newSlug;
+            }
+        } else if (prod_name !== product.prod_name) {
+             // If name changed but no url provided, maybe regenerate? 
+             // To be safe and simple, only update if name changes and current url is auto-gen or empty
+             // but let's just stick to the manual override for now to match post logic.
+        }
+
+        await product.save();
 
         // Xử lý Ảnh: Kết hợp ảnh cũ còn lại và ảnh mới upload
         const { remainingOldImages } = req.body;
@@ -337,20 +406,22 @@ export const importProducts = async (req, res) => {
         const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
 
-        if (data.length <= 1) {
-            return res.status(400).json({ success: false, message: "File excel không có dữ liệu." });
+    if (data.length <= 1) {
+        return res.status(400).json({ success: false, message: "File excel không có dữ liệu." });
         }
 
         const rows = data.slice(1);
-        const [categories, brands, types] = await Promise.all([
+        const [categories, brands, types, vouchers] = await Promise.all([
             Category.find({}),
             Brand.find({}),
-            Type.find({})
+            Type.find({}),
+            Voucher.find({})
         ]);
 
         const categoryMap = {}; categories.forEach(c => categoryMap[c.category_name.toLowerCase()] = c._id);
         const brandMap = {}; brands.forEach(b => brandMap[b.brand_name.toLowerCase()] = b._id);
         const typeMap = {}; types.forEach(t => typeMap[t.type_name.toLowerCase()] = t._id);
+        const voucherMap = {}; vouchers.forEach(v => voucherMap[v.voucher_name.toLowerCase()] = v._id);
 
         let productMaxIdDoc = await Product.findOne({}).sort({ prod_id: -1 });
         let currentProdId = productMaxIdDoc ? productMaxIdDoc.prod_id : 0;
@@ -365,7 +436,7 @@ export const importProducts = async (req, res) => {
             const row = rows[i];
             if (!row || row.length === 0) continue;
 
-            const [prod_name, price, stock, quantity_sold, description, category_name, brand_name, type_name, discount, image_url] = row;
+            const [prod_name, price, stock, quantity_sold, description, category_name, brand_name, type_name, discount, image_url, voucher_name, colors_str, sizes_str] = row;
 
             if (!prod_name || price === undefined) {
                 errors.push(`Dòng ${i + 2}: Thiếu tên sản phẩm hoặc giá.`);
@@ -375,11 +446,21 @@ export const importProducts = async (req, res) => {
             const category_id = categoryMap[String(category_name || '').toLowerCase()];
             const brand_id = brandMap[String(brand_name || '').toLowerCase()];
             const type_id = typeMap[String(type_name || '').toLowerCase()];
+            const voucher_id = voucherMap[String(voucher_name || '').toLowerCase()];
 
             if (!category_id || !brand_id || !type_id) {
                 errors.push(`Dòng ${i + 2}: Danh mục, thương hiệu hoặc loại không tồn tại.`);
                 continue;
             }
+
+            // Parse colors and sizes
+            const parsedColors = String(colors_str || '').split(',')
+                .map(c => ({ color: c.trim() }))
+                .filter(c => c.color !== '');
+            
+            const parsedSizes = String(sizes_str || '').split(',')
+                .map(s => ({ size: s.trim() }))
+                .filter(s => s.size !== '');
 
             let finalDescription = description || '';
             if (finalDescription === "Using AI") {
@@ -391,10 +472,18 @@ export const importProducts = async (req, res) => {
                 }
             }
 
+            const slug = generateSlug(prod_name);
+            let finalSlug = slug;
+            const existing = await Product.findOne({ product_url: slug });
+            if (existing) {
+                finalSlug = `${slug}-${Date.now().toString().slice(-4)}`;
+            }
+
             currentProdId++;
             const newProduct = new Product({
                 prod_id: currentProdId,
                 prod_name,
+                product_url: finalSlug,
                 price: Number(price),
                 stock: Number(stock || 0),
                 quantity_sold: Number(quantity_sold || 0),
@@ -402,6 +491,9 @@ export const importProducts = async (req, res) => {
                 category_id,
                 brand_id,
                 type_id,
+                voucher_id: voucher_id || null,
+                colors: parsedColors,
+                sizes: parsedSizes,
                 discount: Number(discount || 0)
             });
 

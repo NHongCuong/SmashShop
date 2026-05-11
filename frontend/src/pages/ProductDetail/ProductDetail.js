@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer.js';
-import { useGetProductsQuery } from "../../features/product/productApi.js";
+import { useGetProductsQuery, useGetProductByIdQuery } from "../../features/product/productApi.js";
 import { apiAddItem } from '../../apis/cart.js';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,8 +28,8 @@ export default function ProductDetail() {
   const [lensStyle, setLensStyle] = useState({ display: 'none' });
   const imgRef = useRef(null);
   const { id } = useParams();
-  const { data: products = [], isLoading: isLoadingProducts } = useGetProductsQuery();
-  const product = products.find((p) => p._id === id);
+  const { data: product, isLoading: isLoadingProduct } = useGetProductByIdQuery(id);
+  const { data: allProducts = [] } = useGetProductsQuery();
 
   // Lấy tất cả ảnh từ model mới
   const allImages = (product?.images || []).flatMap(img =>
@@ -155,8 +155,8 @@ export default function ProductDetail() {
       }
     });
   };
-  if (isLoadingProducts) {
-    return <><Header /><div className="container">Đang tải sản phẩm...</div><Footer /></>;
+  if (isLoadingProduct) {
+    return <><Header /><div className="container" style={{padding: '100px 0', textAlign: 'center'}}>Đang tải sản phẩm...</div><Footer /></>;
   }
   if (!product) {
     return <><Header /><div className="container">Không tìm thấy sản phẩm.</div><Footer /></>;
@@ -378,12 +378,12 @@ export default function ProductDetail() {
 
         <div className="home-section-title">Sản phẩm tương tự</div>
         <div className="similar-products">
-          {products
-            .filter((p) => p.category_id.category_name === product.category_id.category_name && p._id !== product._id)
+          {allProducts
+            .filter((p) => p.category_id?._id === product.category_id?._id && p._id !== product._id)
             .slice(0, 4)
             .map((prod, i) => (
-              <div key={i} className="product-item" onClick={() => navigate(`/product/${prod.id}`)}>
-                <img src={prod.images?.[0]?.image?.[0] || ''} alt={prod.name} />
+              <div key={i} className="product-item" onClick={() => navigate(`/product/${prod.product_url || prod._id}`)}>
+                <img src={(prod.images?.[0]?.image?.[0] || prod.images?.[0]?.image || '')} alt={prod.prod_name} />
                 <div>{prod.prod_name}</div>
                 <div className="price">{prod.price.toLocaleString('vi-VN')} ₫</div>
               </div>

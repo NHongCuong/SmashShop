@@ -22,13 +22,88 @@
   }
   
   .product-form input,
-  .product-form select,
-  .product-form textarea {
-    padding: 0.5rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
+.product-form select,
+.product-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* ---- Product URL field ---- */
+.url-input-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.3s;
+  margin-bottom: 15px;
+}
+
+.url-input-row:focus-within {
+  border-color: #2b9d00;
+}
+
+.url-prefix {
+  background: #f5f5f5;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #888;
+  border-right: 1px solid #ddd;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+}
+
+.url-input-row input {
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  outline: none;
+  background: transparent;
+  margin-bottom: 0 !important;
+}
+
+.url-input-row input.url-auto {
+  background: #f1fff1;
+  color: #2b6e00;
+}
+
+.btn-regen-url {
+  background: #f0f0f0;
+  border: none !important;
+  border-left: 1px solid #ddd !important;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.2s;
+  width: auto !important;
+  margin-bottom: 0 !important;
+}
+
+.btn-regen-url:hover {
+  background: #e8f5e9;
+  color: #2b9d00;
+}
+
+.url-auto-tag {
+  display: inline-block;
+  background: #e8f5e9;
+  color: #2b9d00;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
   
   .product-form .image-preview {
     display: flex;

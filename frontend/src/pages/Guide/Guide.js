@@ -66,7 +66,7 @@ const Guide = () => {
                             <>
                                 <div className="post-grid">
                                     {postData.posts.map(post => (
-                                        <Link key={post._id} to={`/huong-dan/${post._id}`} className="post-card">
+                                        <Link key={post._id} to={`/huong-dan/${post.post_url || post._id}`} className="post-card">
                                             <div className="post-card-img">
                                                 <img src={post.images?.[0] || 'https://via.placeholder.com/300x200'} alt={post.title} />
                                             </div>
@@ -142,7 +142,7 @@ const Guide = () => {
                             <h3 className="sidebar-title">Tin mới nhất</h3>
                             <div className="recent-posts">
                                 {postData?.posts?.slice(0, 3).map(post => (
-                                    <Link key={post._id} to={`/huong-dan/${post._id}`} className="recent-item">
+                                    <Link key={post._id} to={`/huong-dan/${post.post_url || post._id}`} className="recent-item">
                                         <div className="recent-info">
                                             <p className="recent-title">{post.title}</p>
                                             <span className="recent-date">{new Date(post.createdAt).toLocaleDateString()}</span>

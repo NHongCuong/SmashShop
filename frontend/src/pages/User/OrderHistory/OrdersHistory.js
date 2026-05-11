@@ -65,18 +65,18 @@ const OrdersHistory = () => {
       <div className="orders-table">
         <div className="order-row order-header">
           <span>STT</span>
-          <span>Mã đơn</span>
+          {/* <span>Mã đơn</span> */}
           <span>Tên sản phẩm</span>
           <span>Số lượng</span>
           <span>Trạng thái</span>
-          <span>Ngày</span>
+          <span>Ngày đặt</span>
           <span>Tổng tiền</span>
         </div>
         {orders.length > 0 ? (
           orders.map((order, index) => (
             <div key={order._id} className="order-row">
               <span>{(page - 1) * limit + index + 1}</span>
-              <span>{order.order_code || order._id}</span>
+              {/* <span>{order.order_code || order._id}</span> */}
               <span className="product-name-col">
                 {order.items?.map((item, idx) => (
                   <div key={idx}>{item.product?.prod_name || "Sản phẩm"}</div>

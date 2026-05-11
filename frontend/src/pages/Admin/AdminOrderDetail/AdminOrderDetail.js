@@ -338,8 +338,8 @@ const AdminOrderDetail = () => {
             {selectedProduct?.colors && selectedProduct.colors.length > 0 && (
               <div className="edit-field">
                 <label>Màu sắc:</label>
-                <select 
-                  value={editVariants['Màu sắc'] || ''} 
+                <select
+                  value={editVariants['Màu sắc'] || ''}
                   onChange={(e) => setEditVariants({ ...editVariants, 'Màu sắc': e.target.value })}
                 >
                   <option value="">Chọn Màu sắc</option>
@@ -350,8 +350,8 @@ const AdminOrderDetail = () => {
             {selectedProduct?.sizes && selectedProduct.sizes.length > 0 && (
               <div className="edit-field">
                 <label>Kích cỡ:</label>
-                <select 
-                  value={editVariants['Kích cỡ'] || ''} 
+                <select
+                  value={editVariants['Kích cỡ'] || ''}
                   onChange={(e) => setEditVariants({ ...editVariants, 'Kích cỡ': e.target.value })}
                 >
                   <option value="">Chọn Kích cỡ</option>

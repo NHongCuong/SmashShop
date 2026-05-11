@@ -7,6 +7,12 @@ const PostSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    post_url: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true, // allow null/undefined for multiple docs
+    },
     images: {
       type: [String], // Array of image URLs
       default: [],
@@ -15,6 +21,7 @@ const PostSchema = new mongoose.Schema(
       {
         headling: { type: String, trim: true },
         content: { type: String },
+        create_table: { type: String, default: '' }, // HTML table string
       },
     ],
     category_id: {

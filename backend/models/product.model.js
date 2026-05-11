@@ -5,6 +5,7 @@ import { getVietnamTime } from '../utils/dayjs.js';
 const ProductSchema = new mongoose.Schema({
   prod_id: { type: Number, required: true, unique: true },
   prod_name: { type: String, required: true },
+  product_url: { type: String, trim: true, unique: true, sparse: true },
   price: { type: Number, required: true },
   stock: { type: Number, required: true },
   quantity_sold: { type: Number, required: true },

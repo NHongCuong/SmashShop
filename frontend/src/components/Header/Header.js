@@ -35,9 +35,9 @@ export default function Header() {
     setShowDropdown(true);
   };
 
-  const handleSelectProduct = (productId) => {
+  const handleSelectProduct = (slug) => {
     dispatch(clearSearchTerm());
-    navigate(`/product/${productId}`);
+    navigate(`/product/${slug}`);
     setShowDropdown(false);
   };
 
@@ -141,7 +141,7 @@ export default function Header() {
                       <div
                         key={product._id}
                         className="search-suggestion-item"
-                        onClick={() => handleSelectProduct(product._id)}
+                        onClick={() => handleSelectProduct(product.product_url || product._id)}
                       >
                         <img
                           src={(() => {
@@ -230,7 +230,7 @@ export default function Header() {
                         key={product._id}
                         className="search-suggestion-item"
                         onClick={() => {
-                          handleSelectProduct(product._id);
+                          handleSelectProduct(product.product_url || product._id);
                           setIsSearchOpen(false);
                         }}
                       >

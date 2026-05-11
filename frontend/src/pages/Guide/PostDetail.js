@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetPostByIdQuery, useGetPostsQuery } from '../../features/post/postApi';
 import Header from '../../components/Header/Header';
@@ -6,9 +6,11 @@ import Footer from '../../components/Footer/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt, faUser, faListUl } from '@fortawesome/free-solid-svg-icons';
 import './PostDetail.css';
+import logo from "../../assets/logohcshop.png";
 
 const PostDetail = () => {
     const { id } = useParams();
+    const [tocOpen, setTocOpen] = useState(true);
     const { data: post, isLoading, isError } = useGetPostByIdQuery(id);
     const { data: recentPosts } = useGetPostsQuery({ limit: 5, sort: 'latest' });
 
@@ -25,7 +27,7 @@ const PostDetail = () => {
 
             <div className="guide-breadcrumb">
                 <div className="container">
-                    <Link to="/">Trang chủ</Link> <span>/</span> 
+                    <Link to="/">Trang chủ</Link> <span>/</span>
                     <Link to="/huong-dan">Hướng dẫn / Review</Link> <span>/</span>
                     <span className="active">{post.title}</span>
                 </div>
@@ -45,19 +47,34 @@ const PostDetail = () => {
                         </div>
 
                         {/* Heading Table of Contents */}
-                        <div className="post-toc">
+                        <div className={`post-toc ${!tocOpen ? 'toc-collapsed' : ''}`}>
                             <div className="toc-title">
-                                <FontAwesomeIcon icon={faListUl} /> Mục lục bài viết
+                                <span className="toc-title-text">
+                                    <FontAwesomeIcon icon={faListUl} /> Mục lục bài viết
+                                </span>
+                                <button
+                                    className="ez-toc-icon-toggle"
+                                    onClick={() => setTocOpen(prev => !prev)}
+                                    title={tocOpen ? 'Ẩn mục lục' : 'Hiện mục lục'}
+                                >
+                                    <span className="ez-toc-icon-toggle-span">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </span>
+                                </button>
                             </div>
-                            <ul className="toc-list">
-                                {post.total_content?.map((section, idx) => (
-                                    <li key={idx}>
-                                        <a href={`#section-${idx}`}>
-                                            {idx + 1}. {section.headling}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className="toc-list-wrapper">
+                                <ul className="toc-list">
+                                    {post.total_content?.map((section, idx) => (
+                                        <li key={idx}>
+                                            <a href={`#section-${idx}`}>
+                                                {idx + 1}. {section.headling}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
 
                         <div className="post-body">
@@ -65,7 +82,14 @@ const PostDetail = () => {
                                 <section key={idx} id={`section-${idx}`} className="content-section">
                                     <h2 className="section-headling">{section.headling}</h2>
                                     <div className="section-text" dangerouslySetInnerHTML={{ __html: section.content.replace(/\n/g, '<br />') }} />
-                                    {/* Show image if available per section or display images at the end */}
+                                    {/* Render table if exists */}
+                                    {section.create_table && section.create_table.trim() !== '' && (
+                                        <div
+                                            className="section-table"
+                                            dangerouslySetInnerHTML={{ __html: section.create_table }}
+                                        />
+                                    )}
+                                    {/* Show image if available per section */}
                                     {post.images?.[idx] && (
                                         <div className="section-image">
                                             <img src={post.images[idx]} alt={section.headling} />
@@ -90,7 +114,7 @@ const PostDetail = () => {
                             <h3 className="sidebar-box-title">Bài viết mới nhất</h3>
                             <div className="sidebar-recent-list">
                                 {recentPosts?.posts?.map(p => (
-                                    <Link key={p._id} to={`/huong-dan/${p._id}`} className="sidebar-recent-item">
+                                    <Link key={p._id} to={`/huong-dan/${p.post_url || p._id}`} className="sidebar-recent-item">
                                         <img src={p.images?.[0] || 'https://via.placeholder.com/80'} alt={p.title} />
                                         <div className="sidebar-recent-info">
                                             <p className="sidebar-recent-title">{p.title}</p>
@@ -100,11 +124,11 @@ const PostDetail = () => {
                                 ))}
                             </div>
                         </div>
-                        
+
                         <div className="sidebar-ad-box">
-                           <img src="https://logohc.com/wp-content/uploads/2020/07/HC-SHOP-01.png" alt="Smash Shop" />
-                           <p>Smash Shop - Hệ thống cửa hàng cầu lông hàng đầu Việt Nam</p>
-                           <Link to="/products" className="shop-now-btn">Mua sắm ngay</Link>
+                            <img src={logo} alt="HC SHOP" />
+                            <p>HC SHOP - Hệ thống cửa hàng cầu lông hàng đầu Việt Nam</p>
+                            <Link to="/products" className="shop-now-btn">Mua sắm ngay</Link>
                         </div>
                     </aside>
                 </div>

@@ -19,7 +19,7 @@ const ProductCard = ({ product }) => {
   }, [product]);
 
   return (
-    <div className="product-card" onClick={() => navigate(`/product/${product._id || product.id}`)}>
+    <div className="product-card" onClick={() => navigate(`/product/${product.product_url || product._id || product.id}`)}>
       {product.discount > 0 && (
         <div className="product-discount-badge">-{Math.round(product.discount)}%</div>
       )}

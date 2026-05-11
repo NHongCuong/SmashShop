@@ -61,7 +61,7 @@ const AdminContacts = () => {
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
-        
+
         // Adjust column widths
         const wscols = [
             { wch: 5 },  // STT
@@ -92,7 +92,7 @@ const AdminContacts = () => {
             </div>
 
             <div className="admin-controls-wrapper">
-                <div className="controls-left">
+                <div className="controls-left-contact">
                     <label>
                         Hiển thị:
                         <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}>
@@ -104,7 +104,7 @@ const AdminContacts = () => {
                         </select>
                     </label>
                 </div>
-                <div className="controls-right">
+                <div className="controls-right-contact">
                     <input
                         type="text"
                         placeholder="Tìm kiếm liên hệ..."
