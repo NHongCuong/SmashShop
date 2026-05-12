@@ -7,6 +7,7 @@ import {
 } from '../../../features/services/reviewApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
@@ -141,7 +142,7 @@ const AdminReviews = () => {
                         </select>
                     </label>
                     <button className="btn-export-excel" onClick={handleExportExcel}>
-                        Download Excel (Trang hiện tại)
+                        <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} />Export Reviews
                     </button>
                 </div>
 

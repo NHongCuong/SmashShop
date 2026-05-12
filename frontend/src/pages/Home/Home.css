@@ -123,6 +123,95 @@
     margin: 0;
 }
 
+/* Swiper custom styles */
+.category-swiper {
+    padding: 10px 10px 40px !important;
+}
+
+.category-swiper .swiper-button-next,
+.category-swiper .swiper-button-prev {
+    color: #2b9d00;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.category-swiper .swiper-button-next::after,
+.category-swiper .swiper-button-prev::after {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.category-swiper .swiper-pagination-bullet-active {
+    background: #2b9d00;
+}
+
+/* Category Products Section */
+.category-products-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 25px;
+    padding-bottom: 0px;
+    position: relative;
+}
+
+.section-title-box {
+    background: linear-gradient(135deg, #2b9d00, #4caf50);
+    color: white;
+    padding: 10px 40px 10px 20px;
+    font-weight: 800;
+    font-size: 18px;
+    text-transform: uppercase;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+}
+
+.view-more-link {
+    color: #2b9d00;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+}
+
+.view-more-link:hover {
+    color: #1a6b00;
+    transform: translateX(5px);
+}
+
+.product-swiper {
+    padding: 10px 10px 40px !important;
+}
+
+.product-swiper .swiper-button-next,
+.product-swiper .swiper-button-prev {
+    color: #2b9d00;
+    background: rgba(255, 255, 255, 0.9);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.product-swiper .swiper-button-next::after,
+.product-swiper .swiper-button-prev::after {
+    font-size: 18px;
+    font-weight: bold;
+}
+
 /* PRODUCTS */
 .featured-products {
     max-width: 1200px;

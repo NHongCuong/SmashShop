@@ -1,0 +1,135 @@
+.admin-detail-container {
+    padding: 40px 20px;
+    background: #f8f9fa;
+    min-height: calc(100vh - 64px);
+    display: flex;
+    justify-content: center;
+}
+
+.detail-card {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #f1f3f5;
+    padding-bottom: 15px;
+}
+
+.detail-header h3 {
+    margin: 0;
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+.back-btn {
+    padding: 8px 20px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detail-row {
+    display: flex;
+    border-bottom: 1px solid #f8f9fa;
+    padding-bottom: 15px;
+}
+
+.detail-row label {
+    width: 250px;
+    font-weight: 700;
+    color: #495057;
+    flex-shrink: 0;
+}
+
+.detail-row span {
+    color: #212529;
+}
+
+.url-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.url-item a {
+    color: #007bff;
+    text-decoration: none;
+    word-break: break-all;
+    font-size: 14px;
+}
+
+.url-item a:hover {
+    text-decoration: underline;
+}
+
+.images-row {
+    flex-direction: column;
+    gap: 15px;
+    border-bottom: none;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.image-item {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.image-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.detail-actions {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.edit-detail-btn {
+    padding: 12px 30px;
+    background: #2b9d00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.edit-detail-btn:hover {
+    background: #238500;
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    font-weight: bold;
+}

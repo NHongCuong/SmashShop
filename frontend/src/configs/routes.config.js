@@ -20,6 +20,7 @@ const routes = {
     adminOrders: '/admin/orders',
     adminOrderDetail: '/admin/orders/:id',
     adminContacts: '/admin/contacts',
+    adminGeneralImages: '/admin/general-images',
 };
 
 export default routes;

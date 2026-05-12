@@ -6,6 +6,7 @@ const CategorySchema = new mongoose.Schema({
     category_id: { type: Number, required: true, unique: true },
     category_name: { type: String, required: true },
     image: { type: String }, // Lưu URL ảnh từ Cloudinary
+    featured_category: { type: String, default: '' }, // Nhãn danh mục nổi bật
     create_at: { type: Date, default: getVietnamTime },
     update_at: { type: Date }
 });

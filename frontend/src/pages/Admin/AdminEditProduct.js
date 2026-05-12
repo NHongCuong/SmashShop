@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import AdminProductForm from './AdminProductForm/AdminProductForm';
 import { useGetProductsQuery, useUpdateProductMutation } from '../../features/product/productApi';
 import { useCreateProductImageMutation, useDeleteImagesByProductIdMutation } from '../../features/services/productImageApi';
@@ -44,13 +45,23 @@ const AdminEditProduct = () => {
       await updateProduct({ id, productData: formData }).unwrap();
       
       await refetch();
-      if (window.confirm("Cập nhật thành công! Quay lại danh sách?")) {
+      const result = await Swal.fire({
+        title: 'Thành công',
+        text: "Cập nhật thành công! Bạn có muốn quay lại danh sách sản phẩm không?",
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonColor: '#2b9d00',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Quay lại',
+        cancelButtonText: 'Ở lại'
+      });
+      if (result.isConfirmed) {
         navigate('/admin/products');
       }
 
     } catch (err) {
       console.error("Lỗi khi cập nhật sản phẩm:", err);
-      alert("Không thể cập nhật sản phẩm. Kiểm tra thông tin hoặc kết nối mạng.");
+      Swal.fire('Lỗi', "Không thể cập nhật sản phẩm. Kiểm tra thông tin hoặc kết nối mạng.", 'error');
     } finally {
       setLoading(false);
     }

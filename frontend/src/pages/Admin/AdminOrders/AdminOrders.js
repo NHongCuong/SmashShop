@@ -7,6 +7,7 @@ import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileImport } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
 dayjs.extend(utc);
 
@@ -26,20 +27,31 @@ const AdminOrders = () => {
 
   const handleDeleteOrder = async (e, id) => {
     e.stopPropagation();
-    if (window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này không?")) {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: "Đơn hàng này sẽ bị xóa vĩnh viễn!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2b9d00',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteOrder(id).unwrap();
-        alert("Xóa đơn hàng thành công!");
+        Swal.fire('Thành công', 'Xóa đơn hàng thành công!', 'success');
       } catch (error) {
         console.error("Xóa thất bại:", error);
-        alert("Có lỗi xảy ra khi xóa đơn hàng!");
+        Swal.fire('Lỗi', 'Có lỗi xảy ra khi xóa đơn hàng!', 'error');
       }
     }
   };
 
   const handleExportExcel = () => {
     if (!allOrders || allOrders.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 
@@ -71,7 +83,7 @@ const AdminOrders = () => {
 
   const handleExportDetailedExcel = () => {
     if (!allOrders || allOrders.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 

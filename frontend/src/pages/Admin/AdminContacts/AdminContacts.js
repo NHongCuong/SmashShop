@@ -6,6 +6,7 @@ import { useGetContactsQuery, useUpdateContactStatusMutation, useDeleteContactMu
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 dayjs.extend(utc);
 
@@ -28,24 +29,36 @@ const AdminContacts = () => {
             await updateStatus({ id, status: newStatus }).unwrap();
         } catch (error) {
             console.error('Failed to update status:', error);
-            alert('Cập nhật trạng thái thất bại');
+            Swal.fire('Lỗi', 'Cập nhật trạng thái thất bại', 'error');
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa tin nhắn này?')) {
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn?',
+            text: "Tin nhắn này sẽ bị xóa vĩnh viễn!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2b9d00',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý xóa',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (result.isConfirmed) {
             try {
                 await deleteContact(id).unwrap();
+                Swal.fire('Thành công', 'Xóa tin nhắn thành công!', 'success');
             } catch (error) {
                 console.error('Failed to delete contact:', error);
-                alert('Xóa thất bại');
+                Swal.fire('Lỗi', 'Xóa thất bại', 'error');
             }
         }
     };
 
     const handleExportExcel = () => {
         if (!contacts || contacts.length === 0) {
-            alert('Không có dữ liệu để xuất!');
+            Swal.fire('Thông báo', 'Không có dữ liệu để xuất!', 'info');
             return;
         }
 

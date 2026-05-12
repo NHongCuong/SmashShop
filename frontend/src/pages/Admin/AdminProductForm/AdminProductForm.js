@@ -6,6 +6,7 @@ import { useGetVouchersQuery } from '../../../features/services/voucherApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import './AdminProductForm.css';
+import Swal from 'sweetalert2';
 
 const slugify = (text) => {
   if (!text) return "";
@@ -164,7 +165,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
     };
     if (!formData.prod_name || !formData.price || !formData.description || !formData.stock ||
         !formData.category_id || !formData.brand_id || !formData.type_id) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc.");
+      Swal.fire('Thông báo', "Vui lòng điền đầy đủ thông tin bắt buộc.", 'info');
       return;
     }
     onSubmit(formattedData); // Gửi dữ liệu ra ngoài
@@ -174,21 +175,32 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
     const file = e.target.files[0];
     if (!file) return;
 
-    if (window.confirm("Bạn có muốn import sản phẩm từ file excel này không?")) {
+    const result = await Swal.fire({
+      title: 'Xác nhận import',
+      text: "Bạn có muốn import sản phẩm từ file excel này không?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2b9d00',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
       const formData = new FormData();
       formData.append('file', file);
 
       try {
         const res = await importProducts(formData).unwrap();
-        alert(res.message);
+        Swal.fire('Thành công', res.message, 'success');
         if (res.errors) {
             console.error("Import Errors:", res.errors);
-            alert("Có một số lỗi trong quá trình import, vui lòng kiểm tra console log.");
+            Swal.fire('Thông báo', "Có một số lỗi trong quá trình import, vui lòng kiểm tra console log.", 'warning');
         }
         navigate('/admin/products');
       } catch (err) {
         console.error("Import failed:", err);
-        alert(err?.data?.message || "Import thất bại.");
+        Swal.fire('Thất bại', err?.data?.message || "Import thất bại.", 'error');
       }
     }
   };

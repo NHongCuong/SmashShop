@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { apiRegister } from "../../apis/user";
 import Swal from 'sweetalert2';
+import { useGetGeneralImagesQuery } from "../../features/services/generalImageApi.js";
+import registerBg from "../../assets/register.png";
 
 export default function Register({ setIsAuthenticated }) {
 
@@ -13,6 +15,10 @@ export default function Register({ setIsAuthenticated }) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+
+  // Fetch background image from DB
+  const { data: registerBgData } = useGetGeneralImagesQuery({ search: 'Register' });
+  const bgImage = registerBgData?.data?.find(img => img.image_name === 'Register')?.image?.[0] || registerBg;
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // ngăn reload page
@@ -69,7 +75,7 @@ export default function Register({ setIsAuthenticated }) {
   return (
     <div className="container">
       <Header />
-      <div className="register-container">
+      <div className="register-container" style={{ backgroundImage: `url(${bgImage})` }}>
         <div className="register-box">
           <h2>Đăng Ký</h2>
           <form onSubmit={handleSubmit}>

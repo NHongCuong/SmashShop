@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 dayjs.extend(utc);
 
@@ -25,29 +26,38 @@ export default function AdminProducts() {
 
   const [deactiveProduct] = useDeactiveProductMutation();
   const [importProducts, { isLoading: isImporting }] = useImportProductsMutation();
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
   const navigate = useNavigate();
 
   const handleImportExcel = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (window.confirm("Bạn có muốn import sản phẩm từ file excel này không?")) {
+    const result = await Swal.fire({
+      title: 'Xác nhận import',
+      text: "Bạn có muốn import sản phẩm từ file excel này không?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2b9d00',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
       const formData = new FormData();
       formData.append('file', file);
 
       try {
         const res = await importProducts(formData).unwrap();
-        alert(res.message);
+        Swal.fire('Thành công', res.message, 'success');
         if (res.errors && res.errors.length > 0) {
           console.error("Import Errors:", res.errors);
-          alert("Có một số lỗi trong quá trình import, vui lòng kiểm tra console log.");
+          Swal.fire('Thông báo', "Có một số lỗi trong quá trình import, vui lòng kiểm tra console log.", 'warning');
         }
         refetch();
       } catch (err) {
         console.error("Import failed:", err);
-        alert(err?.data?.message || "Import thất bại.");
+        Swal.fire('Thất bại', err?.data?.message || "Import thất bại.", 'error');
       }
     }
     // Reset input
@@ -56,7 +66,7 @@ export default function AdminProducts() {
 
   const handleExportExcel = () => {
     if (!allProductsData || allProductsData.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 
@@ -92,21 +102,28 @@ export default function AdminProducts() {
     XLSX.writeFile(workbook, "Danh_sach_san_pham.xlsx");
   };
 
-  const handleDelete = (productId) => {
-    setProductToDelete(productId);
-    setShowConfirm(true);
-  };
+  const handleDelete = async (productId) => {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: "Sản phẩm này sẽ bị vô hiệu hóa!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2b9d00',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    });
 
-  const confirmDelete = async () => {
-    try {
-      await deactiveProduct(productToDelete).unwrap();
-      alert("Đã xóa sản phẩm thành công!");
-      refetch();
-    } catch (error) {
-      console.error("Lỗi khi xóa sản phẩm:", error);
+    if (result.isConfirmed) {
+      try {
+        await deactiveProduct(productId).unwrap();
+        Swal.fire('Đã xóa', 'Sản phẩm đã được vô hiệu hóa thành công!', 'success');
+        refetch();
+      } catch (error) {
+        console.error("Lỗi khi xóa sản phẩm:", error);
+        Swal.fire('Lỗi', 'Có lỗi xảy ra khi xóa sản phẩm!', 'error');
+      }
     }
-    setShowConfirm(false);
-    setProductToDelete(null);
   };
 
   return (
@@ -235,16 +252,6 @@ export default function AdminProducts() {
           <button disabled={page === 1} onClick={() => setPage((prev) => prev - 1)}>Trang trước</button>
           <span>Trang {page} / {totalPages}</span>
           <button disabled={page === totalPages} onClick={() => setPage((prev) => prev + 1)}>Trang sau</button>
-        </div>
-      )}
-
-      {showConfirm && (
-        <div className="ad-delprod-modal">
-          <div className="ad-delprod-modal-content">
-            <p>Bạn có chắc chắn muốn xóa sản phẩm này?</p>
-            <button className="btn-ad-delprod" onClick={confirmDelete}>Xóa</button>
-            <button className="btn-ad-cancelprod" onClick={() => setShowConfirm(false)}>Hủy</button>
-          </div>
         </div>
       )}
     </div>

@@ -62,7 +62,7 @@ const AdminUserForm = ({ onSubmit, loading, initialData }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!initialData && (!formData.password || formData.password.trim() === '')) {
-      alert("Vui lòng nhập mật khẩu cho người dùng mới!");
+      Swal.fire('Thông báo', "Vui lòng nhập mật khẩu cho người dùng mới!", 'info');
       return;
     }
 

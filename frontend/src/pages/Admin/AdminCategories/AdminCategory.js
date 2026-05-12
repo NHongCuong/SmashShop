@@ -148,6 +148,7 @@ export default function AdminCategory() {
               <th>STT</th>
               <th>Ảnh</th>
               <th>Danh mục</th>
+              <th>Nổi bật</th>
               <th>Ngày tạo</th>
               <th>Ngày sửa</th>
               <th>Thao tác</th>
@@ -155,9 +156,9 @@ export default function AdminCategory() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center' }}>Đang tải...</td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center' }}>Đang tải...</td></tr>
             ) : categories.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center' }}>Không tìm thấy danh mục nào.</td></tr>
+              <tr><td colSpan="7" style={{ textAlign: 'center' }}>Không tìm thấy danh mục nào.</td></tr>
             ) : categories.map((cat, idx) => (
               <tr key={cat._id}>
                 <td>{(page - 1) * limit + idx + 1}</td>
@@ -165,6 +166,19 @@ export default function AdminCategory() {
                   <img src={cat.image || 'https://via.placeholder.com/50'} alt={cat.category_name} className="cat-img-preview" />
                 </td>
                 <td>{cat.category_name}</td>
+                <td>
+                  {cat.featured_category ? (
+                    <span style={{
+                      backgroundColor: '#2b9d00',
+                      color: '#fff',
+                      padding: '5px 15px',
+                      borderRadius: '15px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap'
+                    }}>{cat.featured_category}</span>
+                  ) : '---'}
+                </td>
                 <td>{cat.create_at ? dayjs(cat.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td>{cat.update_at ? dayjs(cat.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : '---'}</td>
                 <td className="actions-cell">

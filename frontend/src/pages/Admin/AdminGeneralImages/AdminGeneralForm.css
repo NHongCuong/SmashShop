@@ -1,0 +1,167 @@
+.admin-form-container {
+    padding: 40px 20px;
+    background: #f8f9fa;
+    min-height: calc(100vh - 64px);
+    display: flex;
+    justify-content: center;
+}
+
+.form-card {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.form-card h3 {
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 24px;
+    color: #2c3e50;
+    border-bottom: 2px solid #f1f3f5;
+    padding-bottom: 12px;
+}
+
+.form-section {
+    margin-bottom: 24px;
+}
+
+.form-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus {
+    border-color: #2b9d00;
+}
+
+.upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ced4da;
+    border-radius: 12px;
+    padding: 40px;
+    background: #fdfdfd;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #6c757d;
+}
+
+.upload-box:hover {
+    border-color: #2b9d00;
+    background: #f1f8f1;
+    color: #2b9d00;
+}
+
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.preview-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid #eee;
+    background: #fff;
+}
+
+.preview-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+}
+
+.badge.old { background: #6c757d; }
+.badge.new { background: #28a745; }
+
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+    background: #dc3545;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.btn-primary {
+    flex: 2;
+    padding: 12px;
+    background: #2b9d00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover { background: #238500; }
+
+.btn-secondary {
+    flex: 1;
+    padding: 12px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.loading-overlay {
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #2b9d00;
+}

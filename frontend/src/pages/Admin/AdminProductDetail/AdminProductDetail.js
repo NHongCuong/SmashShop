@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -38,7 +39,7 @@ const AdminProductDetail = () => {
 
   const handleExportExcel = () => {
     if (!products || products.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 

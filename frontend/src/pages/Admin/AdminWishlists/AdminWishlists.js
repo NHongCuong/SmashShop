@@ -5,6 +5,7 @@ import {
     useDeleteWishlistAdminMutation,
 } from '../../../features/services/wishlistApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -103,7 +104,7 @@ const AdminWishlists = () => {
                         </select>
                     </label>
                     <button className="btn-export-excel" onClick={handleExportExcel}>
-                        Download Excel
+                        <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} /> Export Wishlists
                     </button>
                 </div>
 

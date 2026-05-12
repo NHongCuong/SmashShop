@@ -41,6 +41,9 @@ import AdminPostForm from '../pages/Admin/AdminPosts/AdminPostForm';
 import AdminPostDetail from '../pages/Admin/AdminPostDetail/AdminPostDetail';
 import Guide from '../pages/Guide/Guide';
 import PostDetail from '../pages/Guide/PostDetail';
+import AdminGeneralLists from '../pages/Admin/AdminGeneralImages/AdminGeneralLists';
+import AdminGeneralForm from '../pages/Admin/AdminGeneralImages/AdminGeneralForm';
+import AdminGeneralListDetail from '../pages/Admin/AdminGeneralImages/AdminGeneralListDetail';
 
 
 import { Navigate } from "react-router-dom";
@@ -106,6 +109,10 @@ const pages = [
             { path: 'posts/add', Component: AdminPostForm },
             { path: 'posts/:id', Component: AdminPostDetail },
             { path: 'posts/edit/:id', Component: AdminPostForm },
+            { path: 'general-images', Component: AdminGeneralLists },
+            { path: 'general-images/:id', Component: AdminGeneralListDetail },
+            { path: 'general-images/add', Component: AdminGeneralForm },
+            { path: 'general-images/edit/:id', Component: AdminGeneralForm },
 
         ],
     },

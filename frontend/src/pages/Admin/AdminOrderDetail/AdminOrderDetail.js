@@ -10,6 +10,7 @@ import {
 import { useGetProductsQuery } from '../../../features/product/productApi';
 import { useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
@@ -32,7 +33,7 @@ const AdminOrderDetail = () => {
 
   const handleExportExcel = () => {
     if (!allOrders || allOrders.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 
@@ -59,7 +60,7 @@ const AdminOrderDetail = () => {
 
   const handleExportDetailedExcel = () => {
     if (!allOrders || allOrders.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      Swal.fire('Thông báo', "Không có dữ liệu để xuất!", 'info');
       return;
     }
 
@@ -115,11 +116,11 @@ const AdminOrderDetail = () => {
   const handleSave = async () => {
     try {
       await updateOrderStatus({ order_id: order._id, status }).unwrap();
-      alert(`Trạng thái cập nhật thành công: ${status}`);
+      Swal.fire('Thành công', `Trạng thái cập nhật thành công: ${status}`, 'success');
       refetch();
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
-      alert("Có lỗi xảy ra khi cập nhật trạng thái!");
+      Swal.fire('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
     }
   };
 
@@ -142,24 +143,35 @@ const AdminOrderDetail = () => {
         price: editPrice,
         variants: editVariants
       }).unwrap();
-      alert("Cập nhật sản phẩm thành công!");
+      Swal.fire('Thành công', 'Cập nhật sản phẩm thành công!', 'success');
       setShowEditDialog(false);
       refetch();
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
-      alert("Có lỗi xảy ra khi cập nhật sản phẩm!");
+      Swal.fire('Lỗi', 'Có lỗi xảy ra khi cập nhật sản phẩm!', 'error');
     }
   };
 
   const handleDeleteItem = async (itemId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi đơn hàng?")) {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: "Sản phẩm này sẽ bị xóa khỏi đơn hàng!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2b9d00',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteOrderItem({ orderId: order._id, itemId }).unwrap();
-        alert("Xóa sản phẩm thành công!");
+        Swal.fire('Thành công', 'Xóa sản phẩm khỏi đơn hàng thành công!', 'success');
         refetch();
       } catch (error) {
         console.error("Xóa thất bại:", error);
-        alert("Có lỗi xảy ra khi xóa sản phẩm!");
+        Swal.fire('Lỗi', 'Có lỗi xảy ra khi xóa sản phẩm!', 'error');
       }
     }
   };

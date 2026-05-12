@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 
 export default function AdminCategoryForm({ category, onClose, refetch }) {
     const [name, setName] = useState('');
+    const [featuredCategory, setFeaturedCategory] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [preview, setPreview] = useState('');
@@ -15,6 +16,7 @@ export default function AdminCategoryForm({ category, onClose, refetch }) {
     useEffect(() => {
         if (category) {
             setName(category.category_name);
+            setFeaturedCategory(category.featured_category || '');
             setImageUrl(category.image || '');
             setPreview(category.image || '');
         }
@@ -38,6 +40,7 @@ export default function AdminCategoryForm({ category, onClose, refetch }) {
 
         const formData = new FormData();
         formData.append('category_name', name);
+        formData.append('featured_category', featuredCategory);
         if (imageFile) {
             formData.append('image', imageFile);
         } else if (imageUrl) {
@@ -75,6 +78,15 @@ export default function AdminCategoryForm({ category, onClose, refetch }) {
                         />
                     </div>
 
+                    <div className="form-group">
+                        <label>Danh mục nổi bật</label>
+                        <input 
+                            type="text" 
+                            value={featuredCategory} 
+                            onChange={(e) => setFeaturedCategory(e.target.value)} 
+                            placeholder="VD: Hot, New, Sale... (để trống nếu không có)"
+                        />
+                    </div>
                     <div className="form-group">
                         <label>Ảnh danh mục (Chọn file hoặc nhập URL)</label>
                         <div className="image-input-options">

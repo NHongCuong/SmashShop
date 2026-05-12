@@ -52,7 +52,7 @@ export const fetchCategoriesAdmin = async (req, res) => {
 // Tạo danh mục mới
 export const createCategory = async (req, res) => {
     try {
-        const { category_name } = req.body;
+        const { category_name, featured_category } = req.body;
         const image = req.file ? req.file.path : req.body.image;
 
         if (!category_name) {
@@ -65,7 +65,8 @@ export const createCategory = async (req, res) => {
         const newCategory = new Category({
             category_id,
             category_name,
-            image
+            image,
+            featured_category: featured_category || ''
         });
 
         await newCategory.save();
@@ -79,11 +80,12 @@ export const createCategory = async (req, res) => {
 export const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { category_name } = req.body;
+        const { category_name, featured_category } = req.body;
         const image = req.file ? req.file.path : req.body.image;
 
         const updateData = { category_name, update_at: getVietnamTime() };
         if (image) updateData.image = image;
+        updateData.featured_category = featured_category || '';
 
         const updatedCategory = await Category.findByIdAndUpdate(id, updateData, { new: true });
 
@@ -123,6 +125,7 @@ export const exportCategoriesExcel = async (req, res) => {
             'ID': c.category_id,
             'Tên danh mục': c.category_name,
             'Ảnh': c.image || '',
+            'Nổi bật': c.featured_category || '',
             'Ngày tạo': c.create_at,
             'Ngày sửa': c.update_at
         }));

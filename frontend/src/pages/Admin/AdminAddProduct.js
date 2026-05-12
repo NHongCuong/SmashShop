@@ -4,6 +4,7 @@ import { useGetProductsQuery, useCreateProductMutation, useUpdateProductMutation
 import { useCreateProductImageMutation } from '../../features/services/productImageApi';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import Swal from 'sweetalert2';
 
 const AdminAddProduct = () => {
   const navigate = useNavigate();
@@ -32,14 +33,24 @@ const AdminAddProduct = () => {
       await createProduct(formData).unwrap();
   
       await refetch();
-      if (window.confirm("Thêm sản phẩm thành công! Bấm OK để quay lại trang quản lý.")) {
+      const result = await Swal.fire({
+        title: 'Thành công',
+        text: "Thêm sản phẩm thành công! Bạn có muốn quay lại trang quản lý không?",
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonColor: '#2b9d00',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Quay lại',
+        cancelButtonText: 'Ở lại'
+      });
+      if (result.isConfirmed) {
         navigate('/admin/products');
       }
   
     } catch (error) {
       console.error("Lỗi khi thêm sản phẩm:", error);
       const msg = error?.data?.message || "Thêm sản phẩm thất bại. Vui lòng kiểm tra lại thông tin.";
-      alert(msg);
+      Swal.fire('Lỗi', msg, 'error');
     } finally {
       setLoading(false);
     }

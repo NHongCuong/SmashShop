@@ -8,11 +8,17 @@ import { loginThunk } from "../../app/store/authThunks";
 import { logout, setAccessToken } from "../../app/store/authSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { useGetGeneralImagesQuery } from "../../features/services/generalImageApi.js";
+import loginBg from "../../assets/login2.png";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Fetch background image from DB
+  const { data: loginBgData } = useGetGeneralImagesQuery({ search: 'Login' });
+  const bgImage = loginBgData?.data?.find(img => img.image_name === 'Login')?.image?.[0] || loginBg;
 
   const [email, setEmail] = useState(localStorage.getItem("remember_email") || "");
   const [password, setPassword] = useState(localStorage.getItem("remember_password") || "");
@@ -95,7 +101,7 @@ export default function Login() {
   return (
     <div className="container">
       <Header />
-      <div className="login-container">
+      <div className="login-container" style={{ backgroundImage: `url(${bgImage})` }}>
         <div className="login-box">
           <h2>Đăng Nhập</h2>
           <form onSubmit={handleLogin}>

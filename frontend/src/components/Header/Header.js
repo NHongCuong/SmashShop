@@ -14,6 +14,7 @@ import { reviewApi } from "../../features/services/reviewApi.js";
 import { wishlistApi } from "../../features/services/wishlistApi.js";
 import { logout, selectIsAuthenticated } from "../../app/store/authSlice.js";
 import { clearCart } from "../../app/store/cartSlice";
+import { useGetGeneralImagesQuery } from "../../features/services/generalImageApi.js";
 import logo from "../../assets/logohcshop.png";
 
 export default function Header() {
@@ -27,6 +28,10 @@ export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { data: allProducts = [], isLoading: productsLoading } = useGetProductsQuery();
+  const { data: logoData } = useGetGeneralImagesQuery({ search: 'Logo' });
+  
+  const dbLogo = logoData?.data?.find(img => img.image_name === 'Logo')?.image?.[0] || logo;
+
   const searchTerm = useSelector((state) => state.search.searchTerm);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -95,7 +100,7 @@ export default function Header() {
           {/* Desktop Logo */}
           <div className="header-left desktop-only">
             <Link to="/" className="logo-link" onClick={handleLogoClick}>
-              <img src={logo} alt="HC Shop" className="header-logo-img" />
+              <img src={dbLogo} alt="HC Shop" className="header-logo-img" />
             </Link>
           </div>
 
@@ -112,7 +117,7 @@ export default function Header() {
           {/* Mobile Center: Logo */}
           <div className="header-mobile-logo">
             <Link to="/" className="logo-link" onClick={handleLogoClick}>
-              <img src={logo} alt="HC Shop" className="header-logo-img" />
+              <img src={dbLogo} alt="HC Shop" className="header-logo-img" />
             </Link>
           </div>
 
@@ -286,11 +291,11 @@ export default function Header() {
               )}
             </div>
 
-            <Link to="/khuyen-mai" className="nav-link">KHUYẾN MÃI</Link>
-            <Link to="/thuong-hieu" className="nav-link">THƯƠNG HIỆU</Link>
-            <Link to="/hop-tac" className="nav-link">HỢP TÁC KINH DOANH</Link>
+            {/* <Link to="/khuyen-mai" className="nav-link">KHUYẾN MÃI</Link> */}
+            {/* <Link to="/thuong-hieu" className="nav-link">THƯƠNG HIỆU</Link>
+            <Link to="/hop-tac" className="nav-link">HỢP TÁC KINH DOANH</Link> */}
             <Link to="/huong-dan" className="nav-link">HƯỚNG DẪN / REVIEW</Link>
-            <Link to="/dich-vu" className="nav-link">DỊCH VỤ</Link>
+            {/* <Link to="/dich-vu" className="nav-link">DỊCH VỤ</Link> */}
             <Link to="/contact" className="nav-link">VỀ CHÚNG TÔI</Link>
           </nav>
         </div>
