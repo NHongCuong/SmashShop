@@ -117,31 +117,34 @@ function Home({ isAuthenticated, setIsAuthenticated }) {
                         >
                             {dbCategories.map((cat) => (
                                 <SwiperSlide key={cat._id}>
-                                    <div
-                                        className="category-item"
-                                        onClick={() => navigate(`/products/${encodeURIComponent(slugify(cat.category_name))}`)}
-                                        style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
-                                    >
-                                        <img src={cat.image} alt={cat.category_name} />
-                                        <p>{cat.category_name}</p>
-                                    </div>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    )}
-                </div>
-
-                {/* NEW PRODUCTS SLIDER */}
-                {newProducts.length > 0 && (
-                    <div className="category-products-section">
-                        <div className="section-header">
-                            <div className="section-title-box">
-                                Sản Phẩm Mới
+                            <div
+                                className="category-item"
+                                onClick={() => {
+                                    navigate(`/products/${encodeURIComponent(slugify(cat.category_name))}`);
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                }}
+                                style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+                            >
+                                <img src={cat.image} alt={cat.category_name} />
+                                <p>{cat.category_name}</p>
                             </div>
-                            <Link to="/products" className="view-more-link">
-                                Xem thêm <span style={{ fontSize: '18px' }}>→</span>
-                            </Link>
-                        </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            )}
+        </div>
+
+        {/* NEW PRODUCTS SLIDER */}
+        {newProducts.length > 0 && (
+            <div className="category-products-section">
+                <div className="section-header">
+                    <div className="section-title-box">
+                        Sản Phẩm Mới
+                    </div>
+                    <Link to="/products" className="view-more-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                        Xem thêm <span style={{ fontSize: '18px' }}>→</span>
+                    </Link>
+                </div>
                         <Swiper
                             modules={[Autoplay, Navigation]}
                             spaceBetween={20}
@@ -172,7 +175,7 @@ function Home({ isAuthenticated, setIsAuthenticated }) {
                             <div className="section-title-box">
                                 {cat.category_name}
                             </div>
-                            <Link to={`/products/${encodeURIComponent(slugify(cat.category_name))}`} className="view-more-link">
+                            <Link to={`/products/${encodeURIComponent(slugify(cat.category_name))}`} className="view-more-link" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                                 Xem thêm <span style={{ fontSize: '18px' }}>→</span>
                             </Link>
                         </div>

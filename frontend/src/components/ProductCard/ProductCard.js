@@ -19,7 +19,10 @@ const ProductCard = ({ product }) => {
   }, [product]);
 
   return (
-    <div className="product-card" onClick={() => navigate(`/product/${product.product_url || product._id || product.id}`)}>
+    <div className="product-card" onClick={() => {
+      navigate(`/product/${product.product_url || product._id || product.id}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}>
       {product.discount > 0 && (
         <div className="product-discount-badge">-{Math.round(product.discount)}%</div>
       )}

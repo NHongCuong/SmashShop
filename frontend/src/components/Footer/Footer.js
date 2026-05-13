@@ -91,7 +91,7 @@ const Footer = () => {
 
         <div className="footer-bottom">
           <div className="footer-bottom-info">
-            <img src="https://res.cloudinary.com/djnh1cl8y/image/upload/v1778653662/IE213/oycyml6rjkfmj6e4yqof.png" alt="Bộ Công Thương" className="bct-logo" />
+            <img src={getImageUrl("Certificated")} alt="Bộ Công Thương" />
             <div className="footer-company-info">
               <h4>HỆ THỐNG CỬA HÀNG HCSHOP</h4>
               <p>Giấy chứng nhận đăng ký kinh doanh 41Y8003247</p>
