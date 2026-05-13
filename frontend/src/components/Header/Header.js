@@ -53,6 +53,13 @@ export default function Header() {
     }
   };
 
+  const handleLinkClick = (path) => {
+    if (window.location.pathname === path) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setMobileMenuOpen(false);
+  };
+
   const handleLogoClick = (e) => {
     if (window.location.pathname === "/") {
       e.preventDefault();
@@ -266,12 +273,15 @@ export default function Header() {
       <div className={`header-bottom ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
         <div className="header-container">
           <nav className="nav-links">
-            <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>TRANG CHỦ</Link>
+            <Link to="/" className="nav-link" onClick={() => handleLinkClick("/")}>TRANG CHỦ</Link>
 
             <div className="nav-dropdown"
               onMouseEnter={() => setProductDropdown(true)}
               onMouseLeave={() => setProductDropdown(false)}>
-              <span className="nav-link dropdown-toggle" onClick={() => navigate("/products")}>
+              <span className="nav-link dropdown-toggle" onClick={() => {
+                handleLinkClick("/products");
+                navigate("/products");
+              }}>
                 SẢN PHẨM <FontAwesomeIcon icon={productDropdown ? faCaretUp : faCaretDown} />
               </span>
               {productDropdown && (
@@ -294,9 +304,9 @@ export default function Header() {
             {/* <Link to="/khuyen-mai" className="nav-link">KHUYẾN MÃI</Link> */}
             {/* <Link to="/thuong-hieu" className="nav-link">THƯƠNG HIỆU</Link>
             <Link to="/hop-tac" className="nav-link">HỢP TÁC KINH DOANH</Link> */}
-            <Link to="/huong-dan" className="nav-link">HƯỚNG DẪN / REVIEW</Link>
+            <Link to="/huong-dan" className="nav-link" onClick={() => handleLinkClick("/huong-dan")}>HƯỚNG DẪN / REVIEW</Link>
             {/* <Link to="/dich-vu" className="nav-link">DỊCH VỤ</Link> */}
-            <Link to="/contact" className="nav-link">VỀ CHÚNG TÔI</Link>
+            <Link to="/contact" className="nav-link" onClick={() => handleLinkClick("/contact")}>VỀ CHÚNG TÔI</Link>
           </nav>
         </div>
       </div>
