@@ -17,7 +17,7 @@ export const orderApi = createApi({
       return headers;
     }
   }),
-  tagTypes: ['Orders'],
+  tagTypes: ['Orders', 'OrdersArchive'],
   keepUnusedDataFor: 0,
   endpoints: (builder) => ({
     getOrders: builder.query({
@@ -34,6 +34,14 @@ export const orderApi = createApi({
         limit: response.limit
       }),
       providesTags: ['Orders'],
+    }),
+    getOrderHistoryArchive: builder.query({
+      query: ({ page = 1, limit = 10, sortBy = 'deletedAt', sortOrder = 'desc', search = '' } = {}) => {
+        let url = `order/archive?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        return url;
+      },
+      providesTags: ['OrdersArchive'],
     }),
     getAllOrders: builder.query({
       query: () => `order?limit=1000000`,
@@ -66,7 +74,7 @@ export const orderApi = createApi({
         url: `order/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Orders'],
+      invalidatesTags: ['Orders', 'OrdersArchive'],
     }),
     updateOrderItem: builder.mutation({
       query: (data) => ({
@@ -93,5 +101,6 @@ export const {
   useGetAllOrdersQuery,
   useDeleteOrderMutation,
   useUpdateOrderItemMutation,
-  useDeleteOrderItemMutation
+  useDeleteOrderItemMutation,
+  useGetOrderHistoryArchiveQuery
 } = orderApi;

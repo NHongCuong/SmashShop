@@ -44,6 +44,7 @@ import PostDetail from '../pages/Guide/PostDetail';
 import AdminGeneralLists from '../pages/Admin/AdminGeneralImages/AdminGeneralLists';
 import AdminGeneralForm from '../pages/Admin/AdminGeneralImages/AdminGeneralForm';
 import AdminGeneralListDetail from '../pages/Admin/AdminGeneralImages/AdminGeneralListDetail';
+import AdminOrderHistories from '../pages/Admin/AdminOrderHistories/AdminOrderHistories';
 
 
 import { Navigate } from "react-router-dom";
@@ -96,6 +97,7 @@ const pages = [
             { path: 'types', Component: AdminTypes },
             { path: 'vouchers', Component: AdminVouchers },
             { path: 'orders', Component: AdminOrders },
+            { path: 'order-history', Component: AdminOrderHistories },
             { path: 'orders/:id', Component: AdminOrderDetail },
             { path: 'users', Component: AdminUsers },
             { path: 'users/add', Component: AdminAddUser },

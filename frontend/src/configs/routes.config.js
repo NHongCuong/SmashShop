@@ -21,6 +21,7 @@ const routes = {
     adminOrderDetail: '/admin/orders/:id',
     adminContacts: '/admin/contacts',
     adminGeneralImages: '/admin/general-images',
+    adminOrderHistory: '/admin/order-history',
 };
 
 export default routes;

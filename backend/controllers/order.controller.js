@@ -1,5 +1,6 @@
 import Cart from '../models/cart.model.js';
 import Order from '../models/order.model.js'
+import OrderHistory from '../models/orderhistory.model.js';
 import OrderDetail from '../models/order_detail.js';
 import Product from '../models/product.model.js';
 import ProductImage from "../models/productImage.model.js";
@@ -338,16 +339,46 @@ export const fetchOrderById = async (req, res) => {
 export const deleteOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).populate('items.product').populate('user_id');
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
         // Kiểm tra quyền (Chỉ Admin hoặc chủ đơn hàng mới được xóa)
-        if (req.user.role !== 'admin' && order.user_id.toString() !== req.user._id.toString()) {
+        if (req.user.role !== 'admin' && order.user_id?._id.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: "Bạn không có quyền xóa đơn hàng này." });
         }
+
+        // Lưu vào lịch sử trước khi xóa
+        const historyData = {
+            original_order_id: order._id,
+            order_code: order.order_id,
+            user_id: order.user_id?._id || order.user_id,
+            user_name: order.user_id?.name || "Khách hàng",
+            items: order.items.map(item => ({
+                product_id: item.product?._id || item.product,
+                product_name: item.product?.prod_name || "Sản phẩm",
+                quantity: item.quantity,
+                price: item.price,
+                selected_variants: item.selected_variants
+            })),
+            shipping: {
+                name: order.shipping.name,
+                address: order.shipping.address,
+                phone: order.shipping.phone,
+                email: order.shipping.email
+            },
+            total: order.total,
+            discount_amount: order.discount_amount,
+            status: order.status,
+            paymentmethod: order.paymentmethod,
+            order_createdAt: order.createdAt,
+            order_updatedAt: order.updatedAt,
+            deletedAt: getVietnamTime()
+        };
+
+        await OrderHistory.create(historyData);
 
         await Order.findByIdAndDelete(orderId);
         await OrderDetail.deleteOne({ order_id: orderId });
@@ -487,3 +518,40 @@ export const deleteOrderItem = async (req, res) => {
     }
 }
 
+export const fetchOrderHistoryArchive = async (req, res) => {
+    const limit = parseInt(req.query.limit) || 12;
+    const page = parseInt(req.query.page) || 1;
+    const sortBy = req.query.sortBy || 'deletedAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const search = req.query.search || '';
+
+    const query = {};
+    if (search) {
+        query.$or = [
+            { order_code: { $regex: search, $options: 'i' } },
+            { user_name: { $regex: search, $options: 'i' } },
+            { 'shipping.phone': { $regex: search, $options: 'i' } },
+            { 'items.product_name': { $regex: search, $options: 'i' } }
+        ];
+    }
+
+    try {
+        const totalDocument = await OrderHistory.countDocuments(query);
+        const history = await OrderHistory.find(query)
+            .sort({ [sortBy]: sortOrder })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.status(200).json({
+            success: true,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(totalDocument / limit),
+            totalItems: totalDocument,
+            data: history
+        })
+    } catch (e) {
+        logger.error("Error fetching order history archive: " + e.message);
+        res.status(500).json({ success: false, error: e.message })
+    }
+}

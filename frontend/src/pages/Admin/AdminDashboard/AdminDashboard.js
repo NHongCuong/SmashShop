@@ -22,6 +22,7 @@ import {
   faHeart,
   faNewspaper,
   faImage,
+  faHistory,
 } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminLogout } from '../../../app/store/adminAuthSlice';
@@ -257,6 +258,9 @@ export default function AdminDashboard() {
             </NavLink>
             <NavLink to="/admin/orders" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faCartShopping} /> Đơn hàng
+            </NavLink>
+            <NavLink to="/admin/order-history" className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
+              <FontAwesomeIcon icon={faHistory} /> Lịch sử xóa đơn hàng
             </NavLink>
             <NavLink to="/admin/reviews" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faThumbsUp} /> Đánh giá sản phẩm

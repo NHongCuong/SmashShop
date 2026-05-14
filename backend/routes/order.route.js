@@ -1,4 +1,4 @@
-import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory, fetchOrderById, deleteOrder, updateOrderItem, deleteOrderItem} from '../controllers/order.controller.js'
+import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory, fetchOrderById, deleteOrder, updateOrderItem, deleteOrderItem, fetchOrderHistoryArchive} from '../controllers/order.controller.js'
 import express from 'express'
 import {authMiddleware} from "../middleware/auth.js";
 import {isAdmin} from "../middleware/auth.js";
@@ -13,6 +13,8 @@ orderRoutes.post('/',createOrder)
 orderRoutes.get('/order_history', fetchOrderHistory)
 // Fetch tất cả đơn hàng (chỉ Admin)
 orderRoutes.get('/', isAdmin, fetchAllOrders)
+// Fetch lịch sử đơn hàng đã xóa (chỉ Admin)
+orderRoutes.get('/archive', isAdmin, fetchOrderHistoryArchive)
 // Cập nhật trạng thái đơn hàng (chỉ Admin)
 orderRoutes.put('/', isAdmin, updateOrderStatus)
 // Lấy thông tin chi tiết đơn hàng
