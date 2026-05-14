@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect } from "react";
 import "./Order.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createOrderThunk } from "../../app/store/orderThunk";
+import { removeCartItemThunk } from "../../app/store/cartThunks";
 import Swal from "sweetalert2";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -136,22 +137,60 @@ export default function Order() {
   };
 
   const handleQuantityChange = (productId, changeAmount, variants) => {
-    setLocalOrderItems(prevItems => {
-      return prevItems.map(item => {
-        if (item.product._id === productId && compareVariants(item.selected_variants, variants)) {
-          const newQuantity = item.quantity + changeAmount;
-          const stock = item.product.stock;
-          if (changeAmount > 0 && stock !== undefined && newQuantity > stock) return item;
-          if (newQuantity < 1) return item;
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
+    const item = localOrderItems.find(i => i.product._id === productId && compareVariants(i.selected_variants || i.variants, variants));
+    if (!item) return;
+
+    const newQuantity = item.quantity + changeAmount;
+    const stock = item.product.stock;
+
+    if (changeAmount > 0 && stock !== undefined && newQuantity > stock) {
+      return;
+    }
+
+    if (newQuantity < 1) {
+      handleRemove(productId, variants);
+    } else {
+      setLocalOrderItems(prevItems => {
+        return prevItems.map(i => {
+          if (i.product._id === productId && compareVariants(i.selected_variants || i.variants, variants)) {
+            return { ...i, quantity: newQuantity };
+          }
+          return i;
+        });
       });
-    });
+    }
   };
 
   const handleRemove = (productId, variants) => {
-    setLocalOrderItems(prev => prev.filter(item => !(item.product._id === productId && compareVariants(item.selected_variants, variants))));
+    Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi đơn hàng?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e44d26',
+      cancelButtonColor: '#999',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Xóa khỏi local state của trang Order
+        setLocalOrderItems(prev => prev.filter(item => !(item.product._id === productId && compareVariants(item.selected_variants || item.variants, variants))));
+        
+        // Xóa khỏi giỏ hàng Redux (nếu có)
+        dispatch(removeCartItemThunk({
+          product_id: productId,
+          variants: variants
+        }));
+
+        Swal.fire({
+          title: 'Đã xóa!',
+          text: 'Sản phẩm đã được xóa.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const total = localOrderItems.reduce((sum, i) => sum + getDiscountedPrice(i.product) * i.quantity, 0);
@@ -519,51 +558,60 @@ export default function Order() {
         {/* RIGHT COLUMN */}
         <div className="order-summary-right">
           <div className="summary-products">
-            {localOrderItems.map((item, index) => (
-              <div key={item.product._id + index} className="summary-item">
-                <img
-                  src={item.product.images && item.product.images.length > 0 ? `http://localhost:5001${item.product.images[0]}` : 'https://via.placeholder.com/60'}
-                  alt={item.product.prod_name}
-                  className="summary-item-img"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/60'; }}
-                />
-                <div className="summary-item-info">
-                  <div className="summary-item-name">
-                    <span>{item.product.prod_name} <FontAwesomeIcon icon={faGift} className="gift-icon" /></span>
-                    <FontAwesomeIcon icon={faTimesCircle} className="remove-icon" onClick={() => handleRemove(item.product._id, item.selected_variants)} />
-                  </div>
+            {localOrderItems.map((item, index) => {
+              // Lấy ảnh từ field 'images' (mảng object) hoặc 'image' (mảng string)
+              const allImages = (item.product.images || []).flatMap(img =>
+                Array.isArray(img.image) ? img.image : [img.image]
+              );
+              const cartImage = Array.isArray(item.product.image) ? item.product.image[0] : item.product.image;
+              const firstImage = allImages[0] || cartImage || 'https://via.placeholder.com/60';
 
-                  <div className="summary-item-variant">
-                    {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
-                      <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
-                    ))}
-                    {(item.variants && !item.selected_variants) && Object.entries(item.variants).map(([name, value]) => (
-                      <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
-                    ))}
-                  </div>
-
-                  {item.product.discount > 0 && (
-                    <div className="summary-item-promo">
-                      Đang áp dụng: VỢT YONEX 100VA TOUR -{item.product.discount}%
+              return (
+                <div key={item.product._id + index} className="summary-item">
+                  <img
+                    src={firstImage}
+                    alt={item.product.prod_name}
+                    className="summary-item-img"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/60'; }}
+                  />
+                  <div className="summary-item-info">
+                    <div className="summary-item-name">
+                      <span>{item.product.prod_name} <FontAwesomeIcon icon={faGift} className="gift-icon" /></span>
+                      <FontAwesomeIcon icon={faTimesCircle} className="remove-icon" onClick={() => handleRemove(item.product._id, item.selected_variants || item.variants)} />
                     </div>
-                  )}
 
-                  <div className="summary-item-actions">
-                    <div className="quantity-control-order">
-                      <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants)}>-</button>
-                      <input type="text" className="quantity-input" value={item.quantity} readOnly />
-                      <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants)} disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}>+</button>
+                    <div className="summary-item-variant">
+                      {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
+                        <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
+                      ))}
+                      {(item.variants && !item.selected_variants) && Object.entries(item.variants).map(([name, value]) => (
+                        <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
+                      ))}
                     </div>
-                    <div className="summary-item-price">
-                      <div className="price-current">{(getDiscountedPrice(item.product)).toLocaleString()}đ</div>
-                      {item.product.discount > 0 && (
-                        <div className="price-old">{(item.product.price).toLocaleString()}đ</div>
-                      )}
+
+                    {item.product.discount > 0 && (
+                      <div className="summary-item-promo">
+                        Đang áp dụng: {item.product.prod_name} -{item.product.discount}%
+                      </div>
+                    )}
+
+                    <div className="summary-item-actions">
+                      <div className="quantity-control-order">
+                        <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants || item.variants)}>-</button>
+                        <input type="text" className="quantity-input" value={item.quantity} readOnly />
+                        <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants || item.variants)} disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}>+</button>
+                      </div>
+                      <div className="summary-item-price">
+                        <div className="price-current">{(getDiscountedPrice(item.product)).toLocaleString()}đ</div>
+                        {item.product.discount > 0 && (
+                          <div className="price-old">{(item.product.price).toLocaleString()}đ</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="summary-calculations">

@@ -7,15 +7,15 @@ const sendmail = asyncHandler(async function main(email, html) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL, 
-            pass: process.env.EMAIL_APP_PASSWORD, 
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_APP_PASSWORD,
         },
     });
 
     // async..await is not allowed in global scope, must use a wrapper
     // send mail with defined transport object
     const info = await transporter.sendMail({
-        from: '"SmashShop" <no-reply@SmashShop.com>', // sender address
+        from: '"HcShop" <no-reply@HcShop.com>', // sender address
         to: email, // list of receivers
         subject: "Forgot Email", // Subject line
         html: html, // html body

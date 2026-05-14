@@ -145,8 +145,7 @@ export default function ProductDetail() {
       state: {
         buyNowItem: {
           product: {
-            _id: product._id,
-            prod_name: product.prod_name,
+            ...product,
             price: discountedPrice,
           },
           quantity: quantity,

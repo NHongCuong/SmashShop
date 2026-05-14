@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import "./OrdersHistory.css";
 import { useGetOrderHistoryQuery } from "../../../features/user/userApi";
 import { useSelector } from "react-redux";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const OrdersHistory = () => {
   const userId = useSelector((state) => state.auth.userId) || localStorage.getItem("userId");
@@ -88,7 +91,7 @@ const OrdersHistory = () => {
                 ))}
               </span>
               <span>{order.status}</span>
-              <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+              <span>{dayjs(order.createdAt).utc().format('DD/MM/YYYY HH:mm')}</span>
               <span>{Number(order.total || 0).toLocaleString()}đ</span>
             </div>
           ))

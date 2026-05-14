@@ -194,13 +194,13 @@ export default function initChatSocket(io) {
                 if (!isAnyAdminOnline) {
                     // Gửi email thông báo cho Admin nếu offline
                     const adminEmail = process.env.EMAIL; // Gửi tới email hệ thống hoặc email admin cụ thể
-                    const subject = `[SmashShop] Tin nhắn mới từ khách hàng ${fromName}`;
+                    const subject = `[HcShop] Tin nhắn mới từ khách hàng ${fromName}`;
                     const html = `
                         <h2>Bạn có tin nhắn mới từ khách hàng ${fromName}</h2>
                         <p><strong>Nội dung:</strong> ${message}</p>
                         <p>Vui lòng đăng nhập vào hệ thống Admin Dashboard để trả lời khách hàng.</p>
                         <hr/>
-                        <p><i>Hệ thống thông báo tự động SmashShop</i></p>
+                        <p><i>Hệ thống thông báo tự động HcShop</i></p>
                     `;
 
                     sendmail(adminEmail, html).catch(err => console.error("Lỗi gửi email thông báo chat cho admin:", err));
@@ -342,7 +342,7 @@ export default function initChatSocket(io) {
         // Xử lý thu hồi tin nhắn
         socket.on('chat:recall', async (data) => {
             const { roomId, msgId, fromId } = data;
-            
+
             // Cập nhật ở RAM
             if (conversations.has(roomId)) {
                 const msgs = conversations.get(roomId);
