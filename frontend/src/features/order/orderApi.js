@@ -91,6 +91,13 @@ export const orderApi = createApi({
       }),
       invalidatesTags: (result, error, { orderId }) => [{ type: 'Orders', id: orderId }, 'Orders'],
     }),
+    deleteOrderHistoryArchive: builder.mutation({
+      query: (id) => ({
+        url: `order/archive/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['OrdersArchive'],
+    }),
   })
 });
 
@@ -102,5 +109,6 @@ export const {
   useDeleteOrderMutation,
   useUpdateOrderItemMutation,
   useDeleteOrderItemMutation,
-  useGetOrderHistoryArchiveQuery
+  useGetOrderHistoryArchiveQuery,
+  useDeleteOrderHistoryArchiveMutation
 } = orderApi;

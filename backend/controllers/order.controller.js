@@ -179,11 +179,11 @@ export const createOrder = async (req, res) => {
         const order = await Order.create({
             user_id,
             items,
-            shipping: { 
-                name, 
-                address, 
-                phone, 
-                email, 
+            shipping: {
+                name,
+                address,
+                phone,
+                email,
                 note,
                 shipmethod: deliveryType,
                 gender: gender,
@@ -355,7 +355,7 @@ export const deleteOrder = async (req, res) => {
             original_order_id: order._id,
             order_code: order.order_id,
             user_id: order.user_id?._id || order.user_id,
-            user_name: order.user_id?.name || "Khách hàng",
+            user_name: order.shipping?.name || "Khách hàng",
             items: order.items.map(item => ({
                 product_id: item.product?._id || item.product,
                 product_name: item.product?.prod_name || "Sản phẩm",
@@ -476,12 +476,34 @@ export const deleteOrderItem = async (req, res) => {
 
         const deletedItem = order.items.find(item => item._id.toString() === itemId);
         if (deletedItem) {
+            const product = await Product.findById(deletedItem.product);
             // Hoàn tác tồn kho và số lượng đã bán
-            await Product.findByIdAndUpdate(deletedItem.product, {
-                $inc: {
-                    stock: deletedItem.quantity,
-                    quantity_sold: -deletedItem.quantity
-                }
+            if (product) {
+                product.stock += deletedItem.quantity;
+                product.quantity_sold -= deletedItem.quantity;
+                await product.save();
+            }
+
+            // Lưu lịch sử xóa sản phẩm chi tiết vào OrderHistory
+            await OrderHistory.create({
+                original_order_id: order._id,
+                order_code: order.order_id,
+                user_name: order.shipping?.name || "Khách hàng cũ",
+                shipping: order.shipping,
+                items: [{
+                    product_id: deletedItem.product,
+                    product_name: product?.prod_name || "Sản phẩm không rõ",
+                    quantity: deletedItem.quantity,
+                    price: deletedItem.price,
+                    selected_variants: deletedItem.selected_variants
+                }],
+                total: deletedItem.price * deletedItem.quantity,
+                discount_amount: 0,
+                status: `Xóa SP chi tiết (Đơn: ${order.status})`,
+                paymentmethod: order.paymentmethod,
+                order_createdAt: order.createdAt,
+                order_updatedAt: order.updatedAt,
+                deletedAt: getVietnamTime()
             });
         }
 
@@ -553,5 +575,19 @@ export const fetchOrderHistoryArchive = async (req, res) => {
     } catch (e) {
         logger.error("Error fetching order history archive: " + e.message);
         res.status(500).json({ success: false, error: e.message })
+    }
+}
+
+export const deleteOrderHistoryArchive = async (req, res) => {
+    try {
+        const historyId = req.params.id;
+        const result = await OrderHistory.findByIdAndDelete(historyId);
+        if (!result) {
+            return res.status(404).json({ success: false, message: "Bản ghi lịch sử không tồn tại." });
+        }
+        res.status(200).json({ success: true, message: "Xóa lịch sử thành công." });
+    } catch (e) {
+        logger.error("Error deleting order history archive: " + e.message);
+        res.status(500).json({ success: false, error: e.message });
     }
 }

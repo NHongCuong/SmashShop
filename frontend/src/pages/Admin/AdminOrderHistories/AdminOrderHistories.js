@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './AdminOrderHistories.css';
-import { useGetOrderHistoryArchiveQuery } from '../../../features/order/orderApi';
+import { useGetOrderHistoryArchiveQuery, useDeleteOrderHistoryArchiveMutation } from '../../../features/order/orderApi';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileExport, faEdit, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faFileExport, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 
 dayjs.extend(utc);
@@ -17,39 +17,18 @@ const AdminOrderHistories = () => {
     const [sortOrder, setSortOrder] = useState("desc");
     const [searchTerm, setSearchTerm] = useState("");
 
-    const { data: response = {}, isLoading } = useGetOrderHistoryArchiveQuery({ 
-        page, 
-        limit, 
-        sortBy: sortField, 
-        sortOrder, 
-        search: searchTerm 
+    const { data: response = {}, isLoading } = useGetOrderHistoryArchiveQuery({
+        page,
+        limit,
+        sortBy: sortField,
+        sortOrder,
+        search: searchTerm
     });
+
+    const [deleteHistory] = useDeleteOrderHistoryArchiveMutation();
 
     const historicalOrders = response.data || [];
     const totalPages = response.totalPages || 1;
-
-    // Flatten items for table display if needed, but the user asked for one row with specific columns.
-    // Given the column list includes "tên sản phẩm", "kích cỡ", "màu sắc", 
-    // it's best to show each product as a separate row to avoid clutter.
-    const flatItems = [];
-    historicalOrders.forEach((order) => {
-        order.items.forEach((item) => {
-            flatItems.push({
-                ...item,
-                order_code: order.order_code,
-                user_name: order.user_name,
-                shipping: order.shipping,
-                total: order.total,
-                discount_amount: order.discount_amount,
-                status: order.status,
-                order_createdAt: order.order_createdAt,
-                order_updatedAt: order.order_updatedAt,
-                deletedAt: order.deletedAt,
-                original_order_id: order.original_order_id,
-                history_id: order._id
-            });
-        });
-    });
 
     const handleExportExcel = () => {
         if (!historicalOrders || historicalOrders.length === 0) {
@@ -57,38 +36,27 @@ const AdminOrderHistories = () => {
             return;
         }
 
-        const dataToExport = [];
-        let stt = 1;
-
-        historicalOrders.forEach((order) => {
-            order.items.forEach((item) => {
-                dataToExport.push({
-                    "STT": stt++,
-                    "ID đơn hàng": order.order_code,
-                    "Tên sản phẩm": item.product_name,
-                    "Số lượng": item.quantity,
-                    "Giá trị đơn hàng": order.total,
-                    "Giảm giá": order.discount_amount,
-                    "Kích cỡ": item.selected_variants?.["Kích cỡ"] || item.selected_variants?.["Size"] || "---",
-                    "Màu sắc": item.selected_variants?.["Màu sắc"] || item.selected_variants?.["Color"] || "---",
-                    "Khách hàng": order.user_name,
-                    "Số điện thoại": order.shipping?.phone,
-                    "Trạng thái đơn hàng": order.status,
-                    "Ngày tạo": order.order_createdAt ? dayjs(order.order_createdAt).utc().format('DD/MM/YYYY HH:mm') : "---",
-                    "Ngày sửa": order.order_updatedAt ? dayjs(order.order_updatedAt).utc().format('DD/MM/YYYY HH:mm') : "---",
-                    "Ngày xóa": order.deletedAt ? dayjs(order.deletedAt).utc().format('DD/MM/YYYY HH:mm') : "---",
-                });
-            });
-        });
+        const dataToExport = historicalOrders.map((order, index) => ({
+            "STT": (page - 1) * limit + index + 1,
+            "ID đơn hàng": order.order_code,
+            "Tên sản phẩm": order.items.map(item => item.product_name).join(", "),
+            "Số lượng": order.items.map(item => item.quantity).join(", "),
+            "Giá trị đơn hàng": order.total,
+            "Giảm giá": order.discount_amount,
+            "Kích cỡ": order.items.map(item => item.selected_variants?.["Kích cỡ"] || item.selected_variants?.["Size"] || "---").join(", "),
+            "Màu sắc": order.items.map(item => item.selected_variants?.["Màu sắc"] || item.selected_variants?.["Color"] || "---").join(", "),
+            "Khách hàng": order.user_name,
+            "Số điện thoại": order.shipping?.phone,
+            "Trạng thái đơn hàng": order.status,
+            "Ngày tạo": order.order_createdAt ? dayjs(order.order_createdAt).utc().format('DD/MM/YYYY HH:mm') : "---",
+            "Ngày sửa": order.order_updatedAt ? dayjs(order.order_updatedAt).utc().format('DD/MM/YYYY HH:mm') : "---",
+            "Ngày xóa": order.deletedAt ? dayjs(order.deletedAt).utc().format('DD/MM/YYYY HH:mm') : "---",
+        }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Lịch sử xóa đơn hàng");
         XLSX.writeFile(workbook, "Lich_su_xoa_don_hang.xlsx");
-    };
-
-    const handleEdit = (id) => {
-        Swal.fire('Thông báo', 'Chức năng chỉnh sửa lịch sử đang được phát triển.', 'info');
     };
 
     const handleDelete = (id) => {
@@ -101,10 +69,14 @@ const AdminOrderHistories = () => {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Xóa',
             cancelButtonText: 'Hủy'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                // Logic xóa lịch sử (nếu có API)
-                Swal.fire('Thông báo', 'Tính năng xóa lịch sử vĩnh viễn chưa được cấu hình API.', 'info');
+                try {
+                    await deleteHistory(id).unwrap();
+                    Swal.fire('Thành công', 'Đã xóa bản ghi lịch sử vĩnh viễn.', 'success');
+                } catch (e) {
+                    Swal.fire('Lỗi', 'Không thể xóa bản ghi: ' + e.message, 'error');
+                }
             }
         });
     };
@@ -135,9 +107,9 @@ const AdminOrderHistories = () => {
                 <div className="controls-right">
                     <div className="search-box">
                         <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                        <input 
-                            type="text" 
-                            placeholder="Mã đơn, khách hàng, SĐT, sản phẩm..." 
+                        <input
+                            type="text"
+                            placeholder="Mã đơn, khách hàng, SĐT, sản phẩm..."
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                         />
@@ -183,30 +155,55 @@ const AdminOrderHistories = () => {
                     <tbody>
                         {isLoading ? (
                             <tr><td colSpan="15" className="text-center">Đang tải dữ liệu...</td></tr>
-                        ) : flatItems.length === 0 ? (
+                        ) : historicalOrders.length === 0 ? (
                             <tr><td colSpan="15" className="text-center">Không tìm thấy lịch sử đơn hàng.</td></tr>
                         ) : (
-                            flatItems.map((item, idx) => (
-                                <tr key={`${item.history_id}-${idx}`}>
+                            historicalOrders.map((order, idx) => (
+                                <tr key={order._id}>
                                     <td>{(page - 1) * limit + idx + 1}</td>
-                                    <td className="order-code">{item.order_code}</td>
-                                    <td className="product-name">{item.product_name}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>{item.total?.toLocaleString()}đ</td>
-                                    <td>{item.discount_amount?.toLocaleString()}đ</td>
-                                    <td>{item.selected_variants?.["Kích cỡ"] || item.selected_variants?.["Size"] || "---"}</td>
-                                    <td>{item.selected_variants?.["Màu sắc"] || item.selected_variants?.["Color"] || "---"}</td>
-                                    <td className="customer-name">{item.user_name}</td>
-                                    <td>{item.shipping?.phone}</td>
-                                    <td><span className={`status-badge ${item.status?.toLowerCase()}`}>{item.status}</span></td>
-                                    <td>{item.order_createdAt ? dayjs(item.order_createdAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
-                                    <td>{item.order_updatedAt ? dayjs(item.order_updatedAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
-                                    <td>{item.deletedAt ? dayjs(item.deletedAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
+                                    <td className="order-code">{order.order_code}</td>
+                                    <td className="product-name-histories">
+                                        {order.items.map((item, i) => (
+                                            <React.Fragment key={i}>
+                                                <div>{item.product_name}</div>
+                                                {i < order.items.length - 1 && <div className="item-separator">-----</div>}
+                                            </React.Fragment>
+                                        ))}
+                                    </td>
+                                    <td>
+                                        {order.items.map((item, i) => (
+                                            <React.Fragment key={i}>
+                                                <div>{item.quantity}</div>
+                                                {i < order.items.length - 1 && <div className="item-separator">-----</div>}
+                                            </React.Fragment>
+                                        ))}
+                                    </td>
+                                    <td>{order.total?.toLocaleString()}đ</td>
+                                    <td>{order.discount_amount?.toLocaleString()}đ</td>
+                                    <td>
+                                        {order.items.map((item, i) => (
+                                            <React.Fragment key={i}>
+                                                <div>{item.selected_variants?.["Kích cỡ"] || item.selected_variants?.["Size"] || "---"}</div>
+                                                {i < order.items.length - 1 && <div className="item-separator">-----</div>}
+                                            </React.Fragment>
+                                        ))}
+                                    </td>
+                                    <td>
+                                        {order.items.map((item, i) => (
+                                            <React.Fragment key={i}>
+                                                <div>{item.selected_variants?.["Màu sắc"] || item.selected_variants?.["Color"] || "---"}</div>
+                                                {i < order.items.length - 1 && <div className="item-separator">-----</div>}
+                                            </React.Fragment>
+                                        ))}
+                                    </td>
+                                    <td className="customer-name">{order.user_name}</td>
+                                    <td>{order.shipping?.phone}</td>
+                                    <td><span className={`status-badge ${order.status?.toLowerCase()}`}>{order.status}</span></td>
+                                    <td>{order.order_createdAt ? dayjs(order.order_createdAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
+                                    <td>{order.order_updatedAt ? dayjs(order.order_updatedAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
+                                    <td>{order.deletedAt ? dayjs(order.deletedAt).utc().format('DD/MM/YYYY HH:mm') : "---"}</td>
                                     <td className="actions-cell">
-                                        <button className="btn-icon edit" onClick={() => handleEdit(item.history_id)}>
-                                            <FontAwesomeIcon icon={faEdit} />
-                                        </button>
-                                        <button className="btn-icon delete" onClick={() => handleDelete(item.history_id)}>
+                                        <button className="btn-icon delete" onClick={() => handleDelete(order._id)}>
                                             <FontAwesomeIcon icon={faTrash} />
                                         </button>
                                     </td>
