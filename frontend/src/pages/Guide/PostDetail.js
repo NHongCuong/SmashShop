@@ -128,7 +128,7 @@ const PostDetail = () => {
                         <div className="sidebar-ad-box">
                             <img src={logo} alt="HC SHOP" />
                             <p>HC SHOP - Hệ thống cửa hàng cầu lông hàng đầu Việt Nam</p>
-                            <Link to="/products" className="shop-now-btn">Mua sắm ngay</Link>
+                            <Link to="/products" className="shop-now-btn" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Mua sắm ngay</Link>
                         </div>
                     </aside>
                 </div>

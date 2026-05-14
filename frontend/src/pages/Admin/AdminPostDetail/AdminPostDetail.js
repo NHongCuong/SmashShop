@@ -71,14 +71,14 @@ const AdminPostDetail = () => {
                             <section key={idx} id={`section-${idx}`} className="content-section">
                                 <h2 className="section-headling">{section.headling}</h2>
                                 <div className="section-text" dangerouslySetInnerHTML={{ __html: section.content.replace(/\n/g, '<br />') }} />
-                                
+
                                 {section.create_table && section.create_table.trim() !== '' && (
                                     <div
                                         className="section-table"
                                         dangerouslySetInnerHTML={{ __html: section.create_table }}
                                     />
                                 )}
-                                
+
                                 {post.images?.[idx] && (
                                     <div className="section-image">
                                         <img src={post.images[idx]} alt={section.headling} />

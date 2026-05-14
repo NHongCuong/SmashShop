@@ -6,6 +6,7 @@ import "./Cart.css";
 import { useDispatch, useSelector } from "react-redux";
 import { removeCartItemThunk, changeCartItemThunk } from "../../app/store/cartThunks";
 import Footer from "../../components/Footer/Footer";
+import Swal from 'sweetalert2';
 
 const formatCurrency = (amount) => {
   return amount.toLocaleString('vi-VN') + ' đ';
@@ -37,12 +38,12 @@ export default function Cart() {
 
   // console.log("detail",cartItemsWithDetails);
   const handleQuantityChange = (productId, changeAmount, variants) => {
-    const item = cartItemsWithDetails.find(item => 
-      item.product._id === productId && 
+    const item = cartItemsWithDetails.find(item =>
+      item.product._id === productId &&
       compareVariants(item.selected_variants, variants)
     );
     if (!item) return;
-  
+
     const newQuantity = item.quantity + changeAmount;
     const stock = item.product.stock;
 
@@ -50,9 +51,9 @@ export default function Cart() {
     if (changeAmount > 0 && stock !== undefined && newQuantity > stock) {
       return;
     }
-  
+
     if (newQuantity < 1) {
-      dispatch(removeCartItemThunk(productId));
+      handleRemove(productId, variants);
     } else {
       dispatch(changeCartItemThunk({
         product_id: productId,
@@ -61,13 +62,33 @@ export default function Cart() {
       }));
     }
   };
-  
-  
+
+
   const handleRemove = (productId, variants) => {
-    dispatch(removeCartItemThunk({
-      product_id: productId,
-      variants
-    }));
+    Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e44d26',
+      cancelButtonColor: '#999',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(removeCartItemThunk({
+          product_id: productId,
+          variants
+        }));
+        Swal.fire({
+          title: 'Đã xóa!',
+          text: 'Sản phẩm đã được xóa khỏi giỏ hàng.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const compareVariants = (v1, v2) => {
@@ -81,23 +102,33 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (cartItemsWithDetails.length === 0) {
-      alert("Giỏ hàng của bạn đang trống.");
+      Swal.fire({
+        title: 'Giỏ hàng trống',
+        text: 'Giỏ hàng của bạn đang trống.',
+        icon: 'info',
+        confirmButtonColor: '#e44d26'
+      });
       return;
     }
-    navigate('/order', { 
-      state: { 
+    navigate('/order', {
+      state: {
         cartItems: cartItemsWithDetails,
         totalPrice,
         discountAmount,
         finalPrice,
-        appliedVoucher 
-      } 
+        appliedVoucher
+      }
     });
   };
 
   const handleApplyVoucher = () => {
     if (!voucherCode.trim()) {
-      alert("Vui lòng nhập mã giảm giá.");
+      Swal.fire({
+        title: 'Thiếu thông tin',
+        text: 'Vui lòng nhập mã giảm giá.',
+        icon: 'warning',
+        confirmButtonColor: '#e44d26'
+      });
       return;
     }
 
@@ -114,30 +145,44 @@ export default function Cart() {
 
       if (isEligible) {
         setAppliedVoucher(voucher);
-        alert(`Áp dụng mã giảm giá thành công! Giảm ${voucher.discount_percent}% cho các sản phẩm hợp lệ.`);
+        Swal.fire({
+          title: 'Thành công',
+          text: `Áp dụng mã giảm giá thành công! Giảm ${voucher.discount_percent}% cho các sản phẩm hợp lệ.`,
+          icon: 'success',
+          confirmButtonColor: '#28a745'
+        });
       } else {
         setAppliedVoucher(null);
-        alert("Mã giảm giá này không áp dụng cho các sản phẩm trong giỏ hàng của bạn.");
+        Swal.fire({
+          title: 'Không hợp lệ',
+          text: 'Mã giảm giá này không áp dụng cho các sản phẩm trong giỏ hàng của bạn.',
+          icon: 'error',
+          confirmButtonColor: '#e44d26'
+        });
       }
     } else {
       setAppliedVoucher(null);
-      alert("Mã giảm giá không hợp lệ.");
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Mã giảm giá không hợp lệ.',
+        icon: 'error',
+        confirmButtonColor: '#e44d26'
+      });
     }
   };
 
-
   const totalQuantity = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItemsWithDetails.reduce((sum, item) => sum + item.quantity * getDiscountedPrice(item.product), 0);
-  
+
   // Tính tiền giảm giá chỉ cho các sản phẩm có voucher_id khớp với appliedVoucher
-  const discountAmount = appliedVoucher 
+  const discountAmount = appliedVoucher
     ? cartItemsWithDetails.reduce((sum, item) => {
-        const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
-        if (productVoucherId === appliedVoucher._id) {
-          return sum + (item.quantity * getDiscountedPrice(item.product) * appliedVoucher.discount_percent) / 100;
-        }
-        return sum;
-      }, 0)
+      const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
+      if (productVoucherId === appliedVoucher._id) {
+        return sum + (item.quantity * getDiscountedPrice(item.product) * appliedVoucher.discount_percent) / 100;
+      }
+      return sum;
+    }, 0)
     : 0;
 
   const finalPrice = totalPrice - discountAmount;
@@ -146,95 +191,95 @@ export default function Cart() {
   return (
 
     <>
-      <Header/>
+      <Header />
 
       <div className="user-container">
         <div className="user-header-container">
           <p className="user-header">TRANG CHỦ {'>'} GIỎ HÀNG</p>
         </div>
         <div className="cart-table">
-        <div className="cart-header">
-          <span>Sản phẩm</span>
-          <span>Đơn giá</span>
-          <span>Số lượng</span>
-          <span>Thành tiền</span>
-        </div>
-
-        {cartItemsWithDetails.map(item => (
-          <div className="cart-item" key={item.product._id}>
-            
-            <div className="product-info">
-              <img src={item.product.image?.[0] || ''} alt={item.product.prod_name} />
-
-              <div className="cart-product-details">
-                <span className="cart-product-name">{item.product.prod_name}</span>
-                <div className="cart-item-variants">
-                  {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
-                    <span key={name} className="variant-label">{name}: {value}</span>
-                  ))}
-                </div>
-              </div>
-              {appliedVoucher && (item.product.voucher_id?._id === appliedVoucher._id || item.product.voucher_id === appliedVoucher._id) && (
-                <span className="voucher-tag" style={{ color: 'green', fontSize: '0.8rem', marginLeft: '5px' }}>
-                  (-{appliedVoucher.discount_percent}%)
-                </span>
-              )}
-            </div>
-            <div>
-              {item.product.discount > 0 ? (
-                <>
-                  <span style={{ color: '#e44d26', fontWeight: 'bold' }}>{formatCurrency(getDiscountedPrice(item.product))}</span>
-                  <br />
-                  <span style={{ color: '#999', textDecoration: 'line-through', fontSize: '0.85rem' }}>{formatCurrency(item.product.price)}</span>
-                </>
-              ) : (
-                <span>{formatCurrency(item.product.price)}</span>
-              )}
-            </div>
-            <div className="quantity-control">
-              <button onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants)}>-</button>
-              <span>{item.quantity}</span>
-              <button
-                onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants)}
-                disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
-              >+</button>
-            </div>
-            <div>{formatCurrency(getDiscountedPrice(item.product) * item.quantity)}</div>
-            <button className="delete-button" onClick={() => handleRemove(item.product._id, item.selected_variants)}>Xóa</button>
+          <div className="cart-header">
+            <span>Sản phẩm</span>
+            <span>Đơn giá</span>
+            <span>Số lượng</span>
+            <span>Thành tiền</span>
           </div>
-        ))}
 
-        <div className="total-price">
-          Tổng tiền: <strong>{formatCurrency(totalPrice)}</strong>
-        </div>
-      </div>
+          {cartItemsWithDetails.map(item => (
+            <div className="cart-item" key={item.product._id}>
 
-      <div className="bottom-section">
-        <div className="discount-box">
-          <label>Mã giảm giá</label>
-          <input 
-            type="text" 
-            placeholder="Nhập mã giảm giá" 
-            value={voucherCode}
-            onChange={(e) => setVoucherCode(e.target.value)}
-          />
-          <button onClick={handleApplyVoucher}>ÁP DỤNG</button>
+              <div className="product-info">
+                <img src={item.product.image?.[0] || ''} alt={item.product.prod_name} />
+
+                <div className="cart-product-details">
+                  <span className="cart-product-name">{item.product.prod_name}</span>
+                  <div className="cart-item-variants">
+                    {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
+                      <span key={name} className="variant-label">{name}: {value}</span>
+                    ))}
+                  </div>
+                </div>
+                {appliedVoucher && (item.product.voucher_id?._id === appliedVoucher._id || item.product.voucher_id === appliedVoucher._id) && (
+                  <span className="voucher-tag" style={{ color: 'green', fontSize: '0.8rem', marginLeft: '5px' }}>
+                    (-{appliedVoucher.discount_percent}%)
+                  </span>
+                )}
+              </div>
+              <div>
+                {item.product.discount > 0 ? (
+                  <>
+                    <span style={{ color: '#e44d26', fontWeight: 'bold' }}>{formatCurrency(getDiscountedPrice(item.product))}</span>
+                    <br />
+                    <span style={{ color: '#999', textDecoration: 'line-through', fontSize: '0.85rem' }}>{formatCurrency(item.product.price)}</span>
+                  </>
+                ) : (
+                  <span>{formatCurrency(item.product.price)}</span>
+                )}
+              </div>
+              <div className="quantity-control">
+                <button onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants)}>-</button>
+                <span>{item.quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants)}
+                  disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
+                >+</button>
+              </div>
+              <div>{formatCurrency(getDiscountedPrice(item.product) * item.quantity)}</div>
+              <button className="delete-button" onClick={() => handleRemove(item.product._id, item.selected_variants)}>Xóa</button>
+            </div>
+          ))}
+
+          <div className="total-price">
+            Tổng tiền: <strong>{formatCurrency(totalPrice)}</strong>
+          </div>
         </div>
-        <div className="summary-box">
-          <p><strong>Số lượng:</strong> {totalQuantity}</p>
-          <p><strong>Thành tiền:</strong> {formatCurrency(totalPrice)}</p>
-          {appliedVoucher && (
-            <p className="discount-text">
-              <strong>Giảm giá ({appliedVoucher.discount_percent}%):</strong> -{formatCurrency(discountAmount)}
-            </p>
-          )}
-          <p className="final-total"><strong>Tổng cộng:</strong> {formatCurrency(finalPrice)}</p>
-          <button className="checkout-button"  onClick={() => handleCheckout()}>THANH TOÁN</button>
+
+        <div className="bottom-section">
+          <div className="discount-box">
+            <label>Mã giảm giá</label>
+            <input
+              type="text"
+              placeholder="Nhập mã giảm giá"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+            />
+            <button onClick={handleApplyVoucher}>ÁP DỤNG</button>
+          </div>
+          <div className="summary-box">
+            <p><strong>Số lượng:</strong> {totalQuantity}</p>
+            <p><strong>Thành tiền:</strong> {formatCurrency(totalPrice)}</p>
+            {appliedVoucher && (
+              <p className="discount-text">
+                <strong>Giảm giá ({appliedVoucher.discount_percent}%):</strong> -{formatCurrency(discountAmount)}
+              </p>
+            )}
+            <p className="final-total"><strong>Tổng cộng:</strong> {formatCurrency(finalPrice)}</p>
+            <button className="checkout-button" onClick={() => handleCheckout()}>THANH TOÁN</button>
+          </div>
         </div>
-      </div>
 
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }

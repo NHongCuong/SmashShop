@@ -9,6 +9,8 @@ import {
 } from '../../../features/order/orderApi';
 import { useGetProductsQuery } from '../../../features/product/productApi';
 import { useParams } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileImport } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
 
@@ -185,11 +187,11 @@ const AdminOrderDetail = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>Chi tiết đơn hàng</h2>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn-export-excel" onClick={handleExportExcel} style={{ padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Download file excel tất cả đơn hàng
+          <button className="btn-export-excel" onClick={handleExportExcel} style={{ padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} /> Export Orders
           </button>
-          <button className="btn-export-excel" onClick={handleExportDetailedExcel} style={{ padding: '5px 10px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Download file excel chi tiết đơn hàng
+          <button className="btn-export-excel" onClick={handleExportDetailedExcel} style={{ padding: '8px 16px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            <FontAwesomeIcon icon={faFileImport} style={{ marginRight: '5px' }} /> Export Orders Details
           </button>
         </div>
       </div>

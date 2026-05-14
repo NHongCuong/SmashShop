@@ -29,7 +29,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { data: allProducts = [], isLoading: productsLoading } = useGetProductsQuery();
   const { data: logoData } = useGetGeneralImagesQuery({ search: 'Logo' });
-  
+
   const dbLogo = logoData?.data?.find(img => img.image_name === 'Logo')?.image?.[0] || logo;
 
   const searchTerm = useSelector((state) => state.search.searchTerm);
@@ -208,7 +208,7 @@ export default function Header() {
 
             <div className="header-info-item header-cart-item" onClick={() => isAuthenticated ? navigate("/cart") : setShowLoginModal(true)}>
               <FontAwesomeIcon icon={faCartShopping} />
-              <span className="info-text desktop-only">Giỏ Hàng ({count})</span>
+              <span className="info-text desktop-only" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Giỏ Hàng ({count})</span>
               {count > 0 && <span className="mobile-cart-badge">{count}</span>}
             </div>
           </div>

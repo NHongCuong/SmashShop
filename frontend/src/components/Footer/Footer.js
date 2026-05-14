@@ -51,7 +51,7 @@ const Footer = () => {
           <div className="footer-column">
             <h3 className="footer-heading">CỘNG ĐỒNG HCSHOP</h3>
             <div className="footer-social-grid">
-              <Link to="/" onClick={handleScrollToTop}>Facebook</Link>
+              <Link to="https://www.facebook.com/hong.96.cuong" >Facebook</Link>
               <Link to="/" onClick={handleScrollToTop}>Youtube</Link>
               <Link to="/" onClick={handleScrollToTop}>Tiktok</Link>
               <Link to="/" onClick={handleScrollToTop}>Instagram</Link>

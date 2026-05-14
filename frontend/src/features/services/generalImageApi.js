@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const generalImageApi = createApi({
     reducerPath: 'generalImageApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:5001/api/v1/general-images',
+        baseUrl: `${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/v1/general-images`,
         prepareHeaders: (headers) => {
             headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`);
             return headers;
