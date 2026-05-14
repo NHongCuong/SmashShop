@@ -1,16 +1,34 @@
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import "./Order.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createOrderThunk } from "../../app/store/orderThunk";
 import Swal from "sweetalert2";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGift, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const EMPTY_CART = [];
 
-export default function Cart() {
+const getDiscountedPrice = (product) => {
+  if (product.discount > 0) {
+    return Math.round(product.price * (1 - product.discount / 100));
+  }
+  return product.price;
+};
+
+const compareVariants = (v1, v2) => {
+  if (!v1 && !v2) return true;
+  if (!v1 || !v2) return false;
+  const k1 = Object.keys(v1);
+  const k2 = Object.keys(v2);
+  if (k1.length !== k2.length) return false;
+  return k1.every(k => v1[k] === v2[k]);
+};
+
+export default function Order() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -19,9 +37,6 @@ export default function Cart() {
   // Check if this is a "Buy Now" flow or coming from Cart with voucher
   const buyNowItem = location.state?.buyNowItem || null;
   const stateCartItems = location.state?.cartItems || null;
-  const stateTotalPrice = location.state?.totalPrice || null;
-  const stateDiscountAmount = location.state?.discountAmount || 0;
-  const stateFinalPrice = location.state?.finalPrice || null;
   const appliedVoucher = location.state?.appliedVoucher || null;
 
   // Determine which items to display in the order
@@ -35,27 +50,126 @@ export default function Cart() {
     return cartItems;
   }, [buyNowItem, stateCartItems, cartItems]);
 
+  const [localOrderItems, setLocalOrderItems] = useState([]);
+
+  useEffect(() => {
+    setLocalOrderItems(orderItems);
+  }, [orderItems]);
+
   const [formData, setFormData] = useState({
     name: '',
-    address: '',
     phone: '',
     email: '',
+    street: '',
     note: '',
+    gender: 'Nam',
+    deliveryType: 'Giao tận nơi',
   });
-  const [paymentMethod, setPaymentMethod] = useState('cod'); // cod | vnpay
+
+  const [isOtherReceiver, setIsOtherReceiver] = useState(false);
+  const [otherReceiverData, setOtherReceiverData] = useState({
+    title: 'Anh',
+    name: '',
+    phone: ''
+  });
+
+  const handleChangeOtherReceiver = e => {
+    setOtherReceiverData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+
+  // Address dropdowns (using esgoo.net for 2026 data)
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedWard, setSelectedWard] = useState('');
+
+  useEffect(() => {
+    fetch('https://esgoo.net/api-tinhthanh/1/0.htm')
+      .then(res => res.json())
+      .then(res => {
+        if (res.error === 0) setProvinces(res.data);
+      })
+      .catch(err => console.error("Error fetching provinces:", err));
+  }, []);
+
+  const handleProvinceChange = (e) => {
+    const code = e.target.value;
+    setSelectedProvince(code);
+    setSelectedDistrict('');
+    setSelectedWard('');
+    setDistricts([]);
+    setWards([]);
+
+    if (code) {
+      fetch(`https://esgoo.net/api-tinhthanh/2/${code}.htm`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.error === 0) setDistricts(res.data);
+        })
+        .catch(err => console.error(err));
+    }
+  };
+
+  const handleDistrictChange = (e) => {
+    const code = e.target.value;
+    setSelectedDistrict(code);
+    setSelectedWard('');
+    setWards([]);
+
+    if (code) {
+      fetch(`https://esgoo.net/api-tinhthanh/3/${code}.htm`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.error === 0) setWards(res.data);
+        })
+        .catch(err => console.error(err));
+    }
+  };
 
   const handleChange = e => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const total = stateTotalPrice !== null
-    ? stateTotalPrice
-    : orderItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  const discount = stateDiscountAmount;
-  const finalTotal = stateFinalPrice !== null ? stateFinalPrice : (total - discount);
+  const handleQuantityChange = (productId, changeAmount, variants) => {
+    setLocalOrderItems(prevItems => {
+      return prevItems.map(item => {
+        if (item.product._id === productId && compareVariants(item.selected_variants, variants)) {
+          const newQuantity = item.quantity + changeAmount;
+          const stock = item.product.stock;
+          if (changeAmount > 0 && stock !== undefined && newQuantity > stock) return item;
+          if (newQuantity < 1) return item;
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      });
+    });
+  };
+
+  const handleRemove = (productId, variants) => {
+    setLocalOrderItems(prev => prev.filter(item => !(item.product._id === productId && compareVariants(item.selected_variants, variants))));
+  };
+
+  const total = localOrderItems.reduce((sum, i) => sum + getDiscountedPrice(i.product) * i.quantity, 0);
+
+  const discount = appliedVoucher
+    ? localOrderItems.reduce((sum, item) => {
+      const productVoucherId = item.product.voucher_id?._id || item.product.voucher_id;
+      if (productVoucherId === appliedVoucher._id) {
+        return sum + (item.quantity * getDiscountedPrice(item.product) * appliedVoucher.discount_percent) / 100;
+      }
+      return sum;
+    }, 0)
+    : 0;
+
+  const finalTotal = total - discount;
 
   const handleSubmit = async () => {
-    const requiredShippingFields = ['name', 'address', 'phone', 'email'];
+    const requiredShippingFields = ['name', 'street', 'phone', 'email'];
     for (let field of requiredShippingFields) {
       if (!formData[field]) {
         Swal.fire({
@@ -68,7 +182,16 @@ export default function Cart() {
       }
     }
 
-    // Validation regex
+    if (!selectedProvince || !selectedDistrict || !selectedWard) {
+      Swal.fire({
+        icon: 'error',
+        title: `Vui lòng chọn đầy đủ địa chỉ giao hàng`,
+        showConfirmButton: false,
+        timer: 1000
+      });
+      return;
+    }
+
     const phoneRegex = /^\d{10}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -86,14 +209,34 @@ export default function Cart() {
       Swal.fire({
         icon: 'error',
         title: 'Email không hợp lệ',
-        text: 'Vui lòng nhập đúng định dạng email (ví dụ: abc@gmail.com).',
+        text: 'Vui lòng nhập đúng định dạng email.',
         timer: 2000
       });
       return;
     }
 
-    // Check if order items are empty
-    if (orderItems.length === 0) {
+    if (isOtherReceiver) {
+      if (!otherReceiverData.name || !otherReceiverData.phone) {
+        Swal.fire({
+          icon: 'error',
+          title: `Vui lòng nhập thông tin người nhận khác`,
+          showConfirmButton: false,
+          timer: 1000
+        });
+        return;
+      }
+      if (!phoneRegex.test(otherReceiverData.phone)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Số điện thoại người nhận không hợp lệ',
+          text: 'Số điện thoại phải bao gồm đúng 10 chữ số.',
+          timer: 2000
+        });
+        return;
+      }
+    }
+
+    if (localOrderItems.length === 0) {
       Swal.fire({
         icon: 'error',
         title: "Không có sản phẩm nào để đặt hàng.",
@@ -103,11 +246,27 @@ export default function Cart() {
       return;
     }
 
-    const shipping = { ...formData };
-    const items = orderItems.map(i => ({
+    const provinceName = provinces.find(p => p.id === selectedProvince)?.full_name || '';
+    const districtName = districts.find(d => d.id === selectedDistrict)?.full_name || '';
+    const wardName = wards.find(w => w.id === selectedWard)?.full_name || '';
+
+    const fullAddress = `${formData.street}, ${wardName}, ${districtName}, ${provinceName}`;
+
+    const shipping = {
+      name: formData.name,
+      address: fullAddress,
+      phone: formData.phone,
+      email: formData.email,
+      note: formData.note,
+      deliveryType: formData.deliveryType,
+      gender: formData.gender,
+      otherReceiver: isOtherReceiver ? otherReceiverData : null
+    };
+
+    const items = localOrderItems.map(i => ({
       product: i.product._id,
       quantity: i.quantity,
-      variants: i.selected_variants || i.variants // Handle both cart and buyNow formats
+      variants: i.selected_variants || i.variants
     }));
 
     const orderData = {
@@ -118,7 +277,6 @@ export default function Cart() {
       voucher_id: appliedVoucher?._id || null,
       discountAmount: discount
     };
-
 
     if (paymentMethod === 'cod') {
       try {
@@ -140,11 +298,7 @@ export default function Cart() {
       }
     } else if (paymentMethod === 'vnpay') {
       try {
-        // Bước 1: Tạo đơn hàng trước để kiểm tra tồn kho atomic
-        // Nếu tồn kho không đủ, createOrderThunk sẽ reject với message lỗi
         const orderResult = await dispatch(createOrderThunk(orderData)).unwrap();
-
-        // Bước 2: Tạo đơn thành công -> lấy order ID rồi gọi API tạo payment URL
         const createdOrderId = orderResult._id;
 
         const res = await fetch("http://localhost:5001/api/v1/vnpay/create_payment", {
@@ -157,7 +311,6 @@ export default function Cart() {
         });
         const data = await res.json();
         if (data.paymentUrl) {
-          // Lưu orderId để xử lý khi quay lại từ VNPAY
           localStorage.setItem("pendingVnpayOrderId", createdOrderId);
           window.location.href = data.paymentUrl;
         } else {
@@ -169,7 +322,6 @@ export default function Cart() {
           });
         }
       } catch (err) {
-        // Hiển thị lỗi tồn kho hoặc lỗi khác giống COD
         Swal.fire({
           icon: 'error',
           title: 'Đặt hàng thất bại',
@@ -181,63 +333,207 @@ export default function Cart() {
   };
 
   return (
-    <>
+    <div className="order-page-wrapper">
       <Header />
 
-      <div className="user-container">
-        <div className="user-header-container">
-          <p className="user-header">TRANG CHỦ {'>'} {buyNowItem ? 'MUA NGAY' : 'GIỎ HÀNG'}</p>
-        </div>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '15px 0' }}>
+        <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>Trang chủ {'>'} {buyNowItem ? 'Mua ngay' : 'Giỏ hàng'}</p>
+      </div>
 
-        <div className="order-container">
-          <div className="order-form">
-            <h3>Thông tin đặt hàng</h3>
-            {['name', 'address', 'phone', 'email', 'note'].map(field => (
-              <div key={field}>
-                <label>{field === 'note' ? 'Ghi chú' : field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                {field === 'note'
-                  ? <textarea name={field} onChange={handleChange} />
-                  : <input name={field} onChange={handleChange} />
-                }
+      <div className="order-container new-layout">
+        {/* LEFT COLUMN */}
+        <div className="order-form-left">
+
+          {/* THÔNG TIN KHÁCH HÀNG */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>Thông tin khách hàng</span>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group half">
+                <label>Họ và Tên</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} />
               </div>
-            ))}
+              <div className="form-group half">
+                <label>Giới tính</label>
+                <div className="radio-group" style={{ marginBottom: 0, marginTop: '8px' }}>
+                  <label>
+                    <input
+                      type="radio" name="gender" value="Nam"
+                      checked={formData.gender === 'Nam'} onChange={handleChange}
+                    /> Nam
+                  </label>
+                  <label>
+                    <input
+                      type="radio" name="gender" value="Nữ"
+                      checked={formData.gender === 'Nữ'} onChange={handleChange}
+                    /> Nữ
+                  </label>
+                </div>
+              </div>
+            </div>
 
-            <div className="payment-method">
-              <p className="payment-method-title">Phương thức thanh toán:</p>
-              <div>
-                <div>
-                  <input
-                    type="radio"
-                    id="cod"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={paymentMethod === 'cod'}
-                    onChange={() => setPaymentMethod('cod')}
-                  />
-                  <label htmlFor="cod">Thanh toán khi nhận hàng</label>
-                </div>
-                <div>
-                  <input
-                    type="radio"
-                    id="vnpay"
-                    name="paymentMethod"
-                    value="vnpay"
-                    checked={paymentMethod === 'vnpay'}
-                    onChange={() => setPaymentMethod('vnpay')}
-                  />
-                  <label htmlFor="vnpay">Thanh toán qua VNPAY</label>
-                </div>
+            <div className="form-row">
+              <div className="form-group half">
+                <label>Số điện thoại</label>
+                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
+              </div>
+              <div className="form-group half">
+                <label>Email</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} />
               </div>
             </div>
           </div>
 
-          <div className="order-summary">
-            <h3>Đơn hàng</h3>
-            {orderItems.map(item => (
-              <div key={item.product._id} className="order-item">
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span>{item.product.prod_name} ×{item.quantity}</span>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+          {/* THÔNG TIN GIAO HÀNG */}
+          <div className="form-section">
+            <div className="section-title">Thông tin giao hàng</div>
+
+            <div className="radio-group" style={{ marginBottom: '15px' }}>
+              <label>
+                <input
+                  type="radio" name="deliveryType" value="Giao tận nơi"
+                  checked={formData.deliveryType === 'Giao tận nơi'} onChange={handleChange}
+                /> Giao tận nơi
+              </label>
+              <label>
+                <input
+                  type="radio" name="deliveryType" value="Nhận tại cửa hàng"
+                  checked={formData.deliveryType === 'Nhận tại cửa hàng'} onChange={handleChange}
+                /> Nhận tại cửa hàng
+              </label>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group third">
+                <label>Tỉnh/Thành phố</label>
+                <select value={selectedProvince} onChange={handleProvinceChange}>
+                  <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                  {provinces.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group third">
+                <label>Quận/Huyện</label>
+                <select value={selectedDistrict} onChange={handleDistrictChange} disabled={!selectedProvince}>
+                  <option value="">-- Chọn Quận/Huyện --</option>
+                  {districts.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group third">
+                <label>Phường/Xã</label>
+                <select value={selectedWard} onChange={(e) => setSelectedWard(e.target.value)} disabled={!selectedDistrict}>
+                  <option value="">-- Chọn Phường/Xã --</option>
+                  {wards.map(w => (
+                    <option key={w.id} value={w.id}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Địa chỉ cụ thể</label>
+              <input
+                type="text" name="street"
+                placeholder="Số nhà, tên đường..."
+                value={formData.street} onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginTop: '5px' }}>
+              <label>Yêu cầu khác (không bắt buộc)</label>
+              <input
+                type="text" name="note"
+                value={formData.note} onChange={handleChange}
+              />
+            </div>
+
+            <div className="checkbox-group">
+              <div>
+                <label>
+                  <input type="checkbox" checked={isOtherReceiver} onChange={e => setIsOtherReceiver(e.target.checked)} /> Người nhận khác (nếu có)
+                </label>
+                {isOtherReceiver && (
+                  <div className="other-receiver-info">
+                    <div className="radio-group" style={{ marginBottom: '8px' }}>
+                      <label>
+                        <input type="radio" name="title" value="Anh" checked={otherReceiverData.title === 'Anh'} onChange={handleChangeOtherReceiver} /> Anh
+                      </label>
+                      <label>
+                        <input type="radio" name="title" value="Chị" checked={otherReceiverData.title === 'Chị'} onChange={handleChangeOtherReceiver} /> Chị
+                      </label>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group half">
+                        <label>Họ và Tên</label>
+                        <input type="text" name="name" value={otherReceiverData.name} onChange={handleChangeOtherReceiver} />
+                      </div>
+                      <div className="form-group half">
+                        <label>Số điện thoại người nhận</label>
+                        <input type="tel" name="phone" value={otherReceiverData.phone} onChange={handleChangeOtherReceiver} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <label><input type="checkbox" /> Hướng dẫn sử dụng, giải đáp thắc mắc sản phẩm</label>
+            </div>
+          </div>
+
+          {/* PHƯƠNG THỨC GIAO HÀNG */}
+          <div className="form-section">
+            <div className="section-title">Phương thức giao hàng</div>
+            <p className="delivery-note">Nhân viên sẽ gọi lại và xác nhận phí ship giao hàng với bạn!</p>
+          </div>
+
+          {/* PHƯƠNG THỨC THANH TOÁN */}
+          <div className="form-section">
+            <div className="section-title">Phương thức thanh toán</div>
+            <div className="radio-group vertical">
+              <label>
+                <input
+                  type="radio" name="paymentMethod" value="cod"
+                  checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')}
+                /> Thanh toán khi nhận hàng
+              </label>
+              <label>
+                <input
+                  type="radio" name="paymentMethod" value="vnpay"
+                  checked={paymentMethod === 'vnpay'} onChange={() => setPaymentMethod('vnpay')}
+                /> Thanh toán qua VNPAY
+              </label>
+            </div>
+            <div className="policy-checkbox" style={{ marginTop: '15px' }}>
+              <label>
+                <input type="checkbox" defaultChecked /> Tôi đồng ý với <a href="#">Chính Sách Bảo Mật Thông Tin Khách Hàng</a> của SmashShop
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="order-summary-right">
+          <div className="summary-products">
+            {localOrderItems.map((item, index) => (
+              <div key={item.product._id + index} className="summary-item">
+                <img
+                  src={item.product.images && item.product.images.length > 0 ? `http://localhost:5001${item.product.images[0]}` : 'https://via.placeholder.com/60'}
+                  alt={item.product.prod_name}
+                  className="summary-item-img"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/60'; }}
+                />
+                <div className="summary-item-info">
+                  <div className="summary-item-name">
+                    <span>{item.product.prod_name} <FontAwesomeIcon icon={faGift} className="gift-icon" /></span>
+                    <FontAwesomeIcon icon={faTimesCircle} className="remove-icon" onClick={() => handleRemove(item.product._id, item.selected_variants)} />
+                  </div>
+
+                  <div className="summary-item-variant">
                     {item.selected_variants && Object.entries(item.selected_variants).map(([name, value]) => (
                       <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
                     ))}
@@ -245,37 +541,57 @@ export default function Cart() {
                       <span key={name} style={{ marginRight: '10px' }}>{name}: {value}</span>
                     ))}
                   </div>
+
+                  {item.product.discount > 0 && (
+                    <div className="summary-item-promo">
+                      Đang áp dụng: VỢT YONEX 100VA TOUR -{item.product.discount}%
+                    </div>
+                  )}
+
+                  <div className="summary-item-actions">
+                    <div className="quantity-control-order">
+                      <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, -1, item.selected_variants)}>-</button>
+                      <input type="text" className="quantity-input" value={item.quantity} readOnly />
+                      <button className="quantity-btn" onClick={() => handleQuantityChange(item.product._id, 1, item.selected_variants)} disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}>+</button>
+                    </div>
+                    <div className="summary-item-price">
+                      <div className="price-current">{(getDiscountedPrice(item.product)).toLocaleString()}đ</div>
+                      {item.product.discount > 0 && (
+                        <div className="price-old">{(item.product.price).toLocaleString()}đ</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <span>{(item.product.price * item.quantity).toLocaleString()} đ</span>
               </div>
             ))}
-            <div className="order-total-detail">
-              <div className="total-row">
-                <span>Tạm tính</span>
-                <span>{total.toLocaleString()} đ</span>
-              </div>
-              {discount > 0 && (
-                <div className="total-row discount">
-                  <span>Giảm giá {appliedVoucher ? `(${appliedVoucher.discount_percent}%)` : ''}</span>
-                  <span>-{discount.toLocaleString()} đ</span>
-                </div>
-              )}
-              <div className="order-total">
-                <span>Tổng đơn</span>
-                <span className="total-amount">{finalTotal.toLocaleString()} đ</span>
-              </div>
-            </div>
-            <button
-              className="order-button"
-              onClick={handleSubmit}
-            >
-              {paymentMethod === 'cod' ? 'Đặt hàng' : 'Thanh toán online'}
-            </button>
           </div>
+
+          <div className="summary-calculations">
+            <div className="calc-row">
+              <span>Tạm tính ({localOrderItems.reduce((acc, item) => acc + item.quantity, 0)} sản phẩm):</span>
+              <span>{total.toLocaleString()}đ</span>
+            </div>
+            <div className="calc-row">
+              <span>Khuyến mãi:</span>
+              <span>{discount > 0 ? `-${discount.toLocaleString()}đ` : '0đ'}</span>
+            </div>
+            <div className="calc-row">
+              <span>Vận chuyển:</span>
+              <span>0đ</span>
+            </div>
+            <div className="calc-total">
+              <span>Tổng tiền:</span>
+              <span className="total-green">{finalTotal.toLocaleString()}đ</span>
+            </div>
+          </div>
+
+          <button className="order-submit-btn" onClick={handleSubmit}>
+            {paymentMethod === 'cod' ? 'ĐẶT HÀNG' : 'THANH TOÁN ONLINE'}
+          </button>
         </div>
       </div>
 
       <Footer />
-    </>
+    </div>
   );
 }

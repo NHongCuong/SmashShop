@@ -25,7 +25,14 @@ const orderSchema = new mongoose.Schema({
         address: { type: String, required: true },
         phone: { type: String, required: true },
         email: { type: String, required: true },
-        note: { type: String }
+        note: { type: String },
+        shipmethod: { type: String },
+        gender: { type: String },
+        otherReceiver: {
+            title: { type: String },
+            name: { type: String },
+            phone: { type: String }
+        }
     },
     total: { type: Number, required: true },
     voucher_id: { type: mongoose.Types.ObjectId, ref: 'Voucher', default: null },

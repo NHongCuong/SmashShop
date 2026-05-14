@@ -62,7 +62,7 @@ export const createOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Thiếu thông tin giao hàng.' });
         }
 
-        const { name, address, phone, email, note } = req.body.shipping;
+        const { name, address, phone, email, note, deliveryType, gender, otherReceiver } = req.body.shipping;
 
         // Validate required shipping fields
         if (!name || !address || !phone || !email) {
@@ -178,7 +178,16 @@ export const createOrder = async (req, res) => {
         const order = await Order.create({
             user_id,
             items,
-            shipping: { name, address, phone, email, note },
+            shipping: { 
+                name, 
+                address, 
+                phone, 
+                email, 
+                note,
+                shipmethod: deliveryType,
+                gender: gender,
+                otherReceiver: otherReceiver
+            },
             total: finalTotal,
             voucher_id: voucher_id || null,
             discount_amount: discountVal,
