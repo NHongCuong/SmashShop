@@ -43,6 +43,7 @@ export default function Header() {
   const handleSelectProduct = (slug) => {
     dispatch(clearSearchTerm());
     navigate(`/product/${slug}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setShowDropdown(false);
   };
 
@@ -54,17 +55,13 @@ export default function Header() {
   };
 
   const handleLinkClick = (path) => {
-    if (window.location.pathname === path) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setMobileMenuOpen(false);
   };
 
-  const handleLogoClick = (e) => {
-    if (window.location.pathname === "/") {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+  const handleLogoClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMobileMenuOpen(false);
   };
 
   const [productDropdown, setProductDropdown] = useState(false);
@@ -206,9 +203,16 @@ export default function Header() {
               )}
             </div>
 
-            <div className="header-info-item header-cart-item" onClick={() => isAuthenticated ? navigate("/cart") : setShowLoginModal(true)}>
+            <div className="header-info-item header-cart-item" onClick={() => {
+              if (isAuthenticated) {
+                navigate("/cart");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              } else {
+                setShowLoginModal(true);
+              }
+            }}>
               <FontAwesomeIcon icon={faCartShopping} />
-              <span className="info-text desktop-only" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Giỏ Hàng ({count})</span>
+              <span className="info-text desktop-only">Giỏ Hàng ({count})</span>
               {count > 0 && <span className="mobile-cart-badge">{count}</span>}
             </div>
           </div>
@@ -292,7 +296,7 @@ export default function Header() {
                       key={cat._id}
                       to={`/products/${encodeURIComponent(slugify(cat.category_name))}`}
                       className="dropdown-item"
-                      onClick={() => setMobileMenuOpen(false)}
+                      onClick={() => handleLinkClick(`/products/${encodeURIComponent(slugify(cat.category_name))}`)}
                     >
                       {cat.category_name}
                     </Link>

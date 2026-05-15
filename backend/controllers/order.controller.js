@@ -215,7 +215,10 @@ export const createOrder = async (req, res) => {
         const populatedOrder = await Order.findById(order._id).populate('items.product');
 
         // Gửi email xác nhận (không await để không block response)
-        sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+        // Chỉ gửi ngay cho COD. Với VNPAY sẽ gửi sau khi verify callback thành công.
+        if (paymentMethod !== 'vnpay') {
+            sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+        }
 
         return res.status(201).json({ success: true, _id: order._id, order: populatedOrder, orderDetail: orderDetailData });
     } catch (err) {

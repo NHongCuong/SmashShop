@@ -11,4 +11,4 @@ export const apiDeleteOrder = (id) =>
     api.delete(`/api/v1/order/${id}`);
 
 export const apiGetOrderById = (id) =>
-    api.get(`/api/v1/order/${id}`);
+    api.get(`/api/v1/order/single/${id}`);

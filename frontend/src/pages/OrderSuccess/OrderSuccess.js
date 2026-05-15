@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -6,12 +6,86 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faListAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
 import './OrderSuccess.css';
 import Swal from 'sweetalert2';
-import { apiUpdateOrderStatus } from '../../apis/order';
+import { apiGetOrderById, apiUpdateOrderStatus } from '../../apis/order';
 
 const OrderSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { order } = location.state || {};
+    const [order, setOrder] = useState(location.state?.order || null);
+    const [loading, setLoading] = useState(!order);
+    const hasHandledVnpay = useRef(false);
+
+    useEffect(() => {
+        const fetchOrder = async () => {
+            const params = new URLSearchParams(location.search);
+            const orderIdFromUrl = params.get('orderId');
+            const responseCode = params.get('vnp_ResponseCode');
+            const orderIdFromStorage = localStorage.getItem('pendingVnpayOrderId');
+            const effectiveOrderId = orderIdFromUrl || orderIdFromStorage;
+
+            console.log("OrderSuccess - location.search:", location.search);
+            console.log("OrderSuccess - effectiveOrderId:", effectiveOrderId);
+
+            // Handle VNPAY notifications once
+            if (responseCode && !hasHandledVnpay.current) {
+                hasHandledVnpay.current = true;
+                if (responseCode === '00') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Đơn hàng của bạn đã được đặt thành công.",
+                        text: 'Cảm ơn bạn đã mua sắm tại SmashShop!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Clear query params to avoid showing Swal again on refresh
+                    const newUrl = location.pathname + (effectiveOrderId ? `?orderId=${effectiveOrderId}` : '');
+                    window.history.replaceState(null, '', newUrl);
+                    localStorage.removeItem('pendingVnpayOrderId'); // Dọn dẹp storage
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thanh toán thất bại hoặc bị hủy.',
+                        text: 'Đơn hàng đã được huỷ và tồn kho đã được khôi phục.',
+                        confirmButtonText: 'Quay lại trang chủ'
+                    }).then(() => {
+                        navigate('/');
+                    });
+                    localStorage.removeItem('pendingVnpayOrderId');
+                    return;
+                }
+            }
+
+            if (!order && effectiveOrderId) {
+                try {
+                    const res = await apiGetOrderById(effectiveOrderId);
+                    if (res.success) {
+                        setOrder(res.data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching order in OrderSuccess:", error);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false);
+            }
+        };
+
+        fetchOrder();
+    }, [order, location.search, location.pathname, navigate]);
+
+    if (loading) {
+        return (
+            <div className="order-success-wrapper">
+                <Header />
+                <div className="order-success-container no-order">
+                    <h2>Đang tải thông tin đơn hàng...</h2>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     if (!order) {
         return (
@@ -128,7 +202,12 @@ const OrderSuccess = () => {
                         </li>
                         <li>
                             <span className="label">Trạng thái:</span>
-                            <span className="value status-pending">Đang xử lý</span>
+                            <span className={`value status-${order.status?.toLowerCase()}`}>
+                                {order.status === 'Succeeded' ? 'Thành công' : 
+                                 order.status === 'Pending' ? 'Đang xử lý' : 
+                                 order.status === 'Cancelled' ? 'Đã hủy' : 
+                                 order.status === 'Processing' ? 'Đang xử lý' : order.status}
+                            </span>
                         </li>
                         <li>
                             <span className="label">Các yêu cầu khác:</span>

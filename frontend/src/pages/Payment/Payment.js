@@ -13,7 +13,8 @@ export default function PaymentSuccess() {
 
     const params = new URLSearchParams(window.location.search);
     const responseCode = params.get('vnp_ResponseCode');
-    const orderId = localStorage.getItem('pendingVnpayOrderId');
+    const orderIdFromUrl = params.get('orderId');
+    const orderId = orderIdFromUrl || localStorage.getItem('pendingVnpayOrderId');
 
     if (responseCode === '00') {
       const handleSuccess = async () => {
@@ -28,16 +29,19 @@ export default function PaymentSuccess() {
 
             Swal.fire({
                 icon: 'success',
-                title: 'Thanh toán thành công!',
-                text: 'Đơn hàng của bạn đã được ghi nhận.',
-                timer: 1500,
+                title: "Đơn hàng của bạn đã được đặt thành công.",
+                text: 'Cảm ơn bạn đã mua sắm tại SmashShop!',
+                timer: 2000,
                 showConfirmButton: false
             });
 
             localStorage.removeItem('pendingVnpayOrderId');
             
             if (orderData) {
-                navigate('/order-success', { state: { order: orderData } });
+                // Đảm bảo navigation xảy ra sau khi Swal chuẩn bị đóng
+                setTimeout(() => {
+                    navigate('/order-success', { state: { order: orderData } });
+                }, 1500);
             } else {
                 navigate('/');
             }
@@ -54,11 +58,11 @@ export default function PaymentSuccess() {
         icon: 'error',
         title: 'Thanh toán thất bại hoặc bị hủy.',
         text: 'Đơn hàng đã được huỷ và tồn kho đã được khôi phục.',
-        showConfirmButton: true
+        confirmButtonText: 'Quay lại trang chủ'
+      }).then(() => {
+        localStorage.removeItem('pendingVnpayOrderId');
+        navigate('/');
       });
-
-      localStorage.removeItem('pendingVnpayOrderId');
-      navigate('/');
       return;
     }
   }, [navigate]);

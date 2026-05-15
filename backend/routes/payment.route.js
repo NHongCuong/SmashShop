@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { createPaymentUrl } from '../controllers/payment.controller.js';
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
+import { sendOrderConfirmationEmail } from '../controllers/order.controller.js';
 
 const paymentRoutes = express.Router();
 
@@ -27,23 +28,30 @@ paymentRoutes.get('/vnpay_return', async (req, res) => {
    const hmac = crypto.createHmac('sha512', process.env.VNP_HASH_SECRET);
    const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-   const FE_URL = process.env.FRONTEND_URL || 'https://smashshop.svuit.org';
+   const FE_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+   console.log("VNPAY Return - Query:", req.query);
 
    if (secureHash === signed) {
       // Trích xuất orderId từ vnp_OrderInfo: "Thanhtoandonhang_<orderId>"
       const orderInfo = query.vnp_OrderInfo || '';
       const orderId = orderInfo.split('_').slice(1).join('_').trim();
+      console.log("VNPAY Return - Extracted OrderId:", orderId);
 
       if (query.vnp_ResponseCode === '00') {
          // === THANH TOÁN THÀNH CÔNG ===
          try {
             if (orderId) {
-               await Order.findByIdAndUpdate(orderId, { status: "Succeeded" });
+               const order = await Order.findByIdAndUpdate(orderId, { status: "Succeeded" }, { new: true }).populate('items.product');
+               if (order) {
+                  sendOrderConfirmationEmail(order, order.shipping, order.total);
+               }
             }
          } catch (err) {
             console.error("Error updating order status to Succeeded:", err.message);
          }
-         return res.redirect(`${FE_URL}/payment-success?vnp_ResponseCode=00`);
+         const redirectUrl = `${FE_URL}/order-success?vnp_ResponseCode=00&orderId=${orderId}`;
+         console.log("VNPAY Return - Redirecting to:", redirectUrl);
+         return res.redirect(redirectUrl);
       } else {
          // === THANH TOÁN THẤT BẠI / HỦY -> Rollback tồn kho ===
          try {
@@ -64,7 +72,7 @@ paymentRoutes.get('/vnpay_return', async (req, res) => {
          } catch (err) {
             console.error("Error rolling back stock on VNPAY failure:", err.message);
          }
-         return res.redirect(`${FE_URL}/payment-success?vnp_ResponseCode=${query.vnp_ResponseCode}`);
+         return res.redirect(`${FE_URL}/order-success?vnp_ResponseCode=${query.vnp_ResponseCode}&orderId=${orderId}`);
       }
 
    } else {
