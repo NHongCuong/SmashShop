@@ -175,7 +175,7 @@ export default function Order() {
       if (result.isConfirmed) {
         // Xóa khỏi local state của trang Order
         setLocalOrderItems(prev => prev.filter(item => !(item.product._id === productId && compareVariants(item.selected_variants || item.variants, variants))));
-        
+
         // Xóa khỏi giỏ hàng Redux (nếu có)
         dispatch(removeCartItemThunk({
           product_id: productId,
@@ -548,7 +548,7 @@ export default function Order() {
             </div>
             <div className="policy-checkbox" style={{ marginTop: '15px' }}>
               <label>
-                <input type="checkbox" defaultChecked /> Tôi đồng ý với <a href="#">Chính Sách Bảo Mật Thông Tin Khách Hàng</a> của SmashShop
+                <input type="checkbox" defaultChecked /> Tôi đồng ý với <a href="#">Chính Sách Bảo Mật Thông Tin Khách Hàng</a> của HcShop
               </label>
             </div>
           </div>

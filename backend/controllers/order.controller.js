@@ -231,8 +231,8 @@ export const createOrder = async (req, res) => {
 export const sendOrderConfirmationEmail = async (order, shipping, total) => {
     try {
         const itemsHtml = order.items.map(item => {
-            const variantsHtml = item.selected_variants 
-                ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>` 
+            const variantsHtml = item.selected_variants
+                ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>`
                 : '';
             return `
                 <tr>
@@ -250,7 +250,7 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                 <h2 style="color: #4caf50; text-align: center;">Xác Nhận Đặt Hàng Thành Công</h2>
                 <p>Chào <b>${shipping.name}</b>,</p>
-                <p>Cảm ơn bạn đã tin tưởng và mua sắm tại <b>SmashShop</b>. Đơn hàng của bạn đã được ghi nhận và đang được xử lý.</p>
+                <p>Cảm ơn bạn đã tin tưởng và mua sắm tại <b>HcShop</b>. Đơn hàng của bạn đã được ghi nhận và đang được xử lý.</p>
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                     <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
@@ -302,7 +302,7 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
                 <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Đây là email tự động, vui lòng không trả lời email này.</p>
             </div>
         `;
-        await sendmail(shipping.email, emailContent, "Xác nhận đơn hàng SmashShop");
+        await sendmail(shipping.email, emailContent, "Xác nhận đơn hàng HcShop");
     } catch (error) {
         logger.error("Error sending confirmation email: " + error.message);
     }
@@ -328,18 +328,25 @@ export const fetchAllOrders = async (req, res) => {
         const totalDocument = await Order.countDocuments(query);
         const orders = await Order.find(query)
             .populate({
-                path: 'items.product', // Populate the 'product' field within the 'products' array
-                model: 'Product', // Specify the model to populate with (Product model)
-                populate: {
-                    path: 'images',
-                    model: 'ProductImage'
-                }
+                path: 'items.product',
+                model: 'Product',
+                populate: [
+                    {
+                        path: 'images',
+                        model: 'ProductImage'
+                    },
+                    {
+                        path: 'brand_id',
+                        model: 'Brand'
+                    }
+                ]
             })
             .populate({
                 path: 'user_id',
                 model: 'User',
                 select: 'name email phone_number '
             })
+            .populate('voucher_id')
             .sort({ [sortBy]: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit);
@@ -386,11 +393,11 @@ export const updateOrderStatus = async (req, res) => {
                     $inc: { stock: item.quantity, quantity_sold: -item.quantity }
                 });
             }
-            
+
             // Gửi email thông báo hủy đơn
             const itemsHtml = order.items.map(item => {
-                const variantsHtml = item.selected_variants 
-                    ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>` 
+                const variantsHtml = item.selected_variants
+                    ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>`
                     : '';
                 return `
                     <tr>
@@ -408,7 +415,7 @@ export const updateOrderStatus = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                     <h2 style="color: #dc3545; text-align: center;">Thông Báo Hủy Đơn Hàng</h2>
                     <p>Chào <b>${order.shipping.name}</b>,</p>
-                    <p>Đơn hàng <b>#${order.order_id || order._id}</b> của bạn đã được hủy thành công trên hệ thống <b>SmashShop</b>.</p>
+                    <p>Đơn hàng <b>#${order.order_id || order._id}</b> của bạn đã được hủy thành công trên hệ thống <b>HcShop</b>.</p>
                     
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                         <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
@@ -457,12 +464,12 @@ export const updateOrderStatus = async (req, res) => {
                     </table>
 
                     <p style="margin-top: 20px;">Nếu đây là một sự nhầm lẫn hoặc bạn muốn đặt lại sản phẩm, vui lòng truy cập website của chúng tôi.</p>
-                    <p>Cảm ơn bạn đã quan tâm đến dịch vụ của SmashShop.</p>
+                    <p>Cảm ơn bạn đã quan tâm đến dịch vụ của HcShop.</p>
                     
                     <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Đây là email tự động, vui lòng không trả lời email này.</p>
                 </div>
             `;
-            sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - SmashShop");
+            sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - HcShop");
         }
 
         order.status = status;
@@ -498,16 +505,23 @@ export const fetchOrderById = async (req, res) => {
             .populate({
                 path: 'items.product',
                 model: 'Product',
-                populate: {
-                    path: 'images',
-                    model: 'ProductImage'
-                }
+                populate: [
+                    {
+                        path: 'images',
+                        model: 'ProductImage'
+                    },
+                    {
+                        path: 'brand_id',
+                        model: 'Brand'
+                    }
+                ]
             })
             .populate({
                 path: 'user_id',
                 model: 'User',
                 select: 'name email phone_number '
-            });
+            })
+            .populate('voucher_id');
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });

@@ -15,9 +15,9 @@ const sendmail = async (email, html, subject) => {
 
         // send mail with defined transport object
         const info = await transporter.sendMail({
-            from: '"SmashShop" <no-reply@smashshop.com>',
+            from: '"HcShop" <no-reply@hcshop.com>',
             to: email,
-            subject: subject || "Notification from SmashShop",
+            subject: subject || "Notification from HcShop",
             html: html,
         });
 
