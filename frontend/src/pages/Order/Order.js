@@ -319,14 +319,14 @@ export default function Order() {
 
     if (paymentMethod === 'cod') {
       try {
-        await dispatch(createOrderThunk(orderData)).unwrap();
+        const result = await dispatch(createOrderThunk(orderData)).unwrap();
         Swal.fire({
           icon: 'success',
           title: "Đơn hàng của bạn đã được đặt thành công.",
           showConfirmButton: false,
           timer: 1000
         });
-        navigate('/');
+        navigate('/order-success', { state: { order: result } });
       } catch (err) {
         Swal.fire({
           icon: 'error',

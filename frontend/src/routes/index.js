@@ -12,6 +12,7 @@ import Products from '../pages/Products/Products';
 import ProductDetail from '../pages/ProductDetail/ProductDetail';
 import Cart from '../pages/Cart/Cart';
 import Order from '../pages/Order/Order';
+import OrderSuccess from '../pages/OrderSuccess/OrderSuccess';
 import AdminDashboard from '../pages/Admin/AdminDashboard/AdminDashboard';
 import AdminProducts from '../pages/Admin/AdminProducts/AdminProducts';
 import AdminEditProduct from '../pages/Admin/AdminEditProduct';
@@ -63,6 +64,7 @@ const pages = [
     { path: routes.product, Component: ProductDetail },
     { path: routes.cart, Component: Cart },
     { path: routes.order, Component: Order },
+    { path: routes.orderSuccess, Component: OrderSuccess },
     { path: routes.paymentSuccess, Component: PaymentSuccess },
     { path: `${routes.products}/:category`, Component: Products },
     {

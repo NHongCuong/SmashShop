@@ -7,6 +7,7 @@ import ProductImage from "../models/productImage.model.js";
 import logger from "../utils/logger.js";
 import { getVietnamTime } from '../utils/dayjs.js';
 import { v4 as uuidv4 } from 'uuid';
+import sendmail from '../utils/sendmail.js';
 
 
 export const fetchOrderHistory = async (req, res) => {
@@ -210,10 +211,97 @@ export const createOrder = async (req, res) => {
             logger.info("đã delete cart");
         }
 
-        return res.status(201).json({ success: true, _id: order._id, order, orderDetail: orderDetailData });
+        // Populate items.product to get product names for the frontend
+        const populatedOrder = await Order.findById(order._id).populate('items.product');
+
+        // Gửi email xác nhận (không await để không block response)
+        sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+
+        return res.status(201).json({ success: true, _id: order._id, order: populatedOrder, orderDetail: orderDetailData });
     } catch (err) {
         logger.error('Error createOrder:', err);
         return res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// Hàm gửi mail xác nhận đặt hàng (Tách ra để không block response)
+export const sendOrderConfirmationEmail = async (order, shipping, total) => {
+    try {
+        const itemsHtml = order.items.map(item => {
+            const variantsHtml = item.selected_variants 
+                ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>` 
+                : '';
+            return `
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">${item.product?.prod_name || 'Sản phẩm'}</div>
+                        ${variantsHtml}
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString()}₫</td>
+                </tr>
+            `;
+        }).join('');
+
+        const emailContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #4caf50; text-align: center;">Xác Nhận Đặt Hàng Thành Công</h2>
+                <p>Chào <b>${shipping.name}</b>,</p>
+                <p>Cảm ơn bạn đã tin tưởng và mua sắm tại <b>SmashShop</b>. Đơn hàng của bạn đã được ghi nhận và đang được xử lý.</p>
+                
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
+                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> #${order.order_id || order._id}</p>
+                    <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                    <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
+                    <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
+                    <p style="margin: 5px 0;"><b>Dịch vụ vận chuyển:</b> Standard Delivery</p>
+                </div>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin giao hàng</h3>
+                    <p style="margin: 5px 0;"><b>Tên khách hàng:</b> ${shipping.name}</p>
+                    <p style="margin: 5px 0;"><b>Số điện thoại:</b> ${shipping.phone}</p>
+                    <p style="margin: 5px 0;"><b>Email:</b> ${shipping.email}</p>
+                    <p style="margin: 5px 0;"><b>Địa chỉ:</b> ${shipping.address}</p>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Sản phẩm</th>
+                            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">SL</th>
+                            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tạm tính:</td>
+                            <td style="padding: 10px; text-align: right;">${(order.total + (order.discount_amount || 0)).toLocaleString()}₫</td>
+                        </tr>
+                        ${order.discount_amount > 0 ? `
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Giảm giá:</td>
+                            <td style="padding: 10px; text-align: right; color: #d32f2f;">-${order.discount_amount.toLocaleString()}₫</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px;">Tổng cộng:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; color: #4caf50; font-size: 18px;">${total.toLocaleString()}₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <p style="margin-top: 20px;">Chúng tôi sẽ sớm liên hệ với bạn để xác nhận thông tin giao hàng.</p>
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Đây là email tự động, vui lòng không trả lời email này.</p>
+            </div>
+        `;
+        await sendmail(shipping.email, emailContent, "Xác nhận đơn hàng SmashShop");
+    } catch (error) {
+        logger.error("Error sending confirmation email: " + error.message);
     }
 };
 
@@ -271,15 +359,113 @@ export const updateOrderStatus = async (req, res) => {
         const orderStatus = ["Processing", "Cancelled", "Succeeded", "Pending"];
         const orderId = req.body.order_id;
         const status = req.body.status;
+        const userId = req.user._id;
+        const userRole = req.user.role;
 
         if (!orderStatus.includes(status)) {
-            return res.status(400).json({ success: false, message: "Status just be one of Processing, Cancelled, Succeeded" });
+            return res.status(400).json({ success: false, message: "Trạng thái không hợp lệ" });
         }
 
-        const order = await Order.findByIdAndUpdate(orderId, { status: status, updatedAt: getVietnamTime() }, { new: true });
+        const order = await Order.findById(orderId).populate('items.product');
         if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
         }
+
+        // Kiểm tra quyền: Admin hoặc Chủ đơn hàng
+        if (userRole !== 'admin' && order.user_id.toString() !== userId.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền cập nhật đơn hàng này" });
+        }
+
+        // Nếu chuyển sang Cancelled, hoàn lại tồn kho
+        if (status === 'Cancelled' && order.status !== 'Cancelled') {
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.product._id, {
+                    $inc: { stock: item.quantity, quantity_sold: -item.quantity }
+                });
+            }
+            
+            // Gửi email thông báo hủy đơn
+            const itemsHtml = order.items.map(item => {
+                const variantsHtml = item.selected_variants 
+                    ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>` 
+                    : '';
+                return `
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <div style="font-weight: bold;">${item.product?.prod_name || 'Sản phẩm'}</div>
+                            ${variantsHtml}
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString()}₫</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const emailContent = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <h2 style="color: #dc3545; text-align: center;">Thông Báo Hủy Đơn Hàng</h2>
+                    <p>Chào <b>${order.shipping.name}</b>,</p>
+                    <p>Đơn hàng <b>#${order.order_id || order._id}</b> của bạn đã được hủy thành công trên hệ thống <b>SmashShop</b>.</p>
+                    
+                    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
+                        <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> #${order.order_id || order._id}</p>
+                        <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                        <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
+                        <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
+                        <p style="margin: 5px 0;"><b>Dịch vụ vận chuyển:</b> Standard Delivery</p>
+                    </div>
+
+                    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin giao hàng</h3>
+                        <p style="margin: 5px 0;"><b>Tên khách hàng:</b> ${order.shipping.name}</p>
+                        <p style="margin: 5px 0;"><b>Số điện thoại:</b> ${order.shipping.phone}</p>
+                        <p style="margin: 5px 0;"><b>Email:</b> ${order.shipping.email}</p>
+                        <p style="margin: 5px 0;"><b>Địa chỉ:</b> ${order.shipping.address}</p>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa;">
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Sản phẩm</th>
+                                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">SL</th>
+                                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tạm tính:</td>
+                                <td style="padding: 10px; text-align: right;">${(order.total + (order.discount_amount || 0)).toLocaleString()}₫</td>
+                            </tr>
+                            ${order.discount_amount > 0 ? `
+                            <tr>
+                                <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Giảm giá:</td>
+                                <td style="padding: 10px; text-align: right; color: #d32f2f;">-${order.discount_amount.toLocaleString()}₫</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px;">Tổng tiền:</td>
+                                <td style="padding: 10px; text-align: right; font-weight: bold; color: #d32f2f; font-size: 18px;">${order.total.toLocaleString()}₫</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <p style="margin-top: 20px;">Nếu đây là một sự nhầm lẫn hoặc bạn muốn đặt lại sản phẩm, vui lòng truy cập website của chúng tôi.</p>
+                    <p>Cảm ơn bạn đã quan tâm đến dịch vụ của SmashShop.</p>
+                    
+                    <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Đây là email tự động, vui lòng không trả lời email này.</p>
+                </div>
+            `;
+            sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - SmashShop");
+        }
+
+        order.status = status;
+        order.updatedAt = getVietnamTime();
+        await order.save();
+
         res.status(200).json({ success: true, data: order });
     } catch (e) {
         logger.error("Error updating order status: " + e.message);

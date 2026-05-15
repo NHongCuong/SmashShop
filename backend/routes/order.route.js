@@ -15,8 +15,8 @@ orderRoutes.get('/order_history', fetchOrderHistory)
 orderRoutes.get('/', isAdmin, fetchAllOrders)
 // Fetch lịch sử đơn hàng đã xóa (chỉ Admin)
 orderRoutes.get('/archive', isAdmin, fetchOrderHistoryArchive)
-// Cập nhật trạng thái đơn hàng (chỉ Admin)
-orderRoutes.put('/', isAdmin, updateOrderStatus)
+// Cập nhật trạng thái đơn hàng (Admin hoặc Chủ đơn hàng)
+orderRoutes.put('/', updateOrderStatus)
 // Lấy thông tin chi tiết đơn hàng
 orderRoutes.get('/detail/:id', fetchProductDetailsByOrderId)
 // Lấy đơn hàng theo ID

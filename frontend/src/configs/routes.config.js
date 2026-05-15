@@ -10,6 +10,7 @@ const routes = {
     cart: '/cart',
     order: '/order',
     paymentSuccess: "/payment-success",
+    orderSuccess: "/order-success",
     contact: "/contact",
 //Admin
     admin: '/admin',
