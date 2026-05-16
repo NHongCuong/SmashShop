@@ -6,14 +6,16 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import * as XLSX from 'xlsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileImport } from '@fortawesome/free-solid-svg-icons';
+import { faFileImport, faPrint } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import OrderPrintModal from './OrderPrintModal';
 
 dayjs.extend(utc);
 
 const AdminOrders = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [printOrder, setPrintOrder] = useState(null);
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -238,7 +240,15 @@ const AdminOrders = () => {
                       {order.status}
                     </span>
                   </td>
-                  <td>
+                  <td style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <button
+                      className="btn-print-order"
+                      title="In đơn hàng"
+                      onClick={(e) => { e.stopPropagation(); setPrintOrder(order); }}
+                      style={{ backgroundColor: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', padding: '5px 10px', cursor: 'pointer' }}
+                    >
+                      <FontAwesomeIcon icon={faPrint} />
+                    </button>
                     <button
                       className="btn-delete-order"
                       onClick={(e) => handleDeleteOrder(e, order._id)}
@@ -260,6 +270,9 @@ const AdminOrders = () => {
           <span>Trang {page} / {totalPages}</span>
           <button disabled={page === totalPages} onClick={() => setPage((prev) => prev + 1)}>Trang sau</button>
         </div>
+      )}
+      {printOrder && (
+        <OrderPrintModal order={printOrder} onClose={() => setPrintOrder(null)} />
       )}
     </div>
   );
