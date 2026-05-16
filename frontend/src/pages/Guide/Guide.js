@@ -23,6 +23,11 @@ const Guide = () => {
         sort: 'latest'
     });
 
+    // Cuộn lên đầu trang mỗi khi chuyển page
+    React.useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [page]);
+
     const handleSearch = (e) => {
         setSearch(e.target.value);
         setPage(1);

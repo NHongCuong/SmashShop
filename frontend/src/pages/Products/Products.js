@@ -79,6 +79,12 @@
         setFilteredProducts(data.data);
       }
     }, [data]);
+
+    // Cuộn lên đầu trang mỗi khi chuyển page
+    useEffect(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [currentPage]);
+
     useEffect(() => {
       if (category && categorySlugMap[category]) {
         setSelectedCategory(categorySlugMap[category]);
