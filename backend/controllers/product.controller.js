@@ -138,10 +138,17 @@ export const fetchAllProducts = async (req, res) => {
     const activeFilter = { is_active: true };
     const category = req.query.category || '';
     const categoryFilter = category ? { 'category_id': category } : {};
-    const brand = req.query.brand || '';
-    const brandFilter = brand ? { brand_id: brand } : {};
-    const type = req.query.type || '';
-    const typeFilter = type ? { type_id: type } : {};
+    const brand = req.query.brand ? req.query.brand.split(',') : [];
+    const brandFilter = brand.length > 0 ? { brand_id: { $in: brand } } : {};
+    const type = req.query.type ? req.query.type.split(',') : [];
+    const typeFilter = type.length > 0 ? { type_id: { $in: type } } : {};
+
+    const colors = req.query.colors ? req.query.colors.split(',') : [];
+    const colorFilter = colors.length > 0 ? { 'colors.color': { $in: colors } } : {};
+
+    const sizes = req.query.sizes ? req.query.sizes.split(',') : [];
+    const sizeFilter = sizes.length > 0 ? { 'sizes.size': { $in: sizes } } : {};
+
     const search = req.query.search || '';
     let keywordFilter = {};
     if (search) {
@@ -155,7 +162,16 @@ export const fetchAllProducts = async (req, res) => {
         };
     }
 
-    const query = { ...priceFilter, ...categoryFilter, ...brandFilter, ...typeFilter, ...keywordFilter, ...activeFilter };
+    const query = { 
+        ...priceFilter, 
+        ...categoryFilter, 
+        ...brandFilter, 
+        ...typeFilter, 
+        ...colorFilter,
+        ...sizeFilter,
+        ...keywordFilter, 
+        ...activeFilter 
+    };
     const totalDocument = await Product.countDocuments(query);
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || totalDocument;
@@ -185,13 +201,36 @@ export const fetchAllProducts = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+        // Lấy tất cả thuộc tính có sẵn cho danh mục/tìm kiếm hiện tại (không phụ thuộc vào bộ lọc brand/type/color/size)
+        const basicQuery = { ...categoryFilter, ...keywordFilter, ...activeFilter };
+        const productsOfSearch = await Product.find(basicQuery)
+            .select('brand_id type_id colors sizes')
+            .populate('brand_id')
+            .populate('type_id');
+
+        const availableBrands = [...new Map(productsOfSearch.map(p => [p.brand_id?._id?.toString(), p.brand_id])).values()].filter(Boolean);
+        const availableTypes = [...new Map(productsOfSearch.map(p => [p.type_id?._id?.toString(), p.type_id])).values()].filter(Boolean);
+        
+        const colorsSet = new Set();
+        const sizesSet = new Set();
+        productsOfSearch.forEach(p => {
+            p.colors?.forEach(c => { if (c.color) colorsSet.add(c.color); });
+            p.sizes?.forEach(s => { if (s.size) sizesSet.add(s.size); });
+        });
+
         res.status(200).json({
             success: true,
             page: page,
             totalPages: Math.ceil(totalDocument / limit),
             totalItems: totalDocument,
             limit: limit,
-            data: products
+            data: products,
+            filters: {
+                brands: availableBrands,
+                types: availableTypes,
+                colors: Array.from(colorsSet),
+                sizes: Array.from(sizesSet)
+            }
         });
     } catch (e) {
         console.error("Error in fetching products:", e.message);

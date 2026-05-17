@@ -195,6 +195,42 @@
   cursor: pointer;
 }
 
+/* Kiểu hiển thị lưới cho Màu sắc và Kích cỡ */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Chia thành 2 cột */
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.filter-grid-3cols {
+  grid-template-columns: repeat(3, 1fr); /* Chia thành 3 cột cho Kích cỡ */
+}
+
+.filter-grid-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: #555;
+  cursor: pointer;
+}
+
+.filter-grid-item:hover {
+  color: #EAC427;
+}
+
+.filter-grid-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-group {
+  margin-top: 15px;
+}
+
 /* --- Responsive Breakpoint --- */
 @media (max-width: 992px) {
   .product-page {

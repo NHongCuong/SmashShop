@@ -18,11 +18,13 @@ export const productApi = createApi({
     tagTypes: ['Product'],
     endpoints: (builder) => ({
         getAllProducts: builder.query({
-            query: ({ search, brand, type, category, minPrice, maxPrice, page = 1, limit = 12, sort }) => {
+            query: ({ search, brand, type, category, colors, sizes, minPrice, maxPrice, page = 1, limit = 12, sort }) => {
                 const params = new URLSearchParams();
                 if (search) params.append("search", search);
                 if (brand?.length) params.append("brand", brand.join(","));
                 if (type?.length) params.append("type", type.join(","));
+                if (colors?.length) params.append("colors", colors.join(","));
+                if (sizes?.length) params.append("sizes", sizes.join(","));
                 if (category) params.append("category", category);
                 if (sort) params.append("sort", sort);
                 if (minPrice !== '') params.append("minPrice", minPrice);
@@ -36,7 +38,8 @@ export const productApi = createApi({
                 page: response.page,
                 totalPages: response.totalPages,
                 totalItems: response.totalItems,
-                limit: response.limit
+                limit: response.limit,
+                filters: response.filters
             }),
             providesTags: ['Product'],
         }),

@@ -43,6 +43,8 @@
     //TYPE
     const [selectedTypes, setSelectedTypes] = useState([]);
     //PHÂN TRANG
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [selectedSizes, setSelectedSizes] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -51,6 +53,8 @@
       search: searchTerm,
       brand: selectedBrands, 
       type: selectedTypes,
+      colors: selectedColors,
+      sizes: selectedSizes,
       category: selectedCategory,
       minPrice: minPrice ? parseInt(minPrice) : '',
       maxPrice: maxPrice ? parseInt(maxPrice) : '', 
@@ -73,7 +77,7 @@
 
     useEffect(() => {
       setCurrentPage(1); // Reset về page 1 khi filter thay đổi
-    }, [searchTerm, selectedBrands, minPrice, maxPrice, selectedTypes, category, sortOption]);
+    }, [searchTerm, selectedBrands, minPrice, maxPrice, selectedTypes, selectedColors, selectedSizes, category, sortOption]);
     useEffect(() => {
       if (data?.data) {
         setFilteredProducts(data.data);
@@ -102,8 +106,18 @@
       setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
     };
 
-    const allBrands = [...new Map(products.map(p => [p.brand_id._id, p.brand_id])).values()];
-    const allTypes = [...new Map(products.map(p => [p.type_id._id, p.type_id])).values()];
+    const toggleColorFilter = (color) => {
+      setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+    };
+
+    const toggleSizeFilter = (size) => {
+      setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+    };
+
+    const allBrands = data?.filters?.brands || [];
+    const allTypes = data?.filters?.types || [];
+    const allColors = data?.filters?.colors || [];
+    const allSizes = data?.filters?.sizes || [];
     // const { data: brandsData } = useGetAllBrandsQuery();
     // const { data: typesData } = useGetAllTypesQuery();
 
@@ -190,27 +204,70 @@
 
           <div className="brand-type-filter">
             <h3>Thương hiệu</h3>
-            {allBrands.map((brand) => (
-              <label key={brand._id}>
-                <input
-                  type="checkbox"
-                  checked={selectedBrands.includes(brand._id)}
-                  onChange={() => toggleBrandFilter(brand._id)}
-                />
-                {brand.brand_name}
-              </label>
-            ))}
-            <h3>Loại</h3>
-            {allTypes.map((type) => (
-              <label key={type._id}>
-                <input
-                  type="checkbox"
-                  checked={selectedTypes.includes(type._id)}
-                  onChange={() => toggleTypeFilter(type._id)}
-                />
-                {type.type_name}
-              </label>
-            ))}
+            <div className="filter-grid">
+              {allBrands.map((brand) => (
+                <label key={brand._id} className="filter-grid-item">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand._id)}
+                    onChange={() => toggleBrandFilter(brand._id)}
+                  />
+                  <span>{brand.brand_name}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="filter-group">
+              <h3>Loại</h3>
+              <div className="filter-grid">
+                {allTypes.map((type) => (
+                  <label key={type._id} className="filter-grid-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedTypes.includes(type._id)}
+                      onChange={() => toggleTypeFilter(type._id)}
+                    />
+                    <span>{type.type_name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {allColors.length > 0 && (
+              <div className="filter-group">
+                <h3>Màu sắc</h3>
+                <div className="filter-grid">
+                  {allColors.map((color) => (
+                    <label key={color} className="filter-grid-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedColors.includes(color)}
+                        onChange={() => toggleColorFilter(color)}
+                      />
+                      <span>{color}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {allSizes.length > 0 && (
+              <div className="filter-group">
+                <h3>Kích cỡ</h3>
+                <div className="filter-grid filter-grid-3cols">
+                  {allSizes.map((size) => (
+                    <label key={size} className="filter-grid-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedSizes.includes(size)}
+                        onChange={() => toggleSizeFilter(size)}
+                      />
+                      <span>{size}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </aside>
         <ProductsList 
