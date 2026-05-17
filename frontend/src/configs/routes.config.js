@@ -11,6 +11,7 @@ const routes = {
     order: '/order',
     paymentSuccess: "/payment-success",
     orderSuccess: "/order-success",
+    orderInvoice: "/order-invoice/:id",
     contact: "/contact",
 //Admin
     admin: '/admin',

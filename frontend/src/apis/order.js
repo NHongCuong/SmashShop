@@ -12,3 +12,6 @@ export const apiDeleteOrder = (id) =>
 
 export const apiGetOrderById = (id) =>
     api.get(`/api/v1/order/single/${id}`);
+
+export const apiGetPublicInvoice = (id) =>
+    api.get(`/api/v1/order/public/invoice/${id}`);

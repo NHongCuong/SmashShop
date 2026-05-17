@@ -68,18 +68,17 @@ const OrdersHistory = () => {
       <div className="orders-table">
         <div className="order-row order-header">
           <span>STT</span>
-          {/* <span>Mã đơn</span> */}
           <span>Tên sản phẩm</span>
           <span>Số lượng</span>
           <span>Trạng thái</span>
           <span>Ngày đặt</span>
           <span>Tổng tiền</span>
+          <span>Hành động</span>
         </div>
         {orders.length > 0 ? (
           orders.map((order, index) => (
             <div key={order._id} className="order-row">
               <span>{(page - 1) * limit + index + 1}</span>
-              {/* <span>{order.order_code || order._id}</span> */}
               <span className="product-name-col">
                 {order.items?.map((item, idx) => (
                   <div key={idx}>{item.product?.prod_name || "Sản phẩm"}</div>
@@ -90,9 +89,19 @@ const OrdersHistory = () => {
                   <div key={idx}>{item.quantity}</div>
                 ))}
               </span>
-              <span>{order.status}</span>
+              <span>
+                {order.status === 'Succeeded' ? 'Thành công' : 
+                 order.status === 'Pending' ? 'Đang xử lý' : 
+                 order.status === 'Cancelled' ? 'Đã hủy' : 
+                 order.status === 'Processing' ? 'Đang xử lý' : order.status}
+              </span>
               <span>{dayjs(order.createdAt).utc().format('DD/MM/YYYY HH:mm')}</span>
               <span>{Number(order.total || 0).toLocaleString()}đ</span>
+              <span className="actions-col">
+                <a href={`/order-invoice/${order._id}`} target="_blank" rel="noopener noreferrer" className="btn-print-invoice">
+                  In Hóa Đơn
+                </a>
+              </span>
             </div>
           ))
         ) : (

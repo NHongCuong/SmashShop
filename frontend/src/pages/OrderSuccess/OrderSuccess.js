@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faListAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faListAlt, faTimes, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import './OrderSuccess.css';
 import Swal from 'sweetalert2';
 import { apiGetOrderById, apiUpdateOrderStatus } from '../../apis/order';
@@ -157,9 +157,14 @@ const OrderSuccess = () => {
                             <button className="btn-manage" onClick={() => navigate('/user/orders')}>
                                 <FontAwesomeIcon icon={faListAlt} /> Quản lý đơn hàng
                             </button>
-                            <button className="btn-cancel" onClick={handleCancelOrder}>
-                                <FontAwesomeIcon icon={faTimes} /> Hủy
+                            <button className="btn-invoice" onClick={() => navigate(`/order-invoice/${order._id}`)}>
+                                <FontAwesomeIcon icon={faFileInvoiceDollar} /> Xuất hóa đơn
                             </button>
+                            {order.status !== 'Cancelled' && (
+                                <button className="btn-cancel" onClick={handleCancelOrder}>
+                                    <FontAwesomeIcon icon={faTimes} /> Hủy
+                                </button>
+                            )}
                         </div>
                     </div>
 

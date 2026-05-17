@@ -1,11 +1,15 @@
-import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory, fetchOrderById, deleteOrder, updateOrderItem, deleteOrderItem, fetchOrderHistoryArchive, deleteOrderHistoryArchive} from '../controllers/order.controller.js'
+import {createOrder, fetchAllOrders, updateOrderStatus, fetchProductDetailsByOrderId, fetchOrderHistory, fetchOrderById, deleteOrder, updateOrderItem, deleteOrderItem, fetchOrderHistoryArchive, deleteOrderHistoryArchive, fetchPublicOrderInvoice} from '../controllers/order.controller.js'
 import express from 'express'
 import {authMiddleware} from "../middleware/auth.js";
 import {isAdmin} from "../middleware/auth.js";
 
 
 const orderRoutes = express.Router();
-// Middleware kiểm tra
+
+// Route public lấy thông tin hóa đơn (Không cần đăng nhập, phục vụ click từ email)
+orderRoutes.get('/public/invoice/:id', fetchPublicOrderInvoice);
+
+// Middleware kiểm tra các route bên dưới
 orderRoutes.use(authMiddleware);      
 // Tạo đơn hàng
 orderRoutes.post('/',createOrder)

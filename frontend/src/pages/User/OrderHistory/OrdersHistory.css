@@ -58,17 +58,17 @@
   .order-row span::before {
     font-weight: bold;
     display: inline-block;
-    width: 100px;
+    width: 110px;
   }
 
   /* Hiển thị nhãn trước giá trị */
   .order-row > span:nth-child(1)::before { content: "STT: "; }
-  .order-row > span:nth-child(2)::before { content: "Mã đơn: "; }
-  .order-row > span:nth-child(3)::before { content: "Tên sản phẩm: "; }
-  .order-row > span:nth-child(4)::before { content: "Số lượng: "; }
-  .order-row > span:nth-child(5)::before { content: "Trạng thái: "; }
-  .order-row > span:nth-child(6)::before { content: "Ngày: "; }
-  .order-row > span:nth-child(7)::before { content: "Tổng tiền: "; }
+  .order-row > span:nth-child(2)::before { content: "Tên sản phẩm: "; }
+  .order-row > span:nth-child(3)::before { content: "Số lượng: "; }
+  .order-row > span:nth-child(4)::before { content: "Trạng thái: "; }
+  .order-row > span:nth-child(5)::before { content: "Ngày đặt: "; }
+  .order-row > span:nth-child(6)::before { content: "Tổng tiền: "; }
+  .order-row > span:nth-child(7)::before { content: "Hành động: "; }
 }
 
 .orders-controls {
@@ -120,4 +120,22 @@
 
 .pagination span {
   font-weight: 500;
+}
+
+.btn-print-invoice {
+  background-color: #10b981;
+  color: #ffffff !important;
+  padding: 5px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-block;
+  border: 1px solid #10b981;
+}
+
+.btn-print-invoice:hover {
+  background-color: #059669;
+  border-color: #059669;
 }

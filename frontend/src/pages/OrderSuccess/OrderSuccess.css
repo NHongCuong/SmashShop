@@ -93,6 +93,26 @@
     color: #fff;
 }
 
+.btn-invoice {
+    background-color: #10b981;
+    border: 1.5px solid #10b981;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-invoice:hover {
+    background-color: #059669;
+    border-color: #059669;
+}
+
 .btn-cancel {
     background: transparent;
     border: 1.5px solid #dc3545;

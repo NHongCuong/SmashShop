@@ -298,6 +298,12 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
                     </tfoot>
                 </table>
 
+                <div style="margin-top: 30px; text-align: center; margin-bottom: 25px;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/order-invoice/${order._id}" 
+                       style="background-color: #4caf50; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
+                        Xuất Hóa Đơn (PDF)
+                    </a>
+                </div>
                 <p style="margin-top: 20px;">Chúng tôi sẽ sớm liên hệ với bạn để xác nhận thông tin giao hàng.</p>
                 <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Đây là email tự động, vui lòng không trả lời email này.</p>
             </div>
@@ -463,6 +469,12 @@ export const updateOrderStatus = async (req, res) => {
                         </tfoot>
                     </table>
 
+                    <div style="margin-top: 30px; text-align: center; margin-bottom: 25px;">
+                        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/order-invoice/${order._id}" 
+                           style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
+                            Xem Hóa Đơn Hủy
+                        </a>
+                    </div>
                     <p style="margin-top: 20px;">Nếu đây là một sự nhầm lẫn hoặc bạn muốn đặt lại sản phẩm, vui lòng truy cập website của chúng tôi.</p>
                     <p>Cảm ơn bạn đã quan tâm đến dịch vụ của HcShop.</p>
                     
@@ -791,6 +803,42 @@ export const deleteOrderHistoryArchive = async (req, res) => {
         res.status(200).json({ success: true, message: "Xóa lịch sử thành công." });
     } catch (e) {
         logger.error("Error deleting order history archive: " + e.message);
+        res.status(500).json({ success: false, error: e.message });
+    }
+}
+
+export const fetchPublicOrderInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'items.product',
+                model: 'Product',
+                populate: [
+                    {
+                        path: 'images',
+                        model: 'ProductImage'
+                    },
+                    {
+                        path: 'brand_id',
+                        model: 'Brand'
+                    }
+                ]
+            })
+            .populate({
+                path: 'user_id',
+                model: 'User',
+                select: 'name email phone_number'
+            })
+            .populate('voucher_id');
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        res.status(200).json({ success: true, data: order });
+    } catch (e) {
+        logger.error("Error fetching public order invoice: " + e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 }
