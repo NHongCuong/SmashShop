@@ -39,14 +39,14 @@ const OrderInvoice = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        const day = date.getUTCDate();
+        const month = date.getUTCMonth() + 1;
+        const year = date.getUTCFullYear();
+        return `lúc ${hours}:${minutes} ${day} tháng ${month}, ${year}`;
     };
 
     if (loading) {
@@ -88,11 +88,17 @@ const OrderInvoice = () => {
             {/* Main Invoice Sheet */}
             <div className="invoice-sheet">
                 {/* Stamp/Watermark based on Status */}
-                <div className={`invoice-status-stamp stamp-${order.status?.toLowerCase()}`}>
-                    {order.status === 'Succeeded' ? 'ĐÃ THANH TOÁN' :
-                        order.status === 'Cancelled' ? 'ĐÃ HỦY ĐƠN' :
-                            order.status === 'Pending' ? 'ĐANG CHỜ DUYỆT' :
-                                order.status === 'Processing' ? 'ĐANG XỬ LÝ' : order.status?.toUpperCase()}
+                <div className={`invoice-status-stamp stamp-${
+                    order.status === 'Cancelled' ? 'cancelled' :
+                    order.paymentmethod === 'cod' ? 'pending' :
+                    order.status === 'Succeeded' ? 'succeeded' :
+                    order.status?.toLowerCase() || 'pending'
+                }`}>
+                    {order.status === 'Cancelled' ? 'ĐÃ HỦY ĐƠN' :
+                     order.paymentmethod === 'cod' ? 'CHƯA THANH TOÁN' :
+                     order.status === 'Succeeded' ? 'ĐÃ THANH TOÁN' :
+                     order.status === 'Pending' ? 'ĐANG CHỜ DUYỆT' :
+                     order.status === 'Processing' ? 'ĐANG XỬ LÝ' : order.status?.toUpperCase()}
                 </div>
 
                 {/* Invoice Header */}
@@ -120,11 +126,17 @@ const OrderInvoice = () => {
                         </div>
                         <div className="meta-row">
                             <span className="meta-label">Trạng thái:</span>
-                            <span className={`meta-value status-${order.status?.toLowerCase()}`}>
-                                {order.status === 'Succeeded' ? 'Đã thanh toán (Thành công)' :
-                                    order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
-                                        order.status === 'Pending' ? 'Đang chờ thanh toán/duyệt' :
-                                            order.status === 'Processing' ? 'Đang xử lý' : order.status}
+                            <span className={`meta-value status-${
+                                order.status === 'Cancelled' ? 'cancelled' :
+                                order.paymentmethod === 'cod' ? 'pending' :
+                                order.status === 'Succeeded' ? 'succeeded' :
+                                order.status?.toLowerCase() || 'pending'
+                            }`}>
+                                {order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
+                                 order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
+                                 order.status === 'Succeeded' ? 'Đã thanh toán' :
+                                 order.status === 'Pending' ? 'Đang chờ thanh toán/duyệt' :
+                                 order.status === 'Processing' ? 'Đang xử lý' : order.status}
                             </span>
                         </div>
                     </div>

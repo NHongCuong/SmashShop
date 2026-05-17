@@ -132,8 +132,9 @@ const OrderSuccess = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return '';
         const date = new Date(dateString);
-        return `Tháng ${date.getMonth() + 1} ${date.getDate()}, ${date.getFullYear()}`;
+        return `Tháng ${date.getUTCMonth() + 1} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
     };
 
     return (
