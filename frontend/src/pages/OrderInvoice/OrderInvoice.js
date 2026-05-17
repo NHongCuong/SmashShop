@@ -88,17 +88,16 @@ const OrderInvoice = () => {
             {/* Main Invoice Sheet */}
             <div className="invoice-sheet">
                 {/* Stamp/Watermark based on Status */}
-                <div className={`invoice-status-stamp stamp-${
-                    order.status === 'Cancelled' ? 'cancelled' :
-                    order.paymentmethod === 'cod' ? 'pending' :
-                    order.status === 'Succeeded' ? 'succeeded' :
-                    order.status?.toLowerCase() || 'pending'
-                }`}>
+                <div className={`invoice-status-stamp stamp-${order.status === 'Cancelled' ? 'cancelled' :
+                        order.paymentmethod === 'cod' ? 'pending' :
+                            order.status === 'Succeeded' ? 'succeeded' :
+                                order.status?.toLowerCase() || 'pending'
+                    }`}>
                     {order.status === 'Cancelled' ? 'ĐÃ HỦY ĐƠN' :
-                     order.paymentmethod === 'cod' ? 'CHƯA THANH TOÁN' :
-                     order.status === 'Succeeded' ? 'ĐÃ THANH TOÁN' :
-                     order.status === 'Pending' ? 'ĐANG CHỜ DUYỆT' :
-                     order.status === 'Processing' ? 'ĐANG XỬ LÝ' : order.status?.toUpperCase()}
+                        order.paymentmethod === 'cod' ? 'CHƯA THANH TOÁN' :
+                            order.status === 'Succeeded' ? 'ĐÃ THANH TOÁN' :
+                                order.status === 'Pending' ? 'ĐANG CHỜ DUYỆT' :
+                                    order.status === 'Processing' ? 'ĐANG XỬ LÝ' : order.status?.toUpperCase()}
                 </div>
 
                 {/* Invoice Header */}
@@ -126,17 +125,16 @@ const OrderInvoice = () => {
                         </div>
                         <div className="meta-row">
                             <span className="meta-label">Trạng thái:</span>
-                            <span className={`meta-value status-${
-                                order.status === 'Cancelled' ? 'cancelled' :
-                                order.paymentmethod === 'cod' ? 'pending' :
-                                order.status === 'Succeeded' ? 'succeeded' :
-                                order.status?.toLowerCase() || 'pending'
-                            }`}>
+                            <span className={`meta-value status-${order.status === 'Cancelled' ? 'cancelled' :
+                                    order.paymentmethod === 'cod' ? 'pending' :
+                                        order.status === 'Succeeded' ? 'succeeded' :
+                                            order.status?.toLowerCase() || 'pending'
+                                }`}>
                                 {order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
-                                 order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
-                                 order.status === 'Succeeded' ? 'Đã thanh toán' :
-                                 order.status === 'Pending' ? 'Đang chờ thanh toán/duyệt' :
-                                 order.status === 'Processing' ? 'Đang xử lý' : order.status}
+                                    order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
+                                        order.status === 'Succeeded' ? 'Đã thanh toán' :
+                                            order.status === 'Pending' ? 'Đang chờ thanh toán/duyệt' :
+                                                order.status === 'Processing' ? 'Đang xử lý' : order.status}
                             </span>
                         </div>
                     </div>

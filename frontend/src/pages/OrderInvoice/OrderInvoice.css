@@ -563,6 +563,10 @@
 
 /* Print CSS overrides */
 @media print {
+    @page {
+        margin: 0; /* Hides default browser print headers and footers (like URL, date, page number) */
+    }
+
     body, html, #root {
         background-color: #ffffff !important;
         margin: 0 !important;
@@ -588,19 +592,141 @@
 
     .invoice-sheet {
         box-shadow: none !important;
-        padding: 0 !important;
+        padding: 1.2cm 1.5cm !important; /* Proper padding for printing */
         border-radius: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Keep all sections on one page */
+    .invoice-header {
+        margin-bottom: 15px !important;
+    }
+    
+    .company-logo {
+        font-size: 26px !important;
+    }
+
+    .company-tagline {
+        margin-bottom: 8px !important;
+    }
+
+    .invoice-title {
+        font-size: 22px !important;
+    }
+
+    .divider-double {
+        margin: 10px 0 !important;
+    }
+
+    .invoice-info-section {
+        gap: 15px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .info-block.border-left {
+        padding-left: 15px !important;
+    }
+
+    .section-title {
+        margin-bottom: 8px !important;
+        padding-bottom: 4px !important;
+        font-size: 13px !important;
+    }
+
+    .info-row {
+        margin: 3px 0 !important;
+        font-size: 12px !important;
+    }
+
+    .invoice-items-section {
+        margin-bottom: 15px !important;
+    }
+
+    .invoice-table th {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+
+    .invoice-table td {
+        padding: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .invoice-summary-section {
+        gap: 15px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .payment-note {
+        padding: 10px !important;
+    }
+
+    .payment-note ul {
+        padding-left: 14px !important;
+    }
+
+    .payment-note li {
+        font-size: 10.5px !important;
+        margin: 2px 0 !important;
+    }
+
+    .totals-row {
+        margin: 4px 0 !important;
+        font-size: 12px !important;
+    }
+
+    .totals-row.grand-total {
+        font-size: 14px !important;
+    }
+
+    .totals-row.grand-total .totals-value {
+        font-size: 16px !important;
+    }
+
+    .invoice-signatures {
+        margin-top: 15px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .signature-space {
+        height: 45px !important;
+    }
+
+    .signature-box {
+        width: 180px !important;
+    }
+
+    .invoice-footer {
+        padding-top: 12px !important;
+        margin-top: 5px !important;
+    }
+
+    .invoice-footer .thank-you {
+        font-size: 12px !important;
     }
 
     .invoice-status-stamp {
         opacity: 0.12 !important; /* Keep stamp slightly visible when printing */
+        top: 20px !important;
+        right: 25px !important;
     }
 
     .stamp-circle {
         /* Print background colors properly */
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    /* Hide global floating widgets (like Live Chat and Back-To-Top button) when printing */
+    .chat-widget,
+    .chat-toggle-btn,
+    .chat-box,
+    .back-to-top,
+    #back-to-top-btn {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
 }
