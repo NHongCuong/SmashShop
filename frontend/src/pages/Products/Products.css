@@ -182,7 +182,7 @@
 
 .brand-type-filter h3 {
   margin: 20px 0 12px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #333;
   font-weight: 600;
 }
@@ -198,13 +198,15 @@
 /* Kiểu hiển thị lưới cho Màu sắc và Kích cỡ */
 .filter-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Chia thành 2 cột */
+  grid-template-columns: repeat(2, 1fr);
+  /* Chia thành 2 cột */
   gap: 8px;
   padding: 5px 0;
 }
 
 .filter-grid-3cols {
-  grid-template-columns: repeat(3, 1fr); /* Chia thành 3 cột cho Kích cỡ */
+  grid-template-columns: repeat(3, 1fr);
+  /* Chia thành 3 cột cho Kích cỡ */
 }
 
 .filter-grid-item {
