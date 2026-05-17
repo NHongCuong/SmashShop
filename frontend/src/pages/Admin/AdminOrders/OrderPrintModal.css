@@ -307,16 +307,16 @@
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  body * {
+  body:has(.print-modal-overlay) * {
     visibility: hidden;
   }
 
-  .invoice-paper,
-  .invoice-paper * {
+  body:has(.print-modal-overlay) .invoice-paper,
+  body:has(.print-modal-overlay) .invoice-paper * {
     visibility: visible;
   }
 
-  .invoice-paper {
+  body:has(.print-modal-overlay) .invoice-paper {
     position: fixed;
     top: 0;
     left: 0;
