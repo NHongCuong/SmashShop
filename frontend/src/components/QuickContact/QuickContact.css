@@ -1,0 +1,241 @@
+/* Container for all floating items */
+.quick-contact-container {
+  position: fixed;
+  bottom: 95px;
+  right: 25px;
+  z-index: 9998; /* Under BackToTop but above footer */
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Main floating trigger button */
+.quick-contact-main-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2eb846, #1f9434);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(46, 184, 70, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  outline: none;
+}
+
+/* Pulsing effect for the closed main button */
+.quick-contact-main-btn:not(.active) {
+  animation: quick-contact-pulse 2s infinite;
+}
+
+.quick-contact-main-btn:hover {
+  transform: scale(1.08) rotate(5deg);
+  box-shadow: 0 6px 24px rgba(46, 184, 70, 0.5);
+}
+
+.quick-contact-main-btn.active {
+  background: linear-gradient(135deg, #dc3545, #bd2130); /* Red color for close/active state if needed, or keep green */
+  background: linear-gradient(135deg, #2eb846, #1f9434); /* Keep premium green */
+  transform: rotate(180deg);
+  box-shadow: 0 4px 20px rgba(46, 184, 70, 0.3);
+}
+
+/* Phone wiggling animation to draw attention */
+.phone-pulse-icon {
+  animation: quick-contact-wiggle 3s infinite;
+}
+
+/* Subaction buttons (Location, Close) */
+.quick-contact-sub-btn {
+  position: fixed;
+  right: 30px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2px solid #2eb846;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(30px) scale(0.5);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.quick-contact-sub-btn:hover {
+  background-color: #f3fcf4;
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(46, 184, 70, 0.25);
+}
+
+/* Specific positions for subaction buttons */
+.close-btn {
+  bottom: 165px;
+  transition-delay: 0.05s;
+}
+
+.location-btn {
+  bottom: 230px;
+  transition-delay: 0.1s;
+}
+
+/* Contact List Card on the left */
+.quick-contact-card {
+  position: fixed;
+  right: 85px;
+  bottom: 155px;
+  width: 250px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px) scale(0.95);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(46, 184, 70, 0.08);
+}
+
+/* Item within contact list card */
+.quick-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  background-color: transparent;
+}
+
+.quick-contact-item:hover {
+  background-color: #e8fced; /* Beautiful soft green highlight */
+}
+
+/* Icon style */
+.quick-contact-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: transform 0.25s ease;
+}
+
+.quick-contact-item:hover .quick-contact-brand-icon {
+  transform: scale(1.1);
+}
+
+/* Text styles */
+.quick-contact-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #2c3e50;
+  transition: color 0.25s ease;
+}
+
+.quick-contact-item:hover .quick-contact-text {
+  color: #1f9434;
+}
+
+.quick-contact-text.phone-number {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #1f9434; /* Highlight phone number with brand green */
+}
+
+/* Open states for menu animations */
+.quick-contact-menu.show .quick-contact-sub-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.quick-contact-menu.show .quick-contact-card {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+}
+
+/* Smooth slide of BackToTop button */
+body.quick-contact-open #back-to-top-btn {
+  transform: translateY(-135px) !important;
+}
+
+/* Keyframes */
+@keyframes quick-contact-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 184, 70, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(46, 184, 70, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 184, 70, 0);
+  }
+}
+
+@keyframes quick-contact-wiggle {
+  0%, 90%, 100% {
+    transform: rotate(0deg);
+  }
+  92%, 96% {
+    transform: rotate(-10deg) scale(1.05);
+  }
+  94%, 98% {
+    transform: rotate(10deg) scale(1.05);
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .quick-contact-container {
+    bottom: 92px;
+    right: 27px;
+  }
+  
+  .quick-contact-main-btn {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .quick-contact-sub-btn {
+    right: 31px;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .close-btn {
+    bottom: 152px;
+  }
+  
+  .location-btn {
+    bottom: 206px;
+  }
+  
+  .quick-contact-card {
+    right: 74px;
+    bottom: 146px;
+    width: 220px;
+  }
+  
+  .quick-contact-item {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  
+  .quick-contact-text {
+    font-size: 14px;
+  }
+  
+  body.quick-contact-open #back-to-top-btn {
+    transform: translateY(-110px) !important;
+  }
+}

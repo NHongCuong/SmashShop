@@ -8,6 +8,7 @@ import { fetchCartThunk} from './app/store/cartThunks';
 import { selectIsAuthenticated } from './app/store/authSlice';
 import BackToTop from './components/BackToTop/BackToTop';
 import UserLiveChat from './components/LiveChat/UserLiveChat';
+import QuickContact from './components/QuickContact/QuickContact';
 
 function AppInner() {
     const calledRef = useRef(false);
@@ -39,6 +40,7 @@ function AppInner() {
             ))}
             </Routes>
             <BackToTop />
+            {!isAdminPage && <QuickContact />}
             {/* Chỉ hiện UserLiveChat ở page user (không phải admin) khi đã đăng nhập */}
             {isAuthenticated && !isAdminPage && <UserLiveChat />}
         </div>

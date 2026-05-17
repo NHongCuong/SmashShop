@@ -79,7 +79,7 @@ const Contact = () => {
                                 </div>
                                 <div className="info-text">
                                     <h3>Email</h3>
-                                    <p>Smahshop@gmail.com</p>
+                                    <p>hcshop@gmail.com</p>
                                 </div>
                             </div>
 
@@ -89,7 +89,7 @@ const Contact = () => {
                                 </div>
                                 <div className="info-text">
                                     <h3>Địa Chỉ</h3>
-                                    <p>4 Einstein, Bình Thọ, Thủ Đức, TP. Hồ Chí Minh</p>
+                                    <p>67/7 Trương Định, Khu vực Vĩnh Phúm Phường An Nhơn Bắc, Tỉnh Gia Lai</p>
                                 </div>
                             </div>
 
