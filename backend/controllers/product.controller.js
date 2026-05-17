@@ -201,7 +201,7 @@ export const fetchAllProducts = async (req, res) => {
 
 // Tạo sản phẩm mới
 export const createProduct = async (req, res) => {
-    let { prod_name, description, price, stock, discount, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
+    let { prod_name, description, warranty, price, stock, discount, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
 
     // Sửa lại lưu theo từng object
     if (typeof colors === 'string') {
@@ -247,6 +247,7 @@ export const createProduct = async (req, res) => {
             product_url: finalSlug,
             price,
             description: finalDescription,
+            warranty: warranty || '',
             quantity_sold,
             stock,
             discount: discount || 0,
@@ -284,7 +285,7 @@ export const createProduct = async (req, res) => {
 // Cập nhật thông tin sản phẩm
 export const updateProduct = async (req, res) => {
     const productId = req.params.id;
-    let { prod_name, product_url, description, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
+    let { prod_name, product_url, description, warranty, price, stock, discount, quantity_sold, category_id, brand_id, type_id, voucher_id, colors, sizes } = req.body;
 
     if (typeof colors === 'string') {
         colors = colors.split(',').map(c => ({ color: c.trim() })).filter(c => c.color !== '');
@@ -320,6 +321,7 @@ export const updateProduct = async (req, res) => {
         product.prod_name = prod_name;
         product.price = price;
         product.description = description;
+        product.warranty = warranty || '';
         product.quantity_sold = quantity_sold;
         product.stock = stock;
         product.discount = discount || 0;
@@ -436,7 +438,7 @@ export const importProducts = async (req, res) => {
             const row = rows[i];
             if (!row || row.length === 0) continue;
 
-            const [prod_name, price, stock, quantity_sold, description, category_name, brand_name, type_name, discount, image_url, voucher_name, colors_str, sizes_str] = row;
+            const [prod_name, price, stock, quantity_sold, description, warranty, category_name, brand_name, type_name, discount, image_url, voucher_name, colors_str, sizes_str] = row;
 
             if (!prod_name || price === undefined) {
                 errors.push(`Dòng ${i + 2}: Thiếu tên sản phẩm hoặc giá.`);
@@ -488,6 +490,7 @@ export const importProducts = async (req, res) => {
                 stock: Number(stock || 0),
                 quantity_sold: Number(quantity_sold || 0),
                 description: finalDescription,
+                warranty: warranty || '',
                 category_id,
                 brand_id,
                 type_id,

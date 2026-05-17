@@ -364,6 +364,7 @@ export default function ProductDetail() {
             <p>Số lượng trong kho: {product.stock}</p>
             <p>Thương hiệu: {product.brand_id.brand_name || ''}</p>
             <p>Danh mục: {product.category_id.category_name || ''}</p>
+            {product.warranty && <p>Bảo hành: {product.warranty}</p>}
           </div>
         </div>
 

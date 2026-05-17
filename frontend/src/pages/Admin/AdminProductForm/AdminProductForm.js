@@ -58,6 +58,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
     stock: '',
     quantity_sold: 0,
     description: '',
+    warranty: '',
     category_id: '',
     brand_id: '',
     type_id: '',
@@ -80,6 +81,7 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
       setFormData({
         ...initialData,
         product_url: initialData.product_url || '',
+        warranty: initialData.warranty || '',
         category_id: initialData.category_id?._id,
         brand_id: initialData.brand_id?._id,
         type_id: initialData.type_id?._id,
@@ -273,6 +275,14 @@ const AdminProductForm = ({ initialData = {}, onSubmit, isEdit = false, loading 
         value={formData.description}
         onChange={handleChange}
         rows="4"
+      />
+
+      <label>Bảo hành (tháng/năm)</label>
+      <input
+        name="warranty"
+        value={formData.warranty}
+        onChange={handleChange}
+        placeholder="VD: 12 tháng, 1 năm..."
       />
       
       <label>Danh mục</label>

@@ -23,6 +23,11 @@ const OrdersHistory = () => {
     { skip: !userId }
   );
 
+  // Cuộn lên đầu trang mỗi khi chuyển page hoặc thay đổi bộ lọc
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page, limit, sortField, sortOrder]);
+
   const orders = responseData?.data || [];
   const totalPages = responseData?.totalPages || 1;
 

@@ -25,44 +25,45 @@ const toBase64 = async (src) => {
 /* ──────────────────────────────────────────────
    Helper: build a complete HTML document string
    that can be fed into a print window.
-   We embed the logo as the same src the browser
-   already loaded (works because same origin).
 ────────────────────────────────────────────── */
 const buildPrintHTML = ({ order, orderDate, totalBeforeDiscount, discountAmount, total, logoSrc }) => {
-  const dd = orderDate ? orderDate.format('DD') : '....';
-  const mm = orderDate ? orderDate.format('MM') : '....';
-  const yyyy = orderDate ? orderDate.format('YYYY') : '......';
+  const formatDate = (date) => {
+    if (!date) return '';
+    return date.format('lúc HH:mm DD [tháng] MM, YYYY');
+  };
+
+  const statusText = order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
+    order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
+      order.status === 'Succeeded' ? 'Đã thanh toán' :
+        order.status === 'Pending' ? 'Đang chờ duyệt' :
+          order.status === 'Processing' ? 'Đang xử lý' : order.status;
+
+  const statusClass = order.status === 'Cancelled' ? 'status-cancelled' :
+    order.paymentmethod === 'cod' ? 'status-pending' :
+      order.status === 'Succeeded' ? 'status-succeeded' :
+        order.status?.toLowerCase() || 'status-pending';
 
   const itemRows = (order.items || []).map((item, index) => {
     const productName = item.product?.prod_name || item.product?.name || 'Sản phẩm';
-    const variantStr = item.selected_variants
-      ? Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')
+    const variantTags = item.selected_variants
+      ? Object.entries(item.selected_variants).map(([k, v]) => `<span class="variant-tag">${k}: ${v}</span>`).join('')
       : '';
     const lineTotal = ((item.price || 0) * (item.quantity || 1)).toLocaleString('vi-VN');
     const unitPrice = (item.price || 0).toLocaleString('vi-VN');
-    const discountCell = discountAmount > 0 && index === 0
-      ? `-${discountAmount.toLocaleString('vi-VN')}₫` : '';
+
     return `
       <tr>
         <td class="tc">${index + 1}</td>
-        <td>${productName}${variantStr ? ` <span class="vs">(${variantStr})</span>` : ''}</td>
+        <td>
+          <div class="item-name"><strong>${productName}</strong></div>
+          ${variantTags ? `<div class="item-variants">${variantTags}</div>` : ''}
+        </td>
         <td class="tc">${item.quantity}</td>
-        <td class="tc">${discountCell}</td>
-        <td class="tr">${unitPrice}₫</td>
-        <td class="tr">${lineTotal}₫</td>
-        <td></td>
+        <td class="tc">${unitPrice}₫</td>
+        <td class="tc">${lineTotal}₫</td>
+        <td class="tc">${item.product?.warranty || 'Không bảo hành'}</td>
       </tr>`;
   }).join('');
-
-  const emptyCount = Math.max(0, 5 - (order.items || []).length);
-  const emptyRows = Array.from({ length: emptyCount })
-    .map(() => `<tr class="er"><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`)
-    .join('');
-
-  const discountRows = discountAmount > 0 ? `
-    <div class="tot-row"><span>Tạm tính:</span><span>${totalBeforeDiscount.toLocaleString('vi-VN')}₫</span></div>
-    <div class="tot-row"><span>Giảm giá (${order.voucher_id?.voucher_name || 'Voucher'}):</span><span>-${discountAmount.toLocaleString('vi-VN')}₫</span></div>
-  ` : '';
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -76,130 +77,196 @@ const buildPrintHTML = ({ order, orderDate, totalBeforeDiscount, discountAmount,
       margin: 15mm 15mm 20mm 15mm;
       @bottom-right {
         content: "Trang " counter(page);
-        font-family: Arial, sans-serif;
+        font-family: 'Inter', Arial, sans-serif;
         font-size: 11px;
         color: #777;
       }
     }
     @media print {
       html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { padding: 5mm; }
+      body { padding: 0; }
     }
-    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 0; }
-    /* ── header ── */
-    .hdr { display: flex; align-items: flex-start; gap: 12px; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 12px; }
-    .hdr img { width: 90px; height: auto; }
-    .store { flex: 1; text-align: center; }
-    .store h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-    .store p { font-size: 11px; margin: 2px 0; }
-    .meta-box { border: 1px solid #333; padding: 6px 10px; font-size: 11px; min-width: 155px; }
-    .meta-title { font-weight: 800; text-align: center; font-size: 12px; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-bottom: 4px; }
-    .meta-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; }
-    .meta-row span:first-child { font-weight: 600; white-space: nowrap; }
-    /* ── customer ── */
-    .cust { border: 1px solid #aaa; padding: 8px 12px; background: #fafafa; margin-bottom: 12px; }
-    .cust-row { display: flex; gap: 8px; margin: 3px 0; }
-    .cust-row .lbl { font-weight: 700; min-width: 160px; }
-    /* ── table ── */
-    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; page-break-inside: auto; }
-    th, td { border: 1px solid #333; padding: 4px 6px; }
-    thead { display: table-header-group; counter-increment: page; } /* Increment on every page break where thead repeats */
-    thead th { background: #e8e8e8; font-weight: 700; text-align: center; }
-    tr { page-break-inside: avoid; page-break-after: auto; }
+    body { font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; color: #1f2937; line-height: 1.5; padding: 0; }
+    
+    /* ── Header ── */
+    .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; gap: 20px; }
+    .company-info { flex: 1; }
+    .company-logo-img { height: 60px; width: auto; margin-bottom: 8px; }
+    .company-tagline { font-size: 13px; color: #6b7280; margin-bottom: 12px; font-style: italic; }
+    .company-details p { font-size: 11.5px; color: #4b5563; margin: 3px 0; }
+    
+    .invoice-meta { display: flex; flex-direction: column; align-items: flex-end; width: 340px; }
+    .invoice-title { font-size: 26px; font-weight: 800; color: #111827; letter-spacing: 1px; text-align: right; width: 100%; }
+    .invoice-sub-title { font-size: 12px; font-weight: 600; color: #9ca3af; letter-spacing: 2px; margin-top: -2px; margin-bottom: 15px; text-align: right; width: 100%; }
+    
+    .meta-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; width: 100%; font-size: 12px; margin: 4px 0; }
+    .meta-label { color: #6b7280; }
+    .meta-value { color: #111827; font-weight: 600; word-break: break-all; }
+    .meta-value.highlight { color: #10b981; font-weight: 700; }
+    .meta-value.status-succeeded { color: #10b981; }
+    .meta-value.status-cancelled { color: #ef4444; }
+    .meta-value.status-pending { color: #f59e0b; }
+
+    .divider-double { border: none; border-top: 3px double #d1d5db; margin: 20px 0; }
+
+    /* ── Info Sections ── */
+    .invoice-info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+    .info-block { display: flex; flex-direction: column; }
+    .info-block.border-left { border-left: 1px solid #e5e7eb; padding-left: 25px; }
+    .section-title { font-size: 13px; font-weight: 700; color: #111827; border-bottom: 1.5px solid #10b981; padding-bottom: 5px; margin-bottom: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+    
+    .info-row { display: flex; font-size: 12px; margin: 4px 0; }
+    .info-label { color: #6b7280; width: 110px; flex-shrink: 0; }
+    .info-value { color: #1f2937; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 12px; }
+    th { background-color: #f9fafb; border: 1px solid #d1d5db; color: #374151; font-weight: 700; padding: 10px 8px; text-transform: uppercase; font-size: 11px; }
+    td { border: 1px solid #e5e7eb; padding: 10px 8px; vertical-align: middle; }
+    thead { display: table-header-group; }
     .tc { text-align: center; }
     .tr { text-align: right; }
-    .er td { height: 24px; }
-    .vs { font-size: 10px; color: #555; font-style: italic; }
-    /* ── footer ── */
-    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; page-break-inside: avoid; }
-    .note { flex: 1; border: 1px solid #ccc; padding: 6px 10px; min-height: 38px; font-size: 12px; }
-    .note .lbl { font-weight: 700; }
-    .totals { min-width: 240px; }
-    .tot-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 2px 0; border-bottom: 1px dashed #ccc; }
-    .tot-final { font-weight: 800; font-size: 14px; border-bottom: 2px solid #333; border-top: 1px solid #333; margin-top: 4px; padding-top: 4px; }
-    /* ── date + signature ── */
-    .date-line { text-align: right; font-size: 12px; font-style: italic; color: #444; margin-bottom: 32px; page-break-inside: avoid; }
-    .sig { display: flex; justify-content: space-between; margin-top: 4px; page-break-inside: avoid; }
-    .sig-col { text-align: center; width: 45%; }
-    .sig-col .sig-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; }
-    .sig-col .sig-sub { font-size: 11px; font-style: italic; color: #555; margin-bottom: 56px; }
-    .sig-col .sig-line { border-top: 1px solid #333; width: 70%; margin: 0 auto; }
+    
+    .item-name { color: #111827; }
+    .item-variants { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+    .variant-tag { background-color: #f3f4f6; color: #4b5563; font-size: 10px; padding: 1px 5px; border-radius: 3px; border: 1px solid #e5e7eb; }
+
+    /* ── Summary ── */
+    .invoice-summary-section { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; margin-bottom: 30px; page-break-inside: avoid; }
+    .payment-note { background-color: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #10b981; }
+    .note-title { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 5px; }
+    .payment-note ul { padding-left: 15px; margin: 0; }
+    .payment-note li { font-size: 10px; color: #4b5563; margin: 2px 0; }
+    
+    .totals-block { display: flex; flex-direction: column; }
+    .totals-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+    .totals-label { color: #4b5563; }
+    .totals-value { font-weight: 600; color: #111827; }
+    .totals-row.grand-total { font-size: 14px; font-weight: 800; border-top: 1px dotted #d1d5db; padding-top: 8px; margin-top: 5px; }
+    .totals-row.grand-total .totals-value { color: #10b981; font-size: 16px; }
+
+    /* ── Signatures ── */
+    .invoice-signatures { display: flex; justify-content: space-around; margin-top: 20px; margin-bottom: 30px; page-break-inside: avoid; }
+    .signature-box { text-align: center; width: 180px; }
+    .signature-title { font-size: 12px; font-weight: 700; color: #111827; }
+    .signature-note { font-size: 10px; color: #6b7280; font-style: italic; margin-top: 2px; }
+    .signature-space { height: 60px; }
+    .signature-name { font-size: 12px; font-weight: 700; color: #111827; border-top: 1px solid #d1d5db; padding-top: 5px; display: inline-block; min-width: 150px; }
+
+    .invoice-footer { text-align: center; border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 10px; page-break-inside: avoid; }
+    .thank-you { font-size: 13px; font-weight: 700; color: #10b981; margin-bottom: 3px; }
+    .footer-tagline { font-size: 11px; color: #6b7280; }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <div class="hdr">
-    <img src="${logoSrc}" alt="HC Shop Logo"/>
-    <div class="store">
-      <h2>CỬA HÀNG HC SHOP</h2>
-      <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
-      <p>Website: hcshop.com</p>
+  <div class="invoice-header">
+    <div class="company-info">
+      <img src="${logoSrc}" class="company-logo-img" alt="Logo"/>
+      <p class="company-tagline">Chuyên thiết bị và phụ kiện thể thao chính hãng</p>
+      <div class="company-details">
+        <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
+        <p>Hotline: 19008089 - Email: support@hcshop.com</p>
+        <p>Website: www.hcshop.com</p>
+      </div>
     </div>
-    <div class="meta-box">
-      <div class="meta-title">MÃ HÓA ĐƠN</div>
-      <div class="meta-row"><span>Mã đơn:</span><span>${(order.order_id || '').substring(0, 8).toUpperCase()}</span></div>
-      <div class="meta-row"><span>Ngày:</span><span>${orderDate ? orderDate.format('DD/MM/YYYY') : '---'}</span></div>
-      <div class="meta-row"><span>Nhân viên:</span><span></span></div>
-    </div>
-  </div>
-
-  <!-- Customer -->
-  <div class="cust">
-    <div class="cust-row"><span class="lbl">Khách hàng:</span><span>${order.shipping?.name || ''}</span></div>
-    <div class="cust-row"><span class="lbl">Địa chỉ:</span><span>${order.shipping?.address || ''}</span></div>
-    <div class="cust-row"><span class="lbl">Số điện thoại:</span><span>${order.shipping?.phone || ''}</span></div>
-    <div class="cust-row"><span class="lbl">Email:</span><span>${order.shipping?.email || ''}</span></div>
-    <div class="cust-row"><span class="lbl">Phương thức thanh toán:</span><span>${(order.paymentmethod || '').toUpperCase()}</span></div>
-  </div>
-
-  <!-- Items -->
-  <table>
-    <thead>
-      <tr>
-        <th style="width:36px">STT</th>
-        <th>Tên sản phẩm</th>
-        <th style="width:66px">Số lượng</th>
-        <th style="width:78px">Giảm giá</th>
-        <th style="width:96px">Đơn giá</th>
-        <th style="width:106px">Thành tiền</th>
-        <th style="width:74px">Bảo hành</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${itemRows}
-      ${emptyRows}
-    </tbody>
-  </table>
-
-  <!-- Note + Totals -->
-  <div class="foot">
-    <div class="note">
-      <span class="lbl">Ghi chú: </span>${order.shipping?.note || ''}
-    </div>
-    <div class="totals">
-      ${discountRows}
-      <div class="tot-row tot-final">
-        <span>Tổng hóa đơn:</span>
-        <span>${total.toLocaleString('vi-VN')}₫</span>
+    <div class="invoice-meta">
+      <div class="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
+      <div class="invoice-sub-title">SALES INVOICE</div>
+      <div class="meta-row">
+        <span class="meta-label">Mã đơn hàng:</span>
+        <span class="meta-value highlight">${(order.order_id || '').substring(0, 8).toUpperCase()}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Ngày đặt:</span>
+        <span class="meta-value">${formatDate(orderDate)}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Trạng thái:</span>
+        <span class="meta-value ${statusClass}">${statusText}</span>
       </div>
     </div>
   </div>
 
-  <!-- Date -->
-  <div class="date-line">Ngày ${dd} Tháng ${mm} Năm ${yyyy}</div>
+  <hr class="divider-double" />
 
-  <!-- Signatures -->
-  <div class="sig">
-    <div class="sig-col">
-      <div class="sig-title">Khách hàng</div>
-      <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
-      <div class="sig-line"></div>
+  <div class="invoice-info-section">
+    <div class="info-block">
+      <h3 class="section-title">Thông tin khách hàng</h3>
+      <div class="info-row"><span class="info-label">Khách hàng:</span><span class="info-value"><strong>${order.shipping?.name || ''}</strong></span></div>
+      <div class="info-row"><span class="info-label">Điện thoại:</span><span class="info-value">${order.shipping?.phone || ''}</span></div>
+      <div class="info-row"><span class="info-label">Email:</span><span class="info-value">${order.shipping?.email || ''}</span></div>
+      <div class="info-row"><span class="info-label">Địa chỉ:</span><span class="info-value">${order.shipping?.address || ''}</span></div>
     </div>
-    <div class="sig-col">
-      <div class="sig-title">Nhân viên bán hàng</div>
-      <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
-      <div class="sig-line"></div>
+    <div class="info-block border-left">
+      <h3 class="section-title">Thông tin giao nhận</h3>
+      <div class="info-row"><span class="info-label">Phương thức:</span><span class="info-value">${order.shipping?.shipmethod || 'Giao hàng tận nơi'}</span></div>
+      <div class="info-row"><span class="info-label">Dịch vụ vận chuyển:</span><span class="info-value">Standard Delivery</span></div>
+      <div class="info-row"><span class="info-label">Thanh toán:</span><span class="info-value">${order.paymentmethod?.toUpperCase() || ''}</span></div>
+      <div class="info-row"><span class="info-label">Ghi chú:</span><span class="info-value"><em>${order.shipping?.note || 'Không có ghi chú.'}</em></span></div>
     </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 5%">STT</th>
+        <th style="width: 45%">Tên Sản Phẩm / Thuộc tính</th>
+        <th style="width: 10%">SL</th>
+        <th style="width: 15%">Đơn Giá</th>
+        <th style="width: 15%">Thành Tiền</th>
+        <th style="width: 10%">Bảo Hành</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemRows}
+    </tbody>
+  </table>
+
+  <div class="invoice-summary-section">
+    <div class="payment-note">
+      <p class="note-title">Cam kết & Chính sách đổi trả:</p>
+      <ul>
+        <li>Được kiểm tra hàng trước khi nhận và thanh toán.</li>
+        <li>Hỗ trợ đổi trả sản phẩm trong vòng 7 ngày nếu lỗi sản xuất.</li>
+        <li>Giữ lại hóa đơn để được bảo hành sản phẩm chính hãng.</li>
+      </ul>
+    </div>
+    <div class="totals-block">
+      <div class="totals-row">
+        <span class="totals-label">Tạm tính:</span>
+        <span class="totals-value">${totalBeforeDiscount.toLocaleString('vi-VN')}₫</span>
+      </div>
+      ${discountAmount > 0 ? `
+      <div class="totals-row">
+        <span class="totals-label">Giảm giá voucher:</span>
+        <span class="totals-value">-${discountAmount.toLocaleString('vi-VN')}₫</span>
+      </div>
+      ` : ''}
+      <div class="totals-row grand-total">
+        <span class="totals-label">TỔNG THANH TOÁN:</span>
+        <span class="totals-value">${total.toLocaleString('vi-VN')}₫</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="invoice-signatures">
+    <div class="signature-box">
+      <p class="signature-title">Người mua hàng</p>
+      <p class="signature-note">(Ký, ghi rõ họ tên)</p>
+      <div class="signature-space"></div>
+      <p class="signature-name">${order.shipping?.name || ''}</p>
+    </div>
+    <div class="signature-box">
+      <p class="signature-title">Người lập hóa đơn</p>
+      <p class="signature-note">(Ký, đóng dấu đại diện)</p>
+      <div class="signature-space"></div>
+      <p class="signature-name">Bộ phận bán hàng</p>
+    </div>
+  </div>
+
+  <div class="invoice-footer">
+    <p class="thank-you">CẢM ƠN QUÝ KHÁCH ĐÃ MUA SẮM TẠI HCSHOP!</p>
+    <p class="footer-tagline">Hẹn gặp lại quý khách lần sau.</p>
   </div>
 </body>
 </html>`;
@@ -212,7 +279,6 @@ const OrderPrintModal = ({ order, onClose }) => {
   const printRef = useRef();
 
   /* ── Lấy logo từ bảng GeneralImages (image_name = 'Logo') ── */
-  /* Hook phải gọi TRƯỚC early return để tuân thủ Rules of Hooks */
   const { data: generalImagesData } = useGetGeneralImagesQuery({ search: 'Logo', limit: 5 });
   const logoRecord = generalImagesData?.data?.find(
     (img) => img.image_name?.toLowerCase() === 'logo'
@@ -228,9 +294,20 @@ const OrderPrintModal = ({ order, onClose }) => {
   const discountAmount = order.discount_amount || 0;
   const total = order.total || 0;
 
+  const statusText = order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
+    order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
+      order.status === 'Succeeded' ? 'Đã thanh toán' :
+        order.status === 'Pending' ? 'Đang chờ duyệt' :
+          order.status === 'Processing' ? 'Đang xử lý' : order.status;
+
+  const statusClass = order.status === 'Cancelled' ? 'status-cancelled' :
+    order.paymentmethod === 'cod' ? 'status-pending' :
+      order.status === 'Succeeded' ? 'status-succeeded' :
+        order.status?.toLowerCase() || 'status-pending';
+
   /* Convert logo to base64, then open a Blob URL window for printing */
   const openPrintWindow = async (autoClose = false) => {
-    const logoBase64 = await toBase64(logoUrl);   // base64 so it works in blob: context
+    const logoBase64 = await toBase64(logoUrl);
     const printData = {
       order, orderDate, totalBeforeDiscount, discountAmount, total,
       logoSrc: logoBase64,
@@ -258,21 +335,23 @@ const OrderPrintModal = ({ order, onClose }) => {
   const handlePrint = () => openPrintWindow(false);
   const handleDownloadPDF = () => openPrintWindow(true);
 
-  const dd = orderDate ? orderDate.format('DD') : '....';
-  const mm = orderDate ? orderDate.format('MM') : '....';
-  const yyyy = orderDate ? orderDate.format('YYYY') : '......';
-
   return (
     <div className="print-modal-overlay" onClick={onClose}>
       <div className="print-modal-container" onClick={(e) => e.stopPropagation()}>
 
         {/* ── Top action bar ── */}
         <div className="print-modal-actions-top">
-          <span className="print-modal-title">Xem trước hóa đơn</span>
+          <span className="print-modal-title">Xem trước hóa đơn bán hàng</span>
           <div className="print-modal-btn-group">
-            <button className="btn-print" onClick={handlePrint}>🖨️ In</button>
-            <button className="btn-download-pdf" onClick={handleDownloadPDF}>📄 Tải PDF</button>
-            <button className="btn-cancel-print" onClick={onClose}>✕ Hủy</button>
+            <button className="btn-print" onClick={handlePrint}>
+              In hóa đơn
+            </button>
+            <button className="btn-download-pdf" onClick={handleDownloadPDF}>
+              Tải PDF
+            </button>
+            <button className="btn-cancel-print" onClick={onClose}>
+              Đóng
+            </button>
           </div>
         </div>
 
@@ -282,54 +361,75 @@ const OrderPrintModal = ({ order, onClose }) => {
 
             {/* Header */}
             <div className="invoice-header">
-              <div className="invoice-logo-block">
-                <img src={logoUrl} alt="HC Shop Logo" className="invoice-logo" />
-              </div>
-              <div className="invoice-store-info">
-                <h2 className="invoice-store-name">CỬA HÀNG HC SHOP</h2>
-                <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
-                <p>Website: hcshop.com</p>
+              <div className="company-info">
+                <img src={logoUrl} alt="Logo" className="logo-img-preview" />
+                <p className="company-tagline">Chuyên thiết bị và phụ kiện thể thao chính hãng</p>
+                <div className="company-details">
+                  <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
+                  <p>Hotline: 19008089 - Email: support@hcshop.com</p>
+                  <p>Website: www.hcshop.com</p>
+                </div>
               </div>
               <div className="invoice-meta">
-                <div className="invoice-meta-box">
-                  <div className="invoice-meta-title">MÃ HÓA ĐƠN</div>
-                  <div className="invoice-meta-row">
-                    <span>Mã đơn:</span>
-                    <span>{order.order_id?.substring(0, 8).toUpperCase()}</span>
-                  </div>
-                  <div className="invoice-meta-row">
-                    <span>Ngày:</span>
-                    <span>{orderDate ? orderDate.format('DD/MM/YYYY') : '---'}</span>
-                  </div>
-                  <div className="invoice-meta-row">
-                    <span>Nhân viên:</span>
-                    <span></span>
-                  </div>
+                <div className="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
+                <div className="invoice-sub-title">SALES INVOICE</div>
+                <div className="meta-row">
+                  <span className="meta-label">Mã đơn hàng:</span>
+                  <span className="meta-value highlight">{order.order_id?.substring(0, 8).toUpperCase()}</span>
+                </div>
+                <div className="meta-row">
+                  <span className="meta-label">Ngày đặt:</span>
+                  <span className="meta-value">{orderDate ? orderDate.format('HH:mm DD/MM/YYYY') : '---'}</span>
+                </div>
+                <div className="meta-row">
+                  <span className="meta-label">Trạng thái:</span>
+                  <span className={`meta-value ${statusClass}`}>{statusText}</span>
                 </div>
               </div>
             </div>
 
+            <hr className="divider-double" />
+
             {/* Customer Info */}
-            <div className="invoice-customer">
-              <div className="invoice-customer-row">
-                <span className="label">Khách hàng:</span>
-                <span>{order.shipping?.name || ''}</span>
+            <div className="invoice-info-section">
+              <div className="info-block">
+                <h3 className="section-title">Thông tin khách hàng</h3>
+                <div className="info-row">
+                  <span className="info-label">Khách hàng:</span>
+                  <span className="info-value"><strong>{order.shipping?.name || ''}</strong></span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Điện thoại:</span>
+                  <span className="info-value">{order.shipping?.phone || ''}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Email:</span>
+                  <span className="info-value">{order.shipping?.email || ''}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Địa chỉ:</span>
+                  <span className="info-value">{order.shipping?.address || ''}</span>
+                </div>
               </div>
-              <div className="invoice-customer-row">
-                <span className="label">Địa chỉ:</span>
-                <span>{order.shipping?.address || ''}</span>
-              </div>
-              <div className="invoice-customer-row">
-                <span className="label">Số điện thoại:</span>
-                <span>{order.shipping?.phone || ''}</span>
-              </div>
-              <div className="invoice-customer-row">
-                <span className="label">Email:</span>
-                <span>{order.shipping?.email || ''}</span>
-              </div>
-              <div className="invoice-customer-row">
-                <span className="label">Phương thức thanh toán:</span>
-                <span>{order.paymentmethod?.toUpperCase() || ''}</span>
+
+              <div className="info-block border-left">
+                <h3 className="section-title">Thông tin giao nhận</h3>
+                <div className="info-row">
+                  <span className="info-label">Phương thức:</span>
+                  <span className="info-value">{order.shipping?.shipmethod || 'Giao hàng tận nơi'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Dịch vụ vận chuyển:</span>
+                  <span className="info-value">Standard Delivery</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Thanh toán:</span>
+                  <span className="info-value">{order.paymentmethod?.toUpperCase() || ''}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Ghi chú:</span>
+                  <span className="info-value"><em>{order.shipping?.note || 'Không có ghi chú.'}</em></span>
+                </div>
               </div>
             </div>
 
@@ -337,104 +437,93 @@ const OrderPrintModal = ({ order, onClose }) => {
             <table className="invoice-table">
               <thead>
                 <tr>
-                  <th style={{ width: '40px' }}>STT</th>
-                  <th>Tên sản phẩm</th>
-                  <th style={{ width: '70px' }}>Số lượng</th>
-                  <th style={{ width: '80px' }}>Giảm giá</th>
-                  <th style={{ width: '100px' }}>Đơn giá</th>
-                  <th style={{ width: '110px' }}>Thành tiền</th>
-                  <th style={{ width: '80px' }}>Bảo hành</th>
+                  <th style={{ width: '5%' }}>STT</th>
+                  <th style={{ width: '45%' }}>Tên Sản Phẩm / Thuộc tính</th>
+                  <th style={{ width: '10%' }} className="text-center">SL</th>
+                  <th style={{ width: '15%' }} className="text-center">Đơn Giá</th>
+                  <th style={{ width: '15%' }} className="text-center">Thành Tiền</th>
+                  <th style={{ width: '10%' }} className="text-center">Bảo Hành</th>
                 </tr>
               </thead>
               <tbody>
                 {(order.items || []).map((item, index) => {
-                  const productName =
-                    item.product?.prod_name || item.product?.name || 'Sản phẩm';
+                  const productName = item.product?.prod_name || item.product?.name || 'Sản phẩm';
                   const variantStr = item.selected_variants
-                    ? Object.entries(item.selected_variants)
-                      .map(([k, v]) => `${k}: ${v}`)
-                      .join(', ')
+                    ? Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')
                     : '';
                   return (
                     <tr key={index}>
                       <td className="text-center">{index + 1}</td>
                       <td>
-                        {productName}
+                        <div className="item-name"><strong>{productName}</strong></div>
                         {variantStr && (
-                          <span className="variant-str"> ({variantStr})</span>
+                          <div className="item-variants">
+                            <span className="variant-tag">{variantStr}</span>
+                          </div>
                         )}
                       </td>
                       <td className="text-center">{item.quantity}</td>
                       <td className="text-center">
-                        {discountAmount > 0 && index === 0
-                          ? `-${discountAmount.toLocaleString('vi-VN')}₫`
-                          : ''}
-                      </td>
-                      <td className="text-right">
                         {(item.price || 0).toLocaleString('vi-VN')}₫
                       </td>
-                      <td className="text-right">
+                      <td className="text-center">
                         {((item.price || 0) * (item.quantity || 1)).toLocaleString('vi-VN')}₫
                       </td>
-                      <td></td>
+                      <td className="text-center">{item.product?.warranty || 'Không bảo hành'}</td>
                     </tr>
                   );
                 })}
-                {/* Empty filler rows */}
-                {(order.items || []).length < 5 &&
-                  Array.from({ length: 5 - (order.items || []).length }).map((_, i) => (
-                    <tr key={`empty-${i}`} className="empty-row">
-                      <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
-                    </tr>
-                  ))}
               </tbody>
             </table>
 
             {/* Note + Totals */}
-            <div className="invoice-footer-section">
-              <div className="invoice-note">
-                <span className="label">Ghi chú: </span>
-                <span>{order.shipping?.note || ''}</span>
+            <div className="invoice-summary-section">
+              <div className="payment-note">
+                <p className="note-title">Cam kết & Chính sách đổi trả:</p>
+                <ul>
+                  <li>Được kiểm tra hàng trước khi nhận và thanh toán.</li>
+                  <li>Hỗ trợ đổi trả sản phẩm trong vòng 7 ngày nếu lỗi sản xuất.</li>
+                  <li>Giữ lại hóa đơn để được bảo hành sản phẩm chính hãng.</li>
+                </ul>
               </div>
-              <div className="invoice-totals">
+              <div className="totals-block">
+                <div className="totals-row">
+                  <span className="totals-label">Tạm tính:</span>
+                  <span className="totals-value">{totalBeforeDiscount.toLocaleString('vi-VN')}₫</span>
+                </div>
                 {discountAmount > 0 && (
-                  <div className="invoice-total-row">
-                    <span>Tạm tính:</span>
-                    <span>{totalBeforeDiscount.toLocaleString('vi-VN')}₫</span>
+                  <div className="totals-row">
+                    <span className="totals-label">Giảm giá voucher:</span>
+                    <span className="totals-value">-{discountAmount.toLocaleString('vi-VN')}₫</span>
                   </div>
                 )}
-                {discountAmount > 0 && (
-                  <div className="invoice-total-row">
-                    <span>Giảm giá ({order.voucher_id?.voucher_name || 'Voucher'}):</span>
-                    <span>-{discountAmount.toLocaleString('vi-VN')}₫</span>
-                  </div>
-                )}
-                <div className="invoice-total-row total-final">
-                  <span>Tổng hóa đơn:</span>
-                  <span>{total.toLocaleString('vi-VN')}₫</span>
+                <div className="totals-row grand-total">
+                  <span className="totals-label">TỔNG THANH TOÁN:</span>
+                  <span className="totals-value">{total.toLocaleString('vi-VN')}₫</span>
                 </div>
               </div>
             </div>
 
-            {/* Date line */}
-            <div className="invoice-signature-date">
-              Ngày {dd} Tháng {mm} Năm {yyyy}
+            {/* Signatures */}
+            <div className="invoice-signatures">
+              <div className="signature-box">
+                <p className="signature-title">Người mua hàng</p>
+                <p className="signature-note">(Ký, ghi rõ họ tên)</p>
+                <div className="signature-space"></div>
+                <p className="signature-name">{order.shipping?.name || ''}</p>
+              </div>
+              <div className="signature-box">
+                <p className="signature-title">Người lập hóa đơn</p>
+                <p className="signature-note">(Ký, đóng dấu đại diện)</p>
+                <div className="signature-space"></div>
+                <p className="signature-name">Bộ phận bán hàng</p>
+              </div>
             </div>
 
-            {/* Signatures */}
-            <div className="invoice-sig-row">
-              <div className="invoice-sig-col">
-                <div className="sig-title">Khách hàng</div>
-                <div className="sig-sub">(Ký, ghi rõ họ tên)</div>
-                <div className="sig-spacer"></div>
-                <div className="sig-line"></div>
-              </div>
-              <div className="invoice-sig-col">
-                <div className="sig-title">Nhân viên bán hàng</div>
-                <div className="sig-sub">(Ký, ghi rõ họ tên)</div>
-                <div className="sig-spacer"></div>
-                <div className="sig-line"></div>
-              </div>
+            {/* Footer */}
+            <div className="invoice-footer">
+              <p className="thank-you">CẢM ƠN QUÝ KHÁCH ĐÃ MUA SẮM TẠI HCSHOP!</p>
+              <p className="footer-tagline">Hẹn gặp lại quý khách lần sau.</p>
             </div>
 
           </div>

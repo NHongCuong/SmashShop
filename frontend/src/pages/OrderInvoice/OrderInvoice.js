@@ -89,9 +89,9 @@ const OrderInvoice = () => {
             <div className="invoice-sheet">
                 {/* Stamp/Watermark based on Status */}
                 <div className={`invoice-status-stamp stamp-${order.status === 'Cancelled' ? 'cancelled' :
-                        order.paymentmethod === 'cod' ? 'pending' :
-                            order.status === 'Succeeded' ? 'succeeded' :
-                                order.status?.toLowerCase() || 'pending'
+                    order.paymentmethod === 'cod' ? 'pending' :
+                        order.status === 'Succeeded' ? 'succeeded' :
+                            order.status?.toLowerCase() || 'pending'
                     }`}>
                     {order.status === 'Cancelled' ? 'ĐÃ HỦY ĐƠN' :
                         order.paymentmethod === 'cod' ? 'CHƯA THANH TOÁN' :
@@ -117,7 +117,7 @@ const OrderInvoice = () => {
                         <div className="invoice-sub-title">SALES INVOICE</div>
                         <div className="meta-row">
                             <span className="meta-label">Mã đơn hàng:</span>
-                            <span className="meta-value highlight">#{order.order_id || order._id}</span>
+                            <span className="meta-value highlight">{(order.order_id || '').substring(0, 8).toUpperCase()}</span>
                         </div>
                         <div className="meta-row">
                             <span className="meta-label">Ngày đặt hàng:</span>
@@ -126,9 +126,9 @@ const OrderInvoice = () => {
                         <div className="meta-row">
                             <span className="meta-label">Trạng thái:</span>
                             <span className={`meta-value status-${order.status === 'Cancelled' ? 'cancelled' :
-                                    order.paymentmethod === 'cod' ? 'pending' :
-                                        order.status === 'Succeeded' ? 'succeeded' :
-                                            order.status?.toLowerCase() || 'pending'
+                                order.paymentmethod === 'cod' ? 'pending' :
+                                    order.status === 'Succeeded' ? 'succeeded' :
+                                        order.status?.toLowerCase() || 'pending'
                                 }`}>
                                 {order.status === 'Cancelled' ? 'Đã hủy đơn hàng' :
                                     order.paymentmethod === 'cod' ? 'Chưa thanh toán' :
@@ -198,8 +198,9 @@ const OrderInvoice = () => {
                                 <th style={{ width: '5%' }}>STT</th>
                                 <th style={{ width: '55%' }}>Tên Sản Phẩm / Thuộc tính</th>
                                 <th style={{ width: '10%', textAlign: 'center' }}>Số Lượng</th>
-                                <th style={{ width: '15%', textAlign: 'right' }}>Đơn Giá</th>
-                                <th style={{ width: '15%', textAlign: 'right' }}>Thành Tiền</th>
+                                <th style={{ width: '15%', textAlign: 'center' }}>Đơn Giá</th>
+                                <th style={{ width: '15%', textAlign: 'center' }}>Thành Tiền</th>
+                                <th style={{ width: '15%', textAlign: 'center' }}>Bảo Hành</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -219,8 +220,9 @@ const OrderInvoice = () => {
                                         )}
                                     </td>
                                     <td style={{ textAlign: 'center' }}>{item.quantity}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.price.toLocaleString()}₫</td>
-                                    <td style={{ textAlign: 'right' }}>{(item.price * item.quantity).toLocaleString()}₫</td>
+                                    <td style={{ textAlign: 'center' }}>{item.price.toLocaleString()}₫</td>
+                                    <td style={{ textAlign: 'center' }}>{(item.price * item.quantity).toLocaleString()}₫</td>
+                                    <td style={{ textAlign: 'center' }}>{item.product?.warranty || 'Không bảo hành'}</td>
                                 </tr>
                             ))}
                         </tbody>

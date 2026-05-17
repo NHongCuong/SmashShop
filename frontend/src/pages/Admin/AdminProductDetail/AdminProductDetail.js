@@ -32,6 +32,7 @@ const AdminProductDetail = () => {
     type_id,
     discount,
     voucher_id,
+    warranty,
     images
   } = product;
 
@@ -57,6 +58,7 @@ const AdminProductDetail = () => {
       "Giảm giá": product.discount || 0,
       "Loại": product.type_id?.type_name || "",
       "Mã voucher": product.voucher_id?.voucher_name || "",
+      "Bảo hành": product.warranty || "",
       "Màu sắc": product.colors?.map(c => c.color).join(', ') || "",
       "Kích cỡ": product.sizes?.map(s => s.size).join(', ') || "",
       "Ảnh": product.images?.[0]?.image?.[0] || "",
@@ -108,6 +110,7 @@ const AdminProductDetail = () => {
           <p><strong>Màu sắc:</strong> {product.colors?.map(c => c.color).join(', ') || 'N/A'}</p>
           <p><strong>Kích cỡ:</strong> {product.sizes?.map(s => s.size).join(', ') || 'N/A'}</p>
           <p><strong>Mã voucher:</strong> {voucher_id?.voucher_name || 'Không có'}</p>
+          <p><strong>Bảo hành:</strong> {warranty || 'N/A'}</p>
         </div>
       </div>
       <div className="ad-product-des details">

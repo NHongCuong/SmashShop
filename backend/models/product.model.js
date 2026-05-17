@@ -10,6 +10,7 @@ const ProductSchema = new mongoose.Schema({
   stock: { type: Number, required: true },
   quantity_sold: { type: Number, required: true },
   description: { type: String },
+  warranty: { type: String },
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   brand_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
   type_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Type' },
