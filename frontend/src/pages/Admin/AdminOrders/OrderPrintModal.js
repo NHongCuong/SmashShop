@@ -4,6 +4,8 @@ import utc from 'dayjs/plugin/utc';
 import './OrderPrintModal.css';
 import { useGetGeneralImagesQuery } from '../../../features/services/generalImageApi';
 import fallbackLogo from '../../../assets/logohcshop.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt, faPhone, faEnvelope, faGlobe } from '@fortawesome/free-solid-svg-icons';
 
 dayjs.extend(utc);
 
@@ -70,6 +72,7 @@ const buildPrintHTML = ({ order, orderDate, totalBeforeDiscount, discountAmount,
 <head>
   <meta charset="UTF-8"/>
   <title>Hóa đơn – ${order.order_id || ''}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     @page {
@@ -93,7 +96,8 @@ const buildPrintHTML = ({ order, orderDate, totalBeforeDiscount, discountAmount,
     .company-info { flex: 1; }
     .company-logo-img { height: 60px; width: auto; margin-bottom: 8px; }
     .company-tagline { font-size: 13px; color: #6b7280; margin-bottom: 12px; font-style: italic; }
-    .company-details p { font-size: 11.5px; color: #4b5563; margin: 3px 0; }
+    .company-details p { font-size: 11.5px; color: #4b5563; margin: 3px 0; display: flex; align-items: center; gap: 8px; }
+    .company-details i { color: #6b7280; width: 14px; text-align: center; }
     
     .invoice-meta { display: flex; flex-direction: column; align-items: flex-end; width: 340px; }
     .invoice-title { font-size: 26px; font-weight: 800; color: #111827; letter-spacing: 1px; text-align: right; width: 100%; }
@@ -164,9 +168,10 @@ const buildPrintHTML = ({ order, orderDate, totalBeforeDiscount, discountAmount,
       <img src="${logoSrc}" class="company-logo-img" alt="Logo"/>
       <p class="company-tagline">Chuyên thiết bị và phụ kiện thể thao chính hãng</p>
       <div class="company-details">
-        <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
-        <p>Hotline: 19008089 - Email: support@hcshop.com</p>
-        <p>Website: www.hcshop.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
+        <p><i class="fas fa-phone"></i> Hotline: 19008089 </p>
+        <p><i class="fas fa-envelope"></i> Email: support@hcshop.com</p>
+        <p><i class="fas fa-globe"></i> Website: www.hcshop.com</p>
       </div>
     </div>
     <div class="invoice-meta">
@@ -365,9 +370,10 @@ const OrderPrintModal = ({ order, onClose }) => {
                 <img src={logoUrl} alt="Logo" className="logo-img-preview" />
                 <p className="company-tagline">Chuyên thiết bị và phụ kiện thể thao chính hãng</p>
                 <div className="company-details">
-                  <p>Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
-                  <p>Hotline: 19008089 - Email: support@hcshop.com</p>
-                  <p>Website: www.hcshop.com</p>
+                  <p><FontAwesomeIcon icon={faMapMarkerAlt} /> Địa chỉ: 67/7 Trương Định, KV Vĩnh Phú, P An Nhơn Bắc, Gia Lai</p>
+                  <p><FontAwesomeIcon icon={faPhone} /> Hotline: 19008089</p>
+                  <p><FontAwesomeIcon icon={faEnvelope} /> Email: support@hcshop.com</p>
+                  <p><FontAwesomeIcon icon={faGlobe} /> Website: www.hcshop.com</p>
                 </div>
               </div>
               <div className="invoice-meta">
