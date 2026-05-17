@@ -75,7 +75,7 @@ const OrderInvoice = () => {
         <div className="invoice-page-container">
             {/* Top Toolbar (Hidden on Print) */}
             <div className="invoice-toolbar no-print">
-                <button className="btn-toolbar-back" onClick={() => navigate(-1)}>
+                <button className="btn-toolbar-back" onClick={() => navigate('/')}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Quay lại
                 </button>
                 <div className="toolbar-actions">
@@ -257,13 +257,13 @@ const OrderInvoice = () => {
                     <div className="signature-box">
                         <p className="signature-title">Người lập hóa đơn</p>
                         <p className="signature-note">(Ký, đóng dấu đại diện)</p>
-                        <div className="signature-space">
+                        {/* <div className="signature-space">
                             <div className="stamp-circle">
                                 <span>HCSHOP</span>
                                 <span className="stamp-center">ĐÃ THU TIỀN</span>
                             </div>
                         </div>
-                        <p className="signature-name">Bộ phận bán hàng</p>
+                        <p className="signature-name">Bộ phận bán hàng</p> */}
                     </div>
                 </div>
 
