@@ -254,7 +254,7 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                     <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
-                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> #${order.order_id || order._id}</p>
+                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id?.substring(0, 8).toUpperCase() || order._id?.substring(0, 8).toUpperCase()}</p>
                     <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
                     <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
                     <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
