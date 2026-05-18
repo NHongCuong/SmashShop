@@ -9,13 +9,17 @@ import { selectIsAuthenticated } from './app/store/authSlice';
 import BackToTop from './components/BackToTop/BackToTop';
 import UserLiveChat from './components/LiveChat/UserLiveChat';
 import QuickContact from './components/QuickContact/QuickContact';
+import { useTrackVisitMutation } from './features/statistics/statisticsApi';
 
 function AppInner() {
     const calledRef = useRef(false);
+    const trackingCalledRef = useRef(false);
     const dispatch = useDispatch();
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const location = useLocation();
     const isAdminPage = location.pathname.startsWith('/admin');
+
+    const [trackVisit] = useTrackVisitMutation();
 
     useEffect(() => {
         if (isAuthenticated && !calledRef.current) {
@@ -23,6 +27,19 @@ function AppInner() {
             calledRef.current = true;
         }
     }, [isAuthenticated, dispatch]);
+
+    useEffect(() => {
+        const hasTracked = sessionStorage.getItem('tracked_visit');
+        if (!hasTracked && !isAdminPage && !trackingCalledRef.current) {
+            trackingCalledRef.current = true; // Chặn ngay lập tức
+            trackVisit().unwrap()
+                .then(() => sessionStorage.setItem('tracked_visit', 'true'))
+                .catch(err => {
+                    console.error("Failed to track visit:", err);
+                    trackingCalledRef.current = false; // Reset nếu lỗi để có thể thử lại
+                });
+        }
+    }, [trackVisit, isAdminPage]);
 
     return (
         <div className="App font-body">

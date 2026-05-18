@@ -9,6 +9,7 @@ import {
   faPercentage,
   faCreditCard,
   faEye,
+  faGlobe
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -39,7 +40,7 @@ const AdminStatistics = () => {
   if (isLoading) return <p className="loading-stats">Đang tải dữ liệu thống kê...</p>;
   if (isError || !data) return <p className="error-stats">Lỗi khi tải thống kê.</p>;
 
-  const { today, chartData, totalOverall, productPerformance, lowConversionProducts, conversionRate } = data;
+  const { today, chartData, totalOverall, productPerformance, allProductsRevenue, lowConversionProducts, conversionRate } = data;
 
   const StatCard = ({ title, value, change, icon, isDown = false, showChange = true }) => (
     <div className="stat-card">
@@ -73,6 +74,21 @@ const AdminStatistics = () => {
     return null;
   };
 
+  const CustomProductTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const p = payload[0].payload;
+      return (
+        <div className="custom-tooltip" style={{ backgroundColor: "#fff", border: "2px solid #4e73df", padding: "10px", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
+          <p style={{ margin: "0 0 8px 0", fontWeight: "bold", color: "#333", borderBottom: "1px solid #eee", paddingBottom: "5px" }}>{p.name}</p>
+          <p style={{ margin: "4px 0", color: "#1cc88a" }}><strong>Hôm nay:</strong> {p.todayRevenue.toLocaleString()} ₫</p>
+          <p style={{ margin: "4px 0", color: "#36b9cc" }}><strong>Tháng này:</strong> {p.monthRevenue.toLocaleString()} ₫</p>
+          <p style={{ margin: "4px 0", color: "#4e73df" }}><strong>365 ngày qua:</strong> {p.yearRevenue.toLocaleString()} ₫</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="dashboard-container">
       <h2>Thống kê tổng quan</h2>
@@ -83,6 +99,7 @@ const AdminStatistics = () => {
         <StatCard title="Tổng Khách hàng" value={totalOverall?.customers || 0} icon={faUsers} showChange={false} />
         <StatCard title="Gía trị đơn TB (AOV)" value={Math.round(totalOverall?.aov || 0)} icon={faCreditCard} showChange={false} />
         <StatCard title="Tỷ lệ chuyển đổi" value={`${conversionRate || 0}%`} icon={faPercentage} showChange={false} />
+        <StatCard title="Tổng lượt truy cập" value={totalOverall?.visits || 0} icon={faGlobe} showChange={false} />
         
         <div className="stat-card alert-card" onClick={() => navigate('/admin/stock')} style={{ cursor: 'pointer', background: (stockAlerts?.count > 0 ? '#fff3e0' : '#e8f5e9') }}>
           <div className="stat-left">
@@ -117,6 +134,26 @@ const AdminStatistics = () => {
           <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
         </LineChart>
       </ResponsiveContainer>
+
+      <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>Hiệu suất doanh thu tất cả sản phẩm</h3>
+      <div className="all-products-chart-container" style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={allProductsRevenue} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis 
+              dataKey="name" 
+              angle={-45} 
+              textAnchor="end" 
+              interval={0} 
+              tick={{ fontSize: 10 }}
+              height={80}
+            />
+            <YAxis tickFormatter={(val) => (val >= 1000000 ? `${val/1000000}tr` : val.toLocaleString())} />
+            <Tooltip content={<CustomProductTooltip />} />
+            <Bar dataKey="yearRevenue" fill="#1cc88a" name="Doanh thu năm" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 20, right: 30, bottom: 5, left: 0 }}>

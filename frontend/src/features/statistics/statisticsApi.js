@@ -25,7 +25,6 @@ export const statisticsApi = createApi({
         `dashboard?start_date=${startDate}&end_date=${endDate}`,
       providesTags: ['Statistics'],
       transformResponse: (res) => {
-        // Backend mới trả về chartData trực tiếp
         const chartData = res.chartData || [];
        
         const todayData = chartData.find(item => item.date === todayStr) || { revenue: 0, orders: 0, sold: 0 };
@@ -52,12 +51,19 @@ export const statisticsApi = createApi({
           chartData: chartData,
           totalOverall: res.totalOverall || {},
           productPerformance: res.productPerformance || [],
+          allProductsRevenue: res.allProductsRevenue || [],
           lowConversionProducts: res.lowConversionProducts || [],
           conversionRate: res.conversionRate || 0
         };
       },
     }),
+    trackVisit: builder.mutation({
+      query: () => ({
+        url: 'dashboard/track-visit',
+        method: 'POST'
+      })
+    }),
   }),
 });
 
-export const { useGetStatisticsQuery } = statisticsApi;
+export const { useGetStatisticsQuery, useTrackVisitMutation } = statisticsApi;

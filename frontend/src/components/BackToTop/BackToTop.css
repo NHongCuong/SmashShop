@@ -1,6 +1,6 @@
 .back-to-top {
   position: fixed;
-  bottom: 166px;
+  bottom: 92px;
   right: 30px;
   width: 46px;
   height: 46px;
@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10001;
 
   /* Ẩn mặc định */
   opacity: 0;
