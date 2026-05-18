@@ -26,6 +26,7 @@ import initChatSocket from "./socket/chatSocket.js";
 import contactRoutes from "./routes/contact.route.js";
 import postRoutes from "./routes/post.route.js";
 import generalImageRoutes from "./routes/generalImage.route.js";
+import stockRoutes from "./routes/stock.route.js";
 
 
 dotenv.config();
@@ -112,6 +113,7 @@ app.use("/api/v1/voucher", voucherRoutes);
 app.use("/api/v1/contacts", contactRoutes);
 app.use("/api/v1/posts", postRoutes);
 app.use("/api/v1/general-images", generalImageRoutes);
+app.use("/api/v1/stock", stockRoutes);
 
 import { generateToken } from "./middleware/jwt.js";
 

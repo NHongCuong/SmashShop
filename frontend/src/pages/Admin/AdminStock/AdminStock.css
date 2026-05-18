@@ -1,0 +1,358 @@
+/* ===== AdminStock ===== */
+.admin-stock {
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.admin-stock h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1a1a2e;
+}
+
+/* Low stock alert banner */
+.stock-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fff3cd, #ffe08a);
+  border: 1.5px solid #f0a500;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #7a4f00;
+  box-shadow: 0 2px 8px rgba(240, 165, 0, 0.15);
+}
+
+.stock-alert-banner .alert-icon {
+  font-size: 1.3rem;
+}
+
+.stock-alert-banner .alert-count {
+  background: #f0a500;
+  color: #fff;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
+.stock-alert-banner .btn-view-low {
+  margin-left: auto;
+  background: #f0a500;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.stock-alert-banner .btn-view-low:hover {
+  background: #c47d00;
+}
+
+/* Controls */
+.stock-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  background: #f8f9fc;
+  border-radius: 10px;
+  padding: 14px 18px;
+  border: 1px solid #e8eaf0;
+}
+
+.stock-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stock-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stock-controls label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-controls select {
+  border: 1px solid #cdd3e0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.88rem;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.stock-controls select:focus {
+  border-color: #4a90e2;
+}
+
+.stock-search {
+  border: 1px solid #cdd3e0;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 0.88rem;
+  width: 230px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.stock-search:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.12);
+}
+
+/* Export button */
+.btn-stock-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
+}
+
+.btn-stock-export:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(40, 167, 69, 0.35);
+}
+
+/* Table */
+.stock-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  min-width: 720px;
+}
+
+.stock-table thead tr {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+}
+
+.stock-table thead th {
+  padding: 13px 14px;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.stock-table tbody tr {
+  border-bottom: 1px solid #f0f2f7;
+  transition: background 0.15s;
+}
+
+.stock-table tbody tr:hover {
+  background: #f5f7ff;
+}
+
+.stock-table tbody tr.low-stock-row {
+  background: #fff8ee;
+}
+
+.stock-table tbody tr.low-stock-row:hover {
+  background: #fff2da;
+}
+
+.stock-table td {
+  padding: 11px 14px;
+  font-size: 0.88rem;
+  color: #333;
+  vertical-align: middle;
+}
+
+/* Stock badge */
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.stock-badge.normal {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.stock-badge.low {
+  background: #fff3e0;
+  color: #e65100;
+  animation: pulse-badge 1.8s ease-in-out infinite;
+}
+
+.stock-badge.zero {
+  background: #fce4ec;
+  color: #880e4f;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 81, 0, 0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(230, 81, 0, 0); }
+}
+
+/* Action icons */
+.stock-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.stock-actions .btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 7px;
+  border-radius: 5px;
+  transition: all 0.18s;
+  font-size: 1rem;
+}
+
+.stock-actions .btn-icon.edit {
+  color: #1976d2;
+}
+
+.stock-actions .btn-icon.edit:hover {
+  background: #e3f0ff;
+  color: #0d47a1;
+}
+
+.stock-actions .btn-icon.delete {
+  color: #c62828;
+}
+
+.stock-actions .btn-icon.delete:hover {
+  background: #fde8e8;
+  color: #7f0000;
+}
+
+/* Edit inline */
+.stock-edit-input {
+  width: 75px;
+  border: 1.5px solid #4a90e2;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.88rem;
+  text-align: center;
+  outline: none;
+}
+
+.btn-save-stock, .btn-cancel-stock {
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-save-stock {
+  background: #28a745;
+  color: white;
+}
+
+.btn-save-stock:hover {
+  background: #1e7e34;
+}
+
+.btn-cancel-stock {
+  background: #e0e0e0;
+  color: #444;
+}
+
+.btn-cancel-stock:hover {
+  background: #bdbdbd;
+}
+
+/* Pagination */
+.stock-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.stock-pagination button {
+  background: #fff;
+  border: 1.5px solid #d0d5e8;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.18s;
+}
+
+.stock-pagination button:hover:not(:disabled) {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+}
+
+.stock-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.stock-pagination span {
+  font-size: 0.88rem;
+  color: #666;
+}
+
+/* Empty state */
+.stock-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: #999;
+  font-size: 1rem;
+}
+
+/* Loading */
+.stock-loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-size: 1rem;
+}

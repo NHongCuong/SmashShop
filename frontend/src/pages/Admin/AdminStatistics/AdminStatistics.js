@@ -3,6 +3,8 @@ import {
   faDollarSign,
   faBoxOpen,
   faCalendarAlt,
+  faWarehouse,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,13 +20,17 @@ import {
 } from "recharts";
 import "./AdminStatistics.css";
 import { useGetStatisticsQuery } from '../../../features/statistics/statisticsApi';
+import { useGetLowStockAlertsQuery } from '../../../features/services/stockApi';
+import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 const AdminStatistics = () => {
+  const navigate = useNavigate();
   const endDate = dayjs().add(1, 'day').format('YYYY-MM-DD');
   const startDate = dayjs().subtract(365, 'day').format('YYYY-MM-DD');
 
   const { data, isLoading, isError } = useGetStatisticsQuery({ startDate, endDate });
+  const { data: stockAlerts } = useGetLowStockAlertsQuery();
 
   if (isLoading) return <p>Đang tải dữ liệu thống kê...</p>;
   if (isError) return <p>Lỗi khi tải thống kê.</p>;
@@ -70,6 +76,20 @@ const AdminStatistics = () => {
         <StatCard title="Tổng Doanh thu" value={totalOverall?.revenue || 0} icon={faDollarSign} showChange={false} />
         <StatCard title="Tổng Đơn hàng" value={totalOverall?.orders || 0} icon={faCalendarAlt} showChange={false} />
         <StatCard title="Tổng Sản phẩm đã bán" value={totalOverall?.sold || 0} icon={faBoxOpen} showChange={false} />
+        <div className="stat-card alert-card" onClick={() => navigate('/admin/stock')} style={{ cursor: 'pointer', background: (stockAlerts?.count > 0 ? '#fff3e0' : '#e8f5e9') }}>
+          <div className="stat-left">
+            <div className="stat-title">Sắp hết hàng</div>
+            <div className="stat-value" style={{ color: stockAlerts?.count > 0 ? '#e65100' : '#1b5e20' }}>
+              {stockAlerts?.count || 0}
+            </div>
+            <div className="stat-change up" style={{ fontSize: '0.8rem' }}>
+              Click để kiểm tra kho
+            </div>
+          </div>
+          <div className="stat-icon" style={{ color: stockAlerts?.count > 0 ? '#e65100' : '#1b5e20' }}>
+            <FontAwesomeIcon icon={stockAlerts?.count > 0 ? faTriangleExclamation : faWarehouse} />
+          </div>
+        </div>
       </div>
 
       <h2>Thống kê ngày hôm nay</h2>

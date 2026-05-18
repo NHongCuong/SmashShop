@@ -37,7 +37,7 @@ const OrderSuccess = () => {
                         timer: 2000,
                         showConfirmButton: false
                     });
-                    
+
                     // Clear query params to avoid showing Swal again on refresh
                     const newUrl = location.pathname + (effectiveOrderId ? `?orderId=${effectiveOrderId}` : '');
                     window.history.replaceState(null, '', newUrl);
@@ -152,7 +152,7 @@ const OrderSuccess = () => {
                 <div className="order-info-card">
                     <div className="order-info-header">
                         <div className="order-id-group">
-                            <strong>Đơn hàng: #{order.order_id || order._id.substring(0, 8).toUpperCase()}</strong>
+                            <strong>Đơn hàng: {order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</strong>
                         </div>
                         <div className="order-actions">
                             <button className="btn-manage" onClick={() => navigate('/user/orders')}>
@@ -209,10 +209,10 @@ const OrderSuccess = () => {
                         <li>
                             <span className="label">Trạng thái:</span>
                             <span className={`value status-${order.status?.toLowerCase()}`}>
-                                {order.status === 'Succeeded' ? 'Thành công' : 
-                                 order.status === 'Pending' ? 'Đang xử lý' : 
-                                 order.status === 'Cancelled' ? 'Đã hủy' : 
-                                 order.status === 'Processing' ? 'Đang xử lý' : order.status}
+                                {order.status === 'Succeeded' ? 'Thành công' :
+                                    order.status === 'Pending' ? 'Đang xử lý' :
+                                        order.status === 'Cancelled' ? 'Đã hủy' :
+                                            order.status === 'Processing' ? 'Đang xử lý' : order.status}
                             </span>
                         </li>
                         <li>

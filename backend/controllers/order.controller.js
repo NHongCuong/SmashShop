@@ -392,7 +392,7 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(403).json({ success: false, message: "Bạn không có quyền cập nhật đơn hàng này" });
         }
 
-        // Nếu chuyển sang Cancelled, hoàn lại tồn kho
+        // Nếu chuyển từ trạng thái khác sang Cancelled, hoàn lại tồn kho
         if (status === 'Cancelled' && order.status !== 'Cancelled') {
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(item.product._id, {
@@ -482,6 +482,26 @@ export const updateOrderStatus = async (req, res) => {
                 </div>
             `;
             sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - HcShop");
+        } 
+        // Nếu chuyển từ Cancelled sang trạng thái khác (Processing, Succeeded, Pending) -> Trừ kho trở lại
+        else if (status !== 'Cancelled' && order.status === 'Cancelled') {
+            // Kiểm tra xem có đủ hàng không trước khi chuyển trạng thái
+            for (const item of order.items) {
+                const product = await Product.findById(item.product._id);
+                if (!product || product.stock < item.quantity) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Sản phẩm ${product?.prod_name || 'không xác định'} không đủ tồn kho để khôi phục đơn hàng.` 
+                    });
+                }
+            }
+
+            // Trừ kho
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.product._id, {
+                    $inc: { stock: -item.quantity, quantity_sold: item.quantity }
+                });
+            }
         }
 
         order.status = status;
