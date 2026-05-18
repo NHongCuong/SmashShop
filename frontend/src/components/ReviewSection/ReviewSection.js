@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGetReviewsByProductQuery, useCreateReviewMutation, useDeleteReviewMutation } from '../../features/services/reviewApi';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../../app/store/authSlice';
+import Swal from 'sweetalert2';
 import './ReviewSection.css';
 
 const StarRating = ({ rating, onRate, interactive = false }) => {
@@ -43,7 +44,7 @@ const ReviewSection = ({ productId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (rating === 0) {
-      alert('Vui lòng chọn số sao đánh giá!');
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn số sao đánh giá!' });
       return;
     }
     try {
@@ -52,16 +53,28 @@ const ReviewSection = ({ productId }) => {
       setComment('');
     } catch (err) {
       const msg = err?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá';
-      alert(msg);
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: msg });
     }
   };
 
   const handleDelete = async (reviewId) => {
-    if (window.confirm('Bạn có chắc muốn xóa đánh giá này?')) {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: "Đánh giá này sẽ bị xóa vĩnh viễn!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa ngay',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
       try {
-        await deleteReview({ reviewId, productId }).unwrap();
+        await deleteReview(reviewId).unwrap();
+        Swal.fire({ icon: 'success', title: 'Đã xóa!', text: 'Đánh giá của bạn đã được gỡ bỏ.', timer: 1500, showConfirmButton: false });
       } catch (err) {
-        alert('Không thể xóa đánh giá');
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể xóa đánh giá.' });
       }
     }
   };

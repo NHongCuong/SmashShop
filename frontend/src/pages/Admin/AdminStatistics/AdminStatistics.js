@@ -1,10 +1,14 @@
-import { useRef, React } from 'react';
+import { React } from 'react';
 import {
   faDollarSign,
   faBoxOpen,
   faCalendarAlt,
   faWarehouse,
   faTriangleExclamation,
+  faUsers,
+  faPercentage,
+  faCreditCard,
+  faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -32,10 +36,10 @@ const AdminStatistics = () => {
   const { data, isLoading, isError } = useGetStatisticsQuery({ startDate, endDate });
   const { data: stockAlerts } = useGetLowStockAlertsQuery();
 
-  if (isLoading) return <p>Đang tải dữ liệu thống kê...</p>;
-  if (isError) return <p>Lỗi khi tải thống kê.</p>;
+  if (isLoading) return <p className="loading-stats">Đang tải dữ liệu thống kê...</p>;
+  if (isError || !data) return <p className="error-stats">Lỗi khi tải thống kê.</p>;
 
-  const { today, chartData, totalOverall } = data;
+  const { today, chartData, totalOverall, productPerformance, lowConversionProducts, conversionRate } = data;
 
   const StatCard = ({ title, value, change, icon, isDown = false, showChange = true }) => (
     <div className="stat-card">
@@ -72,18 +76,19 @@ const AdminStatistics = () => {
   return (
     <div className="dashboard-container">
       <h2>Thống kê tổng quan</h2>
-      <div className="stat-cards">
+      <div className="stat-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', display: 'grid' }}>
         <StatCard title="Tổng Doanh thu" value={totalOverall?.revenue || 0} icon={faDollarSign} showChange={false} />
         <StatCard title="Tổng Đơn hàng" value={totalOverall?.orders || 0} icon={faCalendarAlt} showChange={false} />
         <StatCard title="Tổng Sản phẩm đã bán" value={totalOverall?.sold || 0} icon={faBoxOpen} showChange={false} />
+        <StatCard title="Tổng Khách hàng" value={totalOverall?.customers || 0} icon={faUsers} showChange={false} />
+        <StatCard title="Gía trị đơn TB (AOV)" value={Math.round(totalOverall?.aov || 0)} icon={faCreditCard} showChange={false} />
+        <StatCard title="Tỷ lệ chuyển đổi" value={`${conversionRate || 0}%`} icon={faPercentage} showChange={false} />
+        
         <div className="stat-card alert-card" onClick={() => navigate('/admin/stock')} style={{ cursor: 'pointer', background: (stockAlerts?.count > 0 ? '#fff3e0' : '#e8f5e9') }}>
           <div className="stat-left">
             <div className="stat-title">Sắp hết hàng</div>
             <div className="stat-value" style={{ color: stockAlerts?.count > 0 ? '#e65100' : '#1b5e20' }}>
               {stockAlerts?.count || 0}
-            </div>
-            <div className="stat-change up" style={{ fontSize: '0.8rem' }}>
-              Click để kiểm tra kho
             </div>
           </div>
           <div className="stat-icon" style={{ color: stockAlerts?.count > 0 ? '#e65100' : '#1b5e20' }}>
@@ -125,7 +130,50 @@ const AdminStatistics = () => {
           <Bar dataKey="revenue" fill="#00C49F" />
         </BarChart>
       </ResponsiveContainer>
+
+      <div className="performance-sections" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
+        <div className="performance-card">
+          <h3>Top 10 Sản phẩm bán chạy (Doanh thu)</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={productPerformance} layout="vertical" margin={{ left: 50, right: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" hide />
+              <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(value) => value.toLocaleString() + ' ₫'} />
+              <Bar dataKey="revenue" fill="#4e73df" name="Doanh thu" radius={[0, 5, 5, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="performance-card">
+          <h3>Sản phẩm "Xem nhiều nhưng bán ít"</h3>
+          <div className="low-conversion-list" style={{ background: '#fff', padding: '15px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '2px solid #eee' }}>
+                  <th style={{ padding: '8px' }}>Tên sản phẩm</th>
+                  <th style={{ padding: '8px' }}>Lượt xem</th>
+                  <th style={{ padding: '8px' }}>Đã bán</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lowConversionProducts?.map((p, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                    <td style={{ padding: '8px' }}>{p.prod_name}</td>
+                    <td style={{ padding: '8px', color: '#e74c3c', fontWeight: 'bold' }}>
+                      <FontAwesomeIcon icon={faEye} style={{ marginRight: '5px' }} />
+                      {p.views || 0}
+                    </td>
+                    <td style={{ padding: '8px' }}>{p.quantity_sold}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
+
   );
 };
 

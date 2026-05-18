@@ -130,6 +130,33 @@ export const fetchProductById = async (req, res) => {
     }
 }
 
+// Tăng lượt xem sản phẩm
+export const incrementProductViews = async (req, res) => {
+    const param = req.params.id;
+    try {
+        let filter = {};
+        if (mongoose.Types.ObjectId.isValid(param)) {
+            filter = { _id: param };
+        } else {
+            filter = { product_url: param };
+        }
+
+        const product = await Product.findOneAndUpdate(
+            filter,
+            { $inc: { views: 1 } },
+            { new: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        return res.status(200).json({ success: true, views: product.views });
+    } catch (e) {
+        console.error("Error in incrementing views:", e.message);
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+}
+
 // Lấy thông tin tất cả sản phẩm
 export const fetchAllProducts = async (req, res) => {
     const minPrice = parseInt(req.query.minPrice) || 0;

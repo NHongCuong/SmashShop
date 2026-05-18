@@ -51,7 +51,7 @@ const io = new Server(httpServer, {
             "http://localhost:3000",
             "http://192.168.88.1:3000"
         ],
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PATCH"],
         credentials: true
     }
 });
@@ -90,7 +90,7 @@ app.use(cors({
         "http://localhost:3000",
         "http://192.168.88.1:3000"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }));

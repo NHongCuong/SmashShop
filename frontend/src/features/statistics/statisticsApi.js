@@ -25,13 +25,14 @@ export const statisticsApi = createApi({
         `dashboard?start_date=${startDate}&end_date=${endDate}`,
       providesTags: ['Statistics'],
       transformResponse: (res) => {
-        const chartData = res.data;
+        // Backend mới trả về chartData trực tiếp
+        const chartData = res.chartData || [];
        
         const todayData = chartData.find(item => item.date === todayStr) || { revenue: 0, orders: 0, sold: 0 };
         const yesterdayData = chartData.find(item => item.date === yesterdayStr) || { revenue: 0, orders: 0, sold: 0 };
 
         const calcChange = (todayVal, yesterdayVal) => {
-          if (yesterdayVal === 0) return 100;
+          if (yesterdayVal === 0) return todayVal > 0 ? 100 : 0;
           return Math.round(((todayVal - yesterdayVal) / yesterdayVal) * 100);
         };
 
@@ -40,16 +41,19 @@ export const statisticsApi = createApi({
           orders: todayData.orders || 0,
           sold: todayData.sold || 0,
           change: {
-            revenue: calcChange(todayData.revenue, yesterdayData.revenue),
-            orders: calcChange(todayData.orders, yesterdayData.orders),
-            sold: calcChange(todayData.sold, yesterdayData.sold),
+            revenue: calcChange(todayData.revenue || 0, yesterdayData.revenue || 0),
+            orders: calcChange(todayData.orders || 0, yesterdayData.orders || 0),
+            sold: calcChange(todayData.sold || 0, yesterdayData.sold || 0),
           },
         };
 
         return {
           today,
-          chartData,
-          totalOverall: res.totalOverall
+          chartData: chartData,
+          totalOverall: res.totalOverall || {},
+          productPerformance: res.productPerformance || [],
+          lowConversionProducts: res.lowConversionProducts || [],
+          conversionRate: res.conversionRate || 0
         };
       },
     }),

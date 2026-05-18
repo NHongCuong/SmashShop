@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer.js';
-import { useGetProductsQuery, useGetProductByIdQuery } from "../../features/product/productApi.js";
+import { useGetProductsQuery, useGetProductByIdQuery, useIncrementViewsMutation } from "../../features/product/productApi.js";
 import { apiAddItem } from '../../apis/cart.js';
 import Swal from 'sweetalert2';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,6 +30,19 @@ export default function ProductDetail() {
   const { id } = useParams();
   const { data: product, isLoading: isLoadingProduct } = useGetProductByIdQuery(id);
   const { data: allProducts = [] } = useGetProductsQuery();
+  const [incrementViews] = useIncrementViewsMutation();
+  const hasIncremented = useRef(false);
+
+  useEffect(() => {
+    if (id && !hasIncremented.current) {
+      incrementViews(id);
+      hasIncremented.current = true;
+    }
+    // Reset flag khi đổi sang sản phẩm khác hoàn toàn (khác id)
+    return () => {
+      hasIncremented.current = false;
+    };
+  }, [id, incrementViews]);
 
   // Lấy tất cả ảnh từ model mới
   const allImages = (product?.images || []).flatMap(img =>

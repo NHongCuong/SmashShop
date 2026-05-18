@@ -92,6 +92,13 @@ export const productApi = createApi({
             }),
             invalidatesTags: ['Product'],
         }),
+        incrementViews: builder.mutation({
+            query: (id) => ({
+                url: `products/views/${id}`,
+                method: 'PATCH',
+            }),
+            // Không cần invalidatesTags để tránh re-fetch liên tục khi chỉ tăng view
+        }),
     })
 })
 export const { 
@@ -103,5 +110,6 @@ export const {
     useGetAllBrandsQuery, 
     useGetAllTypesQuery, 
     useDeactiveProductMutation, 
-    useImportProductsMutation 
+    useImportProductsMutation,
+    useIncrementViewsMutation
 } = productApi;

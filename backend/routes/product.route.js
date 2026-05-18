@@ -1,10 +1,13 @@
 import express from "express";
-import { fetchAllProducts, fetchProductById, createProduct, updateProduct, deactiveProduct, importProducts } from "../controllers/product.controller.js";
+import { fetchAllProducts, fetchProductById, createProduct, updateProduct, deactiveProduct, importProducts, incrementProductViews } from "../controllers/product.controller.js";
 import multer from "multer";
 import parser from '../utils/multer.js'
 
 const productRouter = express.Router();
 const excelUpload = multer({ storage: multer.memoryStorage() });
+
+// Tăng lượt xem sản phẩm
+productRouter.patch("/views/:id", incrementProductViews);
 
 // Lấy thông tin 1 sản phẩm
 productRouter.get("/:id", fetchProductById);

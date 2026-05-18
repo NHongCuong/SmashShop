@@ -9,6 +9,7 @@ const ProductSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   stock: { type: Number, required: true },
   quantity_sold: { type: Number, required: true },
+  views: { type: Number },
   description: { type: String },
   warranty: { type: String },
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
