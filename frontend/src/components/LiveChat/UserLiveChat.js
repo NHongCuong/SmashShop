@@ -34,13 +34,24 @@ export default function UserLiveChat() {
 
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
-    const [messagesHidden, setMessagesHidden] = useState(() => {
-        return localStorage.getItem(`chat_hidden_user_${userId}`) === 'true';
+    const [clearTime, setClearTime] = useState(() => {
+        const saved = localStorage.getItem(`chat_clear_time_user_${userId}`);
+        return saved ? parseInt(saved, 10) : 0;
     });
+
+    const getMsgTime = (msg) => {
+        if (!msg.timestamp) return msg.id || 0;
+        return new Date(msg.timestamp).getTime() || msg.id || 0;
+    };
+
+    const visibleMessages = clearTime
+        ? messages.filter(msg => getMsgTime(msg) > clearTime)
+        : messages;
 
     useEffect(() => {
         if (userId) {
-            setMessagesHidden(localStorage.getItem(`chat_hidden_user_${userId}`) === 'true');
+            const saved = localStorage.getItem(`chat_clear_time_user_${userId}`);
+            setClearTime(saved ? parseInt(saved, 10) : 0);
         }
     }, [userId]);
 
@@ -59,16 +70,12 @@ export default function UserLiveChat() {
     }, [showMenu]);
 
     const handleHideMessages = () => {
-        setMessagesHidden(true);
-        localStorage.setItem(`chat_hidden_user_${userId}`, 'true');
+        const now = Date.now();
+        setClearTime(now);
+        localStorage.setItem(`chat_clear_time_user_${userId}`, now.toString());
         setShowMenu(false);
     };
 
-    const handleRestoreMessages = () => {
-        setMessagesHidden(false);
-        localStorage.setItem(`chat_hidden_user_${userId}`, 'false');
-        setShowMenu(false);
-    };
 
     // Đăng ký user với socket server
     useEffect(() => {
@@ -98,8 +105,6 @@ export default function UserLiveChat() {
             setMessages((prev) => [...prev, msg]);
             if (!open) setUnread((u) => u + 1);
             setIsOtherTyping(false); // Dừng typing khi nhận tin nhắn
-            setMessagesHidden(false);
-            localStorage.setItem(`chat_hidden_user_${userId}`, 'false');
         });
 
         socket.on('message:sent', ({ msg }) => {
@@ -147,14 +152,11 @@ export default function UserLiveChat() {
             setUnread(0);
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [open, messages]);
+    }, [open, visibleMessages]);
 
     const handleSend = useCallback(() => {
         if (!input.trim() || !socket || !userId) return;
         
-        setMessagesHidden(false);
-        localStorage.setItem(`chat_hidden_user_${userId}`, 'false');
-
         const msgId = Date.now();
         const msgObj = {
             id: msgId,
@@ -251,7 +253,6 @@ export default function UserLiveChat() {
                                 {showMenu && (
                                     <div className="chat-dropdown-menu">
                                         <button onClick={handleHideMessages}>Xóa tin nhắn</button>
-                                        <button onClick={handleRestoreMessages}>Lịch sử tin nhắn</button>
                                     </div>
                                 )}
                             </div>
@@ -260,81 +261,70 @@ export default function UserLiveChat() {
                     </div>
 
                     <div className="chat-messages">
-                        {messagesHidden ? (
-                            <div className="chat-hidden-placeholder">
-                                <div className="chat-hidden-bubble">
-                                    <span>Tin nhắn đã xóa</span>
-                                    <span className="chat-hidden-trash">🗑️</span>
-                                </div>
+                        {visibleMessages.length === 0 && (
+                            <div style={{ textAlign: 'center', color: '#bbb', marginTop: 40, fontSize: 14 }}>
+                                👋 Xin chào! Chúng tôi có thể giúp gì cho bạn?
                             </div>
-                        ) : (
-                            <>
-                                {messages.length === 0 && (
-                                    <div style={{ textAlign: 'center', color: '#bbb', marginTop: 40, fontSize: 14 }}>
-                                        👋 Xin chào! Chúng tôi có thể giúp gì cho bạn?
-                                    </div>
-                                )}
-                                {messages.map((msg, i) => {
-                                    const isMe = msg.fromId === userId;
-                                    return (
-                                        <div key={msg.id || i} className={`chat-msg-row ${isMe ? 'me' : 'other'}`}>
-                                            <img
-                                                src={msg.avatar || DEFAULT_AVATAR}
-                                                alt={msg.fromName}
-                                                className="chat-msg-avatar"
-                                                onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
-                                            />
-                                            <div className="chat-msg-content-wrapper">
-                                                {!isMe && <div className="chat-msg-name">{msg.fromName}</div>}
+                        )}
+                        {visibleMessages.map((msg, i) => {
+                            const isMe = msg.fromId === userId;
+                            return (
+                                <div key={msg.id || i} className={`chat-msg-row ${isMe ? 'me' : 'other'}`}>
+                                    <img
+                                        src={msg.avatar || DEFAULT_AVATAR}
+                                        alt={msg.fromName}
+                                        className="chat-msg-avatar"
+                                        onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+                                    />
+                                    <div className="chat-msg-content-wrapper">
+                                        {!isMe && <div className="chat-msg-name">{msg.fromName}</div>}
 
-                                                <div className={`chat-msg-bubble-container ${activeReactionMsgId === msg.id ? 'reaction-active' : ''}`}>
-                                                    <div className="chat-msg-actions">
-                                                        <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
-                                                        <button onClick={() => setActiveReactionMsgId(activeReactionMsgId === msg.id ? null : msg.id)} title="Thả cảm xúc">🙂</button>
-                                                        {isMe && !msg.isRecalled && (
-                                                            <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
-                                                        )}
+                                        <div className={`chat-msg-bubble-container ${activeReactionMsgId === msg.id ? 'reaction-active' : ''}`}>
+                                            <div className="chat-msg-actions">
+                                                <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
+                                                <button onClick={() => setActiveReactionMsgId(activeReactionMsgId === msg.id ? null : msg.id)} title="Thả cảm xúc">🙂</button>
+                                                {isMe && !msg.isRecalled && (
+                                                    <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
+                                                )}
+                                            </div>
+
+                                            <div className="chat-msg-bubble-wrapper">
+                                                {activeReactionMsgId === msg.id && (
+                                                    <div className="chat-reaction-picker">
+                                                        {REACTIONS.map(r => (
+                                                            <span key={r} onClick={() => handleReact(msg.id, r)}>{r}</span>
+                                                        ))}
                                                     </div>
-
-                                                    <div className="chat-msg-bubble-wrapper">
-                                                        {activeReactionMsgId === msg.id && (
-                                                            <div className="chat-reaction-picker">
-                                                                {REACTIONS.map(r => (
-                                                                    <span key={r} onClick={() => handleReact(msg.id, r)}>{r}</span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {msg.replyTo && (
-                                                            <div className="chat-msg-reply-quote">
-                                                                <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
-                                                            </div>
-                                                        )}
-                                                        {msg.isRecalled ? (
-                                                            <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
-                                                        ) : (
-                                                            <div className="chat-msg-bubble">{msg.message}</div>
-                                                        )}
-                                                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                                            <div className="chat-msg-reactions-display">
-                                                                {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
-                                                                    <span 
-                                                                        key={idx} 
-                                                                        onDoubleClick={() => { if (reactionUserId === userId) handleReact(msg.id, null); }}
-                                                                        title={reactionUserId === userId ? "Nhấp đúp để xóa" : ""}
-                                                                    >{r}</span>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                )}
+                                                {msg.replyTo && (
+                                                    <div className="chat-msg-reply-quote">
+                                                        <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
                                                     </div>
-                                                </div>
-
-                                                <div className="chat-msg-time">{formatTime(msg.timestamp)}</div>
+                                                )}
+                                                {msg.isRecalled ? (
+                                                    <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
+                                                ) : (
+                                                    <div className="chat-msg-bubble">{msg.message}</div>
+                                                )}
+                                                {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                                    <div className="chat-msg-reactions-display">
+                                                        {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
+                                                            <span 
+                                                                key={idx} 
+                                                                onDoubleClick={() => { if (reactionUserId === userId) handleReact(msg.id, null); }}
+                                                                title={reactionUserId === userId ? "Nhấp đúp để xóa" : ""}
+                                                            >{r}</span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </>
-                        )}
+
+                                        <div className="chat-msg-time">{formatTime(msg.timestamp)}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                         <div ref={messagesEndRef} />
                     </div>
 

@@ -38,15 +38,15 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
-    const [messagesHidden, setMessagesHidden] = useState(false);
+    const [clearTime, setClearTime] = useState(0);
 
-    // Sync hidden state when selectedUserId changes
+    // Sync clearTime state when selectedUserId changes
     useEffect(() => {
         if (selectedUserId) {
-            const isHidden = localStorage.getItem(`chat_hidden_admin_${selectedUserId}`) === 'true';
-            setMessagesHidden(isHidden);
+            const saved = localStorage.getItem(`chat_clear_time_admin_${selectedUserId}`);
+            setClearTime(saved ? parseInt(saved, 10) : 0);
         } else {
-            setMessagesHidden(false);
+            setClearTime(0);
         }
         setShowMenu(false);
     }, [selectedUserId]);
@@ -67,15 +67,16 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
 
     const handleHideMessages = () => {
         if (!selectedUserId) return;
-        setMessagesHidden(true);
-        localStorage.setItem(`chat_hidden_admin_${selectedUserId}`, 'true');
+        const now = Date.now();
+        setClearTime(now);
+        localStorage.setItem(`chat_clear_time_admin_${selectedUserId}`, now.toString());
         setShowMenu(false);
     };
 
     const handleRestoreMessages = () => {
         if (!selectedUserId) return;
-        setMessagesHidden(false);
-        localStorage.setItem(`chat_hidden_admin_${selectedUserId}`, 'false');
+        setClearTime(0);
+        localStorage.removeItem(`chat_clear_time_admin_${selectedUserId}`);
         setShowMenu(false);
     };
 
@@ -111,10 +112,6 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                 setUnread((u) => u + 1);
             }
             setTypingUsers((prev) => ({ ...prev, [uid]: false }));
-            if (selectedUserId === uid) {
-                setMessagesHidden(false);
-                localStorage.setItem(`chat_hidden_admin_${uid}`, 'false');
-            }
         });
 
         socket.on('message:sent', ({ msg }) => {
@@ -240,9 +237,6 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     const handleSend = useCallback(() => {
         if (!input.trim() || !socket || !selectedUserId) return;
         
-        setMessagesHidden(false);
-        localStorage.setItem(`chat_hidden_admin_${selectedUserId}`, 'false');
-
         const msgId = Date.now();
         const msgObj = {
             id: msgId,
@@ -339,6 +333,14 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
     if (!adminUser) return null;
 
     const messages = selectedUserId ? (conversations[selectedUserId] || []) : [];
+    const getMsgTime = (msg) => {
+        if (!msg.timestamp) return msg.id || 0;
+        return new Date(msg.timestamp).getTime() || msg.id || 0;
+    };
+    const visibleMessages = clearTime
+        ? messages.filter(msg => getMsgTime(msg) > clearTime)
+        : messages;
+
     const selectedUser = onlineUsers.find((u) => u.userId === selectedUserId);
     const isOtherTyping = selectedUserId ? typingUsers[selectedUserId] : false;
 
@@ -402,81 +404,70 @@ export default function AdminLiveChat({ openWithUserId, onNotifHandled }) {
                         </div>
                     ) : (
                         <div className="chat-messages">
-                            {messagesHidden ? (
-                                <div className="chat-hidden-placeholder">
-                                    <div className="chat-hidden-bubble">
-                                        <span>Tin nhắn đã xóa</span>
-                                        <span className="chat-hidden-trash">🗑️</span>
-                                    </div>
+                            {visibleMessages.length === 0 && (
+                                <div style={{ textAlign: 'center', color: '#bbb', marginTop: 40, fontSize: 14 }}>
+                                    Chưa có tin nhắn nào
                                 </div>
-                            ) : (
-                                <>
-                                    {messages.length === 0 && (
-                                        <div style={{ textAlign: 'center', color: '#bbb', marginTop: 40, fontSize: 14 }}>
-                                            Chưa có tin nhắn nào
-                                        </div>
-                                    )}
-                                    {messages.map((msg, i) => {
-                                        const isMe = msg.fromRole === 'admin';
-                                        return (
-                                            <div key={msg.id || i} className={`chat-msg-row ${isMe ? 'me' : 'other'}`}>
-                                                <img
-                                                    src={msg.avatar || DEFAULT_AVATAR}
-                                                    alt={msg.fromName}
-                                                    className="chat-msg-avatar"
-                                                    onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
-                                                />
-                                                <div className="chat-msg-content-wrapper">
-                                                    {!isMe && <div className="chat-msg-name">{msg.fromName}</div>}
+                            )}
+                            {visibleMessages.map((msg, i) => {
+                                const isMe = msg.fromRole === 'admin';
+                                return (
+                                    <div key={msg.id || i} className={`chat-msg-row ${isMe ? 'me' : 'other'}`}>
+                                        <img
+                                            src={msg.avatar || DEFAULT_AVATAR}
+                                            alt={msg.fromName}
+                                            className="chat-msg-avatar"
+                                            onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+                                        />
+                                        <div className="chat-msg-content-wrapper">
+                                            {!isMe && <div className="chat-msg-name">{msg.fromName}</div>}
 
-                                                    <div className={`chat-msg-bubble-container ${activeReactionMsgId === msg.id ? 'reaction-active' : ''}`}>
-                                                        <div className="chat-msg-actions">
-                                                            <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
-                                                            <button onClick={() => toggleReactionPicker(msg.id)} title="Thả cảm xúc">🙂</button>
-                                                            {isMe && !msg.isRecalled && (
-                                                                <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
-                                                            )}
+                                            <div className={`chat-msg-bubble-container ${activeReactionMsgId === msg.id ? 'reaction-active' : ''}`}>
+                                                <div className="chat-msg-actions">
+                                                    <button onClick={() => setReplyingTo(msg)} title="Trả lời">↩</button>
+                                                    <button onClick={() => toggleReactionPicker(msg.id)} title="Thả cảm xúc">🙂</button>
+                                                    {isMe && !msg.isRecalled && (
+                                                        <button onClick={() => handleRecall(msg.id)} title="Thu hồi tin nhắn">🗑️</button>
+                                                    )}
+                                                </div>
+
+                                                <div className="chat-msg-bubble-wrapper">
+                                                    {activeReactionMsgId === msg.id && (
+                                                        <div className="chat-reaction-picker">
+                                                            {REACTIONS.map(r => (
+                                                                <span key={r} onClick={() => handleReact(msg.id, r)}>{r}</span>
+                                                            ))}
                                                         </div>
-
-                                                        <div className="chat-msg-bubble-wrapper">
-                                                            {activeReactionMsgId === msg.id && (
-                                                                <div className="chat-reaction-picker">
-                                                                    {REACTIONS.map(r => (
-                                                                        <span key={r} onClick={() => handleReact(msg.id, r)}>{r}</span>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                            {msg.replyTo && (
-                                                                <div className="chat-msg-reply-quote">
-                                                                    <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
-                                                                </div>
-                                                            )}
-                                                            {msg.isRecalled ? (
-                                                                <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
-                                                            ) : (
-                                                                <div className="chat-msg-bubble">{msg.message}</div>
-                                                            )}
-                                                            {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                                                                <div className="chat-msg-reactions-display">
-                                                                    {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
-                                                                        <span 
-                                                                            key={idx} 
-                                                                            onDoubleClick={() => { if (reactionUserId === ADMIN_ID) handleReact(msg.id, null); }}
-                                                                            title={reactionUserId === ADMIN_ID ? "Nhấp đúp để xóa" : ""}
-                                                                        >{r}</span>
-                                                                    ))}
-                                                                </div>
-                                                            )}
+                                                    )}
+                                                    {msg.replyTo && (
+                                                        <div className="chat-msg-reply-quote">
+                                                            <strong>{msg.replyTo.name}</strong>: {msg.replyTo.message}
                                                         </div>
-                                                    </div>
-
-                                                    <div className="chat-msg-time">{formatTime(msg.timestamp)}</div>
+                                                    )}
+                                                    {msg.isRecalled ? (
+                                                        <div className="chat-msg-bubble recalled-msg"><i>Tin nhắn đã thu hồi</i></div>
+                                                    ) : (
+                                                        <div className="chat-msg-bubble">{msg.message}</div>
+                                                    )}
+                                                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                                        <div className="chat-msg-reactions-display">
+                                                            {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
+                                                                <span 
+                                                                    key={idx} 
+                                                                    onDoubleClick={() => { if (reactionUserId === ADMIN_ID) handleReact(msg.id, null); }}
+                                                                    title={reactionUserId === ADMIN_ID ? "Nhấp đúp để xóa" : ""}
+                                                                >{r}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </>
-                            )}
+
+                                            <div className="chat-msg-time">{formatTime(msg.timestamp)}</div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                             <div ref={messagesEndRef} />
                         </div>
                     )}
