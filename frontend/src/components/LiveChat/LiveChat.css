@@ -774,3 +774,112 @@
         transform: scale(1.15);
     }
 }
+
+/* ====================== WELCOME BUBBLE ====================== */
+.chat-welcome-bubble {
+    position: absolute;
+    bottom: 20px;
+    right: 75px;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    padding: 16px;
+    z-index: 10000;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    animation: welcomeSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.chat-welcome-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 20px;
+    right: -8px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #ffffff;
+}
+
+.chat-welcome-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+.chat-welcome-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+    transition: color 0.2s;
+}
+
+.chat-welcome-close:hover {
+    color: #333;
+}
+
+.chat-welcome-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.chat-welcome-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f0f2f5;
+    border: 1px solid #e0e0e0;
+}
+
+.chat-welcome-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a1a;
+}
+
+.chat-welcome-body {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #4a4a4a;
+    padding-right: 10px;
+    text-align: left;
+}
+
+@keyframes welcomeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-welcome-bubble {
+        width: 260px;
+        right: 65px;
+        bottom: 15px;
+        padding: 12px;
+    }
+    .chat-welcome-bubble::after {
+        bottom: 16px;
+    }
+    .chat-welcome-body {
+        font-size: 12.5px;
+    }
+}

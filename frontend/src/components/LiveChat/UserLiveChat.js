@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useSocket } from '../../context/SocketContext';
 import './LiveChat.css';
+import shopLogo from '../../assets/logohcshop.png';
 
 const DEFAULT_AVATAR = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg';
 const ADMIN_ID = 'ADMIN_SUPPORT';
@@ -34,6 +35,7 @@ export default function UserLiveChat() {
 
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
+    const [showWelcomeBubble, setShowWelcomeBubble] = useState(false);
     const [clearTime, setClearTime] = useState(() => {
         const saved = localStorage.getItem(`chat_clear_time_user_${userId}`);
         return saved ? parseInt(saved, 10) : 0;
@@ -74,6 +76,30 @@ export default function UserLiveChat() {
         setClearTime(now);
         localStorage.setItem(`chat_clear_time_user_${userId}`, now.toString());
         setShowMenu(false);
+    };
+
+    useEffect(() => {
+        const welcomeClosed = sessionStorage.getItem('chat_welcome_closed') === 'true';
+        if (!open && !welcomeClosed) {
+            const timer = setTimeout(() => {
+                setShowWelcomeBubble(true);
+            }, 2000);
+            return () => clearTimeout(timer);
+        } else {
+            setShowWelcomeBubble(false);
+        }
+    }, [open]);
+
+    const handleCloseWelcome = (e) => {
+        e.stopPropagation();
+        setShowWelcomeBubble(false);
+        sessionStorage.setItem('chat_welcome_closed', 'true');
+    };
+
+    const handleOpenChatFromWelcome = () => {
+        setOpen(true);
+        setShowWelcomeBubble(false);
+        sessionStorage.setItem('chat_welcome_closed', 'true');
     };
 
 
@@ -156,7 +182,7 @@ export default function UserLiveChat() {
 
     const handleSend = useCallback(() => {
         if (!input.trim() || !socket || !userId) return;
-        
+
         const msgId = Date.now();
         const msgObj = {
             id: msgId,
@@ -309,8 +335,8 @@ export default function UserLiveChat() {
                                                 {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                                                     <div className="chat-msg-reactions-display">
                                                         {Object.entries(msg.reactions).map(([reactionUserId, r], idx) => (
-                                                            <span 
-                                                                key={idx} 
+                                                            <span
+                                                                key={idx}
                                                                 onDoubleClick={() => { if (reactionUserId === userId) handleReact(msg.id, null); }}
                                                                 title={reactionUserId === userId ? "Nhấp đúp để xóa" : ""}
                                                             >{r}</span>
@@ -367,6 +393,24 @@ export default function UserLiveChat() {
                         <button className="chat-send-btn" onClick={handleSend}>
                             <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" /></svg>
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {showWelcomeBubble && !open && (
+                <div className="chat-welcome-bubble" onClick={handleOpenChatFromWelcome}>
+                    <button className="chat-welcome-close" onClick={handleCloseWelcome} title="Đóng">×</button>
+                    <div className="chat-welcome-header">
+                        <img
+                            src={shopLogo || DEFAULT_AVATAR}
+                            alt="Shop Logo"
+                            className="chat-welcome-avatar"
+                            onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+                        />
+                        <span className="chat-welcome-name">HC Shop</span>
+                    </div>
+                    <div className="chat-welcome-body">
+                        HC shop hân hạnh phục vụ! Anh/chị có cần tư vấn sản phẩm hay hỗ trợ gì không ạ?
                     </div>
                 </div>
             )}
