@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminOrders.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGetOrdersQuery, useGetAllOrdersQuery, useDeleteOrderMutation } from '../../../features/order/orderApi';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -14,12 +14,16 @@ dayjs.extend(utc);
 
 const AdminOrders = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+  const initialSearch = searchParams.get('search') || "";
+
   const [page, setPage] = useState(1);
   const [printOrder, setPrintOrder] = useState(null);
   const [limit, setLimit] = useState(10);
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
 
   const { data = {}, isLoading } = useGetOrdersQuery({ page, limit, sortBy: sortField, sortOrder, search: searchTerm });
   const { orders = [], totalPages = 1 } = data;
@@ -222,7 +226,11 @@ const AdminOrders = () => {
               <tr><td colSpan={9}>Đang tải...</td></tr>
             ) : (
               orders.map((order, idx) => (
-                <tr key={order._id} onClick={() => navigate(`/admin/orders/${order._id}`)}>
+                <tr 
+                  key={order._id} 
+                  onClick={() => navigate(`/admin/orders/${order._id}`)}
+                  className={highlightId === (order.order_id || order._id) ? 'highlight-row' : ''}
+                >
                   <td>{(page - 1) * limit + idx + 1}</td>
                   <td>{order.order_id}</td>
                   <td>{typeof (order.total_price ?? order.total) === 'number'

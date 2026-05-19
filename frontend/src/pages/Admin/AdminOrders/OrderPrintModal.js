@@ -529,7 +529,7 @@ const OrderPrintModal = ({ order, onClose }) => {
             {/* Footer */}
             <div className="invoice-footer">
               <p className="thank-you">CẢM ƠN QUÝ KHÁCH ĐÃ MUA SẮM TẠI HCSHOP!</p>
-              <p className="footer-tagline">Hẹn gặp lại quý khách lần sau.</p>
+              <p className="footer-tagline">Hẹn gặp lại quý khách lần mua sắm tiếp theo.</p>
             </div>
 
           </div>

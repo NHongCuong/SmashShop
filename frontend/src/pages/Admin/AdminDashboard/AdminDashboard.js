@@ -45,10 +45,20 @@ import { generalImageApi } from '../../../features/services/generalImageApi.js';
 import { stockApi } from '../../../features/services/stockApi.js';
 
 const NOTIF_STORAGE_KEY = 'admin_chat_notifications';
+const ORDER_NOTIF_STORAGE_KEY = 'admin_order_notifications';
 
 function loadNotificationsFromStorage() {
   try {
     const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadOrderNotificationsFromStorage() {
+  try {
+    const raw = localStorage.getItem(ORDER_NOTIF_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -61,6 +71,12 @@ function saveNotificationsToStorage(notifs) {
   } catch { }
 }
 
+function saveOrderNotificationsToStorage(notifs) {
+  try {
+    localStorage.setItem(ORDER_NOTIF_STORAGE_KEY, JSON.stringify(notifs.slice(0, 20)));
+  } catch { }
+}
+
 export default function AdminDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -70,7 +86,9 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Khởi tạo từ localStorage để giữ thông báo sau khi refresh
   const [notifications, setNotifications] = useState(loadNotificationsFromStorage);
+  const [orderNotifications, setOrderNotifications] = useState(loadOrderNotificationsFromStorage);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+  const [showOrderDropdown, setShowOrderDropdown] = useState(false);
   const [chatOpenUserId, setChatOpenUserId] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -154,6 +172,56 @@ export default function AdminDashboard() {
     });
   };
 
+  // Lắng nghe thông báo đơn hàng mới
+  useEffect(() => {
+    if (!socket || !adminUser) return;
+
+    const orderHandler = (data) => {
+      setOrderNotifications((prev) => {
+        // Lọc bỏ đơn hàng cũ trùng ID để thay thế bằng thông báo trạng thái mới nhất
+        const filtered = prev.filter((n) => n.orderId !== data.orderId);
+        const updated = [
+          { ...data, read: false, time: new Date().toISOString() },
+          ...filtered,
+        ].slice(0, 20);
+        
+        saveOrderNotificationsToStorage(updated);
+        return updated;
+      });
+    };
+
+    socket.on('admin:newOrder', orderHandler);
+    return () => {
+      socket.off('admin:newOrder', orderHandler);
+    };
+  }, [socket, adminUser]);
+
+  // Click vào thông báo đơn hàng
+  const handleOrderNotifClick = (notif, index) => {
+    setShowOrderDropdown(false);
+    setOrderNotifications((prev) => {
+      const updated = prev.map((n, i) => i === index ? { ...n, read: true } : n);
+      saveOrderNotificationsToStorage(updated);
+      return updated;
+    });
+    // Thêm highlight=ORDER_ID để AdminOrders.js nhận diện và tô màu
+    navigate(`/admin/orders?search=${notif.orderId}&highlight=${notif.orderId}`);
+  };
+
+  const handleClearOrders = () => {
+    setOrderNotifications([]);
+    localStorage.removeItem(ORDER_NOTIF_STORAGE_KEY);
+  };
+
+  const handleDismissOrderNotif = (e, index) => {
+    e.stopPropagation();
+    setOrderNotifications((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      saveOrderNotificationsToStorage(updated);
+      return updated;
+    });
+  };
+
   const handleChatOpened = useCallback(() => {
     setChatOpenUserId(null);
   }, []);
@@ -164,6 +232,7 @@ export default function AdminDashboard() {
 
   // Số thông báo chưa đọc
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadOrderCount = orderNotifications.filter((n) => !n.read).length;
 
   return (
     <div className="ad-container">
@@ -174,10 +243,62 @@ export default function AdminDashboard() {
         ADMIN DASHBOARD
         {/* Notification Bell */}
         <div className="ad-header-actions">
+          {/* Order Notification Icon */}
           <div className="ad-notif-wrapper">
             <button
               className="ad-notif-btn"
-              onClick={() => setShowNotifDropdown((v) => !v)}
+              onClick={() => {
+                setShowOrderDropdown((v) => !v);
+                setShowNotifDropdown(false);
+              }}
+              title="Thông báo đơn hàng"
+            >
+               🛍️
+              {unreadOrderCount > 0 && (
+                <span className="ad-notif-badge">{unreadOrderCount > 9 ? '9+' : unreadOrderCount}</span>
+              )}
+            </button>
+            {showOrderDropdown && (
+              <div className="ad-notif-dropdown order-notif">
+                <div className="ad-notif-header">
+                  <span>Đơn hàng mới ({orderNotifications.length})</span>
+                  {orderNotifications.length > 0 && (
+                    <button className="ad-notif-clear" onClick={handleClearOrders}>Xóa tất cả</button>
+                  )}
+                </div>
+                {orderNotifications.length === 0 ? (
+                  <div className="ad-notif-empty">Không có đơn hàng mới</div>
+                ) : (
+                  orderNotifications.map((n, i) => (
+                    <div
+                      key={i}
+                      className={`ad-notif-item ${n.read ? 'read' : 'unread'} ${n.status === 'Cancelled' ? 'is-cancelled' : ''}`}
+                      onClick={() => handleOrderNotifClick(n, i)}
+                    >
+                      <div className={`ad-notif-icon-box ${n.status === 'Cancelled' ? 'bg-red' : ''}`}>
+                        {n.status === 'Cancelled' ? '❌' : '📦'}
+                      </div>
+                      <div className="ad-notif-content">
+                        <div className="ad-notif-name">
+                          {n.status === 'Cancelled' ? 'Đơn hàng bị hủy' : 'Đơn hàng mới'}
+                        </div>
+                        <div className="ad-notif-msg">ID: {n.orderId}</div>
+                      </div>
+                      <button className="ad-notif-dismiss" onClick={(e) => handleDismissOrderNotif(e, i)}>×</button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="ad-notif-wrapper">
+            <button
+              className="ad-notif-btn"
+              onClick={() => {
+                setShowNotifDropdown((v) => !v);
+                setShowOrderDropdown(false);
+              }}
               title="Thông báo tin nhắn"
             >
               📩
@@ -236,7 +357,7 @@ export default function AdminDashboard() {
 
       <div className="ad-body">
         <aside className={`ad-sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <h2 className="ad-logo">Smash shop</h2>
+          <h2 className="ad-logo">HC SHOP</h2>
           <nav className="ad-nav" onClick={closeSidebar}>
             <NavLink to="/admin" end className={({ isActive }) => isActive ? 'ad-nav-item active' : 'ad-nav-item'}>
               <FontAwesomeIcon icon={faGauge} /> Tổng quan

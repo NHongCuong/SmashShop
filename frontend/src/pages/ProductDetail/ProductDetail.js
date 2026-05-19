@@ -167,8 +167,13 @@ export default function ProductDetail() {
       }
     });
   };
+
+  const handleOpenQuickContact = () => {
+    window.dispatchEvent(new CustomEvent('quick-contact:open'));
+  };
+
   if (isLoadingProduct) {
-    return <><Header /><div className="container" style={{padding: '100px 0', textAlign: 'center'}}>Đang tải sản phẩm...</div><Footer /></>;
+    return <><Header /><div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>Đang tải sản phẩm...</div><Footer /></>;
   }
   if (!product) {
     return <><Header /><div className="container">Không tìm thấy sản phẩm.</div><Footer /></>;
@@ -373,6 +378,20 @@ export default function ProductDetail() {
                 Mua ngay
               </button>
 
+              {product.stock <= 0 && (
+                <button
+                  className="contact-out-of-stock-btn"
+                  onClick={handleOpenQuickContact}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f0fdf4';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                  }}
+                >
+                  Liên hệ
+                </button>
+              )}
             </div>
             <p>Số lượng trong kho: {product.stock}</p>
             <p>Thương hiệu: {product.brand_id.brand_name || ''}</p>

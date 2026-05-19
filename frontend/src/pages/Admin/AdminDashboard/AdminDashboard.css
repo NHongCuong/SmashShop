@@ -7,7 +7,7 @@
 }
 
 .ad-header {
-  background-color: #ffffff;
+  background-color: #a3d2f7;
   padding: 10px 60px;
   text-align: center;
   font-size: 24px;
@@ -211,6 +211,32 @@
   background: #fee;
 }
 
+.ad-notif-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff8e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 2px solid #ffca28;
+}
+
+.ad-notif-icon-box.bg-red {
+  background: #fff5f5;
+  border-color: #feb2b2;
+}
+
+.ad-notif-item.is-cancelled {
+  border-left: 3px solid #f56565;
+}
+
+.ad-notif-dropdown.order-notif {
+  right: -50px; /* Dịch chuyển để không bị che khuất */
+}
+
 .ad-menu-btn {
   position: absolute;
   left: 15px;
@@ -295,7 +321,7 @@
 }
 
 .ad-nav-item.active {
-  background-color: #EAC427;
+  background-color: #00FF00;
   color: white;
   border-radius: 20px;
 }
@@ -320,7 +346,7 @@
     left: 0;
     width: 220px;
     height: calc(100vh - 60px);
-    background-color: #fff;
+    background-color: #f9f9f9;
     z-index: 1001;
     transform: translateX(-100%);
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);

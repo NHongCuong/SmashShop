@@ -7,8 +7,16 @@ import sendmail from "../utils/sendmail.js";
 const onlineUsers = new Map();
 // Map lưu conversation: roomId -> [messages]
 const conversations = new Map();
+let ioInstance = null;
+
+export const notifyAdminsOrder = (notif) => {
+    if (ioInstance) {
+        ioInstance.emit('admin:newOrder', notif);
+    }
+};
 
 export default function initChatSocket(io) {
+    ioInstance = io;
     // Socket.io authentication middleware — verify JWT token khi connect
     io.use((socket, next) => {
         const token = socket.handshake.auth?.token;

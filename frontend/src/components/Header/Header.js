@@ -130,7 +130,7 @@ export default function Header() {
             <div className="search-bar">
               <input
                 type="text"
-                placeholder="Tìm kiếm thương hiệu, sản phẩm, bài viết..."
+                placeholder="Tìm kiếm thương hiệu, sản phẩm..."
                 className="search-bar-input"
                 value={searchTerm}
                 onChange={handleInputChange}

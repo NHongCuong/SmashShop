@@ -33,7 +33,7 @@ const OrderSuccess = () => {
                     Swal.fire({
                         icon: 'success',
                         title: "Đơn hàng của bạn đã được đặt thành công.",
-                        text: 'Cảm ơn bạn đã mua sắm tại SmashShop!',
+                        text: 'Cảm ơn bạn đã mua sắm tại HcShop!',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -146,7 +146,7 @@ const OrderSuccess = () => {
                     <h1>Đã Đặt Hàng Thành Công!</h1>
                 </div>
                 <p className="thank-you-msg">
-                    Cảm ơn bạn, <strong>{order.shipping.name}</strong>, đã cho SmashShop cơ hội phục vụ bạn.
+                    Cảm ơn bạn, <strong>{order.shipping.name}</strong>, đã cho HcShop cơ hội phục vụ bạn.
                 </p>
 
                 <div className="order-info-card">

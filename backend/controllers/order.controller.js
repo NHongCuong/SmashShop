@@ -9,6 +9,8 @@ import { getVietnamTime } from '../utils/dayjs.js';
 import { v4 as uuidv4 } from 'uuid';
 import sendmail from '../utils/sendmail.js';
 
+import { notifyAdminsOrder } from '../socket/chatSocket.js';
+
 
 export const fetchOrderHistory = async (req, res) => {
     const { _id, role } = req.user;
@@ -218,6 +220,12 @@ export const createOrder = async (req, res) => {
         // Chỉ gửi ngay cho COD. Với VNPAY sẽ gửi sau khi verify callback thành công.
         if (paymentMethod !== 'vnpay') {
             sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+            // Gửi thông báo socket tới Admin
+            notifyAdminsOrder({
+                orderId: order.order_id || order._id,
+                message: `Có đơn hàng mới: ${order.order_id || order._id}`,
+                time: new Date()
+            });
         }
 
         return res.status(201).json({ success: true, _id: order._id, order: populatedOrder, orderDetail: orderDetailData });
@@ -507,6 +515,15 @@ export const updateOrderStatus = async (req, res) => {
         order.status = status;
         order.updatedAt = getVietnamTime();
         await order.save();
+
+        // Gửi thông báo socket tới Admin về việc cập nhật trạng thái (đặc biệt là Hủy đơn)
+        notifyAdminsOrder({
+            orderId: order.order_id || order._id,
+            status: status,
+            type: status === 'Cancelled' ? 'cancelled' : 'status_update',
+            message: status === 'Cancelled' ? `Đơn hàng đã bị hủy: ${order.order_id || order._id}` : `Đơn hàng ${order.order_id || order._id} chuyển sang ${status}`,
+            time: new Date()
+        });
 
         res.status(200).json({ success: true, data: order });
     } catch (e) {

@@ -119,9 +119,13 @@ export const dashboardStatistics = async (req, res) => {
         ]);
 
         // 3.1 Thống kê doanh thu tất cả sản phẩm theo các mốc (Today, This Month, 365 Days)
-        const todayStart = dayjs().startOf('day').toDate();
-        const monthStart = dayjs().startOf('month').toDate();
-        const yearStart = dayjs().subtract(365, 'day').toDate();
+        // Tính toán các mốc thời gian chuẩn Việt Nam (khớp với cách lưu createdAt đã offset +7)
+        // Cách lưu hiện tại: createdAt = UTC + 7h
+        const nowVN = dayjs().utc().add(7, 'hour');
+        const todayStart = nowVN.startOf('day').toDate();
+        const monthStart = nowVN.startOf('month').toDate();
+        const yearStart = nowVN.startOf('year').subtract(1, 'year').toDate(); // Hoặc tùy chọn mốc 365 ngày
+        const year365Start = nowVN.subtract(365, 'day').toDate();
 
         const allProductsRevenue = await Product.aggregate([
             { $match: { is_active: true } },
@@ -133,7 +137,7 @@ export const dashboardStatistics = async (req, res) => {
                         $expr: { 
                             $and: [
                                 { $eq: ["$status", "Succeeded"] },
-                                { $gte: ["$createdAt", yearStart] }
+                                { $gte: ["$createdAt", year365Start] }
                             ]
                         }
                     }},

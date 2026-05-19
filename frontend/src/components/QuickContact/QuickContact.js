@@ -8,6 +8,13 @@ export default function QuickContact() {
     setIsOpen(prev => !prev);
   };
 
+  // Thêm bộ lắng nghe sự kiện để có thể mở QuickContact từ ProductDetail hoặc bất cứ đâu
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('quick-contact:open', handleOpen);
+    return () => window.removeEventListener('quick-contact:open', handleOpen);
+  }, []);
+
   // Add/remove class to body to dynamically shift the BackToTop button up when open
   useEffect(() => {
     if (isOpen) {
