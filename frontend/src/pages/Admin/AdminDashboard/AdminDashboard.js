@@ -269,24 +269,26 @@ export default function AdminDashboard() {
                 {orderNotifications.length === 0 ? (
                   <div className="ad-notif-empty">Không có đơn hàng mới</div>
                 ) : (
-                  orderNotifications.map((n, i) => (
-                    <div
-                      key={i}
-                      className={`ad-notif-item ${n.read ? 'read' : 'unread'} ${n.status === 'Cancelled' ? 'is-cancelled' : ''}`}
-                      onClick={() => handleOrderNotifClick(n, i)}
-                    >
-                      <div className={`ad-notif-icon-box ${n.status === 'Cancelled' ? 'bg-red' : ''}`}>
-                        {n.status === 'Cancelled' ? '❌' : '📦'}
-                      </div>
-                      <div className="ad-notif-content">
-                        <div className="ad-notif-name">
-                          {n.status === 'Cancelled' ? 'Đơn hàng bị hủy' : 'Đơn hàng mới'}
+                  <div className="ad-notif-list">
+                    {orderNotifications.map((n, i) => (
+                      <div
+                        key={i}
+                        className={`ad-notif-item ${n.read ? 'read' : 'unread'} ${n.status === 'Cancelled' ? 'is-cancelled' : ''}`}
+                        onClick={() => handleOrderNotifClick(n, i)}
+                      >
+                        <div className={`ad-notif-icon-box ${n.status === 'Cancelled' ? 'bg-red' : ''}`}>
+                          {n.status === 'Cancelled' ? '❌' : '📦'}
                         </div>
-                        <div className="ad-notif-msg">ID: {n.orderId}</div>
+                        <div className="ad-notif-content">
+                          <div className="ad-notif-name">
+                            {n.status === 'Cancelled' ? 'Đơn hàng bị hủy' : 'Đơn hàng mới'}
+                          </div>
+                          <div className="ad-notif-msg">ID: {n.orderId}</div>
+                        </div>
+                        <button className="ad-notif-dismiss" onClick={(e) => handleDismissOrderNotif(e, i)}>×</button>
                       </div>
-                      <button className="ad-notif-dismiss" onClick={(e) => handleDismissOrderNotif(e, i)}>×</button>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -322,32 +324,34 @@ export default function AdminDashboard() {
                 {notifications.length === 0 ? (
                   <div className="ad-notif-empty">Không có thông báo mới</div>
                 ) : (
-                  notifications.map((n, i) => (
-                    <div
-                      key={i}
-                      className={`ad-notif-item ${n.read ? 'read' : 'unread'}`}
-                      onClick={() => handleNotifClick(n, i)}
-                    >
-                      <img
-                        src={n.avatar || 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg'}
-                        alt={n.fromName}
-                        className="ad-notif-avatar"
-                        onError={(e) => { e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg'; }}
-                      />
-                      <div className="ad-notif-content">
-                        <div className="ad-notif-name">{n.fromName}</div>
-                        <div className="ad-notif-msg">{n.message}</div>
-                        {n.read && <div className="ad-notif-read-tag">✓ Đã đọc</div>}
-                      </div>
-                      <button
-                        className="ad-notif-dismiss"
-                        onClick={(e) => handleDismissNotif(e, i)}
-                        title="Xóa thông báo này"
+                  <div className="ad-notif-list">
+                    {notifications.map((n, i) => (
+                      <div
+                        key={i}
+                        className={`ad-notif-item ${n.read ? 'read' : 'unread'}`}
+                        onClick={() => handleNotifClick(n, i)}
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))
+                        <img
+                          src={n.avatar || 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg'}
+                          alt={n.fromName}
+                          className="ad-notif-avatar"
+                          onError={(e) => { e.target.src = 'https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg'; }}
+                        />
+                        <div className="ad-notif-content">
+                          <div className="ad-notif-name">{n.fromName}</div>
+                          <div className="ad-notif-msg">{n.message}</div>
+                          {n.read && <div className="ad-notif-read-tag">✓ Đã đọc</div>}
+                        </div>
+                        <button
+                          className="ad-notif-dismiss"
+                          onClick={(e) => handleDismissNotif(e, i)}
+                          title="Xóa thông báo này"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}

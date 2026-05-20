@@ -146,6 +146,26 @@
   border: 2px solid #EAC427;
 }
 
+.ad-notif-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar cho thông báo */
+.ad-notif-list::-webkit-scrollbar {
+  width: 6px;
+}
+.ad-notif-list::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+.ad-notif-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+.ad-notif-list::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
 .ad-notif-content {
   flex: 1;
   min-width: 0;
