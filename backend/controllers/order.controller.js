@@ -337,7 +337,7 @@ export const sendAdminOrderNotificationEmail = async (order, shipping, total) =>
     try {
         // Lấy tất cả admin từ database
         const admins = await User.find({ role: 'admin' }, 'email');
-        
+
         if (!admins || admins.length === 0) {
             // Fallback gửi về email hệ thống nếu không tìm thấy admin nào trong DB
             const fallbackEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
@@ -388,7 +388,7 @@ const sendSingleAdminEmail = async (email, order, shipping, total) => {
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                     <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Chi tiết đơn hàng</h3>
-                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id || order._id}</p>
+                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</p>
                     <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'HH:mm:ss DD/MM/YYYY')}</p>
                     <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
                 </div>
