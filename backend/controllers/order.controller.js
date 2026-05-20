@@ -428,10 +428,112 @@ const sendSingleAdminEmail = async (email, order, shipping, total) => {
                     </a>
                 </div>
                 
-                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Hệ thống thông báo tự động SmashShop.</p>
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Hệ thống thông báo tự động HcShop.</p>
             </div>
         `;
-        await sendmail(email, emailContent, "Thông báo đơn hàng mới - SmashShop");
+        await sendmail(email, emailContent, "Thông báo đơn hàng mới - HcShop");
+    } catch (err) {
+        logger.error(`Failed to send email to admin ${email}: ${err.message}`);
+    }
+};
+
+// Hàm gửi mail thông báo cho Admin khi khách hàng hủy đơn hàng
+export const sendAdminOrderCancellationEmail = async (order, shipping, total) => {
+    try {
+        const admins = await User.find({ role: 'admin' }, 'email');
+
+        if (!admins || admins.length === 0) {
+            const fallbackEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
+            if (fallbackEmail) {
+                await sendSingleAdminCancellationEmail(fallbackEmail, order, shipping, total);
+            }
+            return;
+        }
+
+        const sendPromises = admins.map(admin => {
+            if (admin.email) {
+                return sendSingleAdminCancellationEmail(admin.email, order, shipping, total);
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(sendPromises);
+    } catch (error) {
+        logger.error("Error sending admin cancellation notification emails: " + error.message);
+    }
+};
+
+// Hàm phụ gửi email thông báo hủy đơn cho Admin cụ thể
+const sendSingleAdminCancellationEmail = async (email, order, shipping, total) => {
+    try {
+        const itemsHtml = order.items.map(item => {
+            const variantsHtml = item.selected_variants
+                ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>`
+                : '';
+            return `
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">${item.product?.prod_name || 'Sản phẩm'}</div>
+                        ${variantsHtml}
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString()}₫</td>
+                </tr>
+            `;
+        }).join('');
+
+        const emailContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #dc3545; text-align: center;">Thông Báo Khách Hàng Hủy Đơn Hàng</h2>
+                <p>Chào Admin,</p>
+                <p>Đơn hàng <b>${order.order_id?.substring(0, 8).toUpperCase() || order._id?.substring(0, 8).toUpperCase()}</b> đã bị khách hàng <b>${shipping.name}</b> hủy bỏ trên hệ thống.</p>
+                
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Chi tiết đơn hàng</h3>
+                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</p>
+                    <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'HH:mm:ss DD/MM/YYYY')}</p>
+                    <p style="margin: 5px 0;"><b>Trạng thái hiện tại:</b> <span style="color: #dc3545; font-weight: bold;">Cancelled (Đã hủy)</span></p>
+                    <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
+                </div>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin khách hàng</h3>
+                    <p style="margin: 5px 0;"><b>Họ tên:</b> ${shipping.name}</p>
+                    <p style="margin: 5px 0;"><b>Số điện thoại:</b> ${shipping.phone}</p>
+                    <p style="margin: 5px 0;"><b>Email:</b> ${shipping.email}</p>
+                    <p style="margin: 5px 0;"><b>Địa chỉ:</b> ${shipping.address}</p>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Sản phẩm</th>
+                            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">SL</th>
+                            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; color: #dc3545; font-size: 18px;">${total.toLocaleString()}₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin-order-detail/${order._id}" 
+                       style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;">
+                        Xem Chi Tiết Tại Dashboard
+                    </a>
+                </div>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Hệ thống thông báo tự động HcShop.</p>
+            </div>
+        `;
+        await sendmail(email, emailContent, "Thông báo hủy đơn hàng - HcShop");
     } catch (err) {
         logger.error(`Failed to send email to admin ${email}: ${err.message}`);
     }
@@ -605,6 +707,11 @@ export const updateOrderStatus = async (req, res) => {
                 </div>
             `;
             sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - HcShop");
+
+            // Gửi email thông báo cho tất cả Admin nếu người hủy là khách hàng
+            if (userRole !== 'admin') {
+                sendAdminOrderCancellationEmail(order, order.shipping, order.total);
+            }
         }
         // Nếu chuyển từ Cancelled sang trạng thái khác (Processing, Succeeded, Pending) -> Trừ kho trở lại
         else if (status !== 'Cancelled' && order.status === 'Cancelled') {
