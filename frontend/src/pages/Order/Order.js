@@ -1,6 +1,6 @@
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-
+import dotenv from "dotenv";
 import { useState, useMemo, useEffect } from "react";
 import "./Order.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,8 @@ import Swal from "sweetalert2";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+
+dotenv.config();
 
 const EMPTY_CART = [];
 
@@ -340,7 +342,7 @@ export default function Order() {
         const orderResult = await dispatch(createOrderThunk(orderData)).unwrap();
         const createdOrderId = orderResult._id;
 
-        const res = await fetch("http://localhost:5001/api/v1/vnpay/create_payment", {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5001"}/api/v1/vnpay/create_payment`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -220,13 +220,15 @@ export const createOrder = async (req, res) => {
         // Chỉ gửi ngay cho COD. Với VNPAY sẽ gửi sau khi verify callback thành công.
         if (paymentMethod !== 'vnpay') {
             sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
-            // Gửi thông báo socket tới Admin
-            notifyAdminsOrder({
-                orderId: order.order_id || order._id,
-                message: `Có đơn hàng mới: ${order.order_id || order._id}`,
-                time: new Date()
-            });
         }
+
+        // Luôn gửi thông báo socket tới Admin khi có đơn hàng mới (kể cả Pending của VNPAY)
+        notifyAdminsOrder({
+            orderId: order.order_id || order._id,
+            message: `Có đơn hàng mới: ${order.order_id || order._id}`,
+            status: order.status,
+            time: new Date()
+        });
 
         return res.status(201).json({ success: true, _id: order._id, order: populatedOrder, orderDetail: orderDetailData });
     } catch (err) {

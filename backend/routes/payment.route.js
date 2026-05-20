@@ -6,6 +6,7 @@ import { createPaymentUrl } from '../controllers/payment.controller.js';
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
 import { sendOrderConfirmationEmail } from '../controllers/order.controller.js';
+import { notifyAdminsOrder } from '../socket/chatSocket.js';
 
 const paymentRoutes = express.Router();
 
@@ -44,6 +45,14 @@ paymentRoutes.get('/vnpay_return', async (req, res) => {
                const order = await Order.findByIdAndUpdate(orderId, { status: "Succeeded" }, { new: true }).populate('items.product');
                if (order) {
                   sendOrderConfirmationEmail(order, order.shipping, order.total);
+                  // Gửi thông báo cho Admin khi thanh toán thành công
+                  notifyAdminsOrder({
+                     orderId: order.order_id || order._id,
+                     status: "Succeeded",
+                     type: 'status_update',
+                     message: `Đơn hàng thanh toán thành công: ${order.order_id || order._id}`,
+                     time: new Date()
+                  });
                }
             }
          } catch (err) {
@@ -67,6 +76,14 @@ paymentRoutes.get('/vnpay_return', async (req, res) => {
                   // Đánh dấu đơn hàng là Cancelled
                   order.status = 'Cancelled';
                   await order.save();
+                  // Gửi thông báo cho Admin khi thanh toán thất bại/hủy
+                  notifyAdminsOrder({
+                     orderId: order.order_id || order._id,
+                     status: "Cancelled",
+                     type: 'cancelled',
+                     message: `Đơn hàng VNPAY bị hủy: ${order.order_id || order._id}`,
+                     time: new Date()
+                  });
                }
             }
          } catch (err) {
