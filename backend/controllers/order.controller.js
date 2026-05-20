@@ -4,8 +4,9 @@ import OrderHistory from '../models/orderhistory.model.js';
 import OrderDetail from '../models/order_detail.js';
 import Product from '../models/product.model.js';
 import ProductImage from "../models/productImage.model.js";
+import User from '../models/user.model.js';
 import logger from "../utils/logger.js";
-import { getVietnamTime } from '../utils/dayjs.js';
+import { getVietnamTime, formatVietnamTime } from '../utils/dayjs.js';
 import { v4 as uuidv4 } from 'uuid';
 import sendmail from '../utils/sendmail.js';
 
@@ -219,7 +220,14 @@ export const createOrder = async (req, res) => {
         // Gửi email xác nhận (không await để không block response)
         // Chỉ gửi ngay cho COD. Với VNPAY sẽ gửi sau khi verify callback thành công.
         if (paymentMethod !== 'vnpay') {
-            sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+            // sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+            sendAdminOrderNotificationEmail(populatedOrder, req.body.shipping, finalTotal);
+            // Gửi thông báo socket tới Admin
+            notifyAdminsOrder({
+                orderId: order.order_id || order._id,
+                message: `Có đơn hàng mới: ${order.order_id || order._id}`,
+                time: new Date()
+            });
         }
 
         // Luôn gửi thông báo socket tới Admin khi có đơn hàng mới (kể cả Pending của VNPAY)
@@ -265,7 +273,7 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
                 <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                     <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
                     <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id?.substring(0, 8).toUpperCase() || order._id?.substring(0, 8).toUpperCase()}</p>
-                    <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                    <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'DD/MM/YYYY')}</p>
                     <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
                     <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
                     <p style="margin: 5px 0;"><b>Dịch vụ vận chuyển:</b> Standard Delivery</p>
@@ -321,6 +329,111 @@ export const sendOrderConfirmationEmail = async (order, shipping, total) => {
         await sendmail(shipping.email, emailContent, "Xác nhận đơn hàng HcShop");
     } catch (error) {
         logger.error("Error sending confirmation email: " + error.message);
+    }
+};
+
+// Hàm gửi mail thông báo cho Admin khi có đơn hàng mới
+export const sendAdminOrderNotificationEmail = async (order, shipping, total) => {
+    try {
+        // Lấy tất cả admin từ database
+        const admins = await User.find({ role: 'admin' }, 'email');
+        
+        if (!admins || admins.length === 0) {
+            // Fallback gửi về email hệ thống nếu không tìm thấy admin nào trong DB
+            const fallbackEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
+            if (fallbackEmail) {
+                await sendSingleAdminEmail(fallbackEmail, order, shipping, total);
+            }
+            return;
+        }
+
+        // Gửi email cho từng admin
+        const sendPromises = admins.map(admin => {
+            if (admin.email) {
+                return sendSingleAdminEmail(admin.email, order, shipping, total);
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(sendPromises);
+    } catch (error) {
+        logger.error("Error sending admin notification emails: " + error.message);
+    }
+};
+
+// Hàm phụ để gửi email cho một địa chỉ cụ thể (Admin)
+const sendSingleAdminEmail = async (email, order, shipping, total) => {
+    try {
+        const itemsHtml = order.items.map(item => {
+            const variantsHtml = item.selected_variants
+                ? `<div style="font-size: 12px; color: #666;">${Object.entries(item.selected_variants).map(([k, v]) => `${k}: ${v}`).join(', ')}</div>`
+                : '';
+            return `
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">${item.product?.prod_name || 'Sản phẩm'}</div>
+                        ${variantsHtml}
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.price.toLocaleString()}₫</td>
+                </tr>
+            `;
+        }).join('');
+
+        const emailContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #1976d2; text-align: center;">Thông Báo Đơn Hàng Mới</h2>
+                <p>Chào Admin,</p>
+                <p>Hệ thống vừa ghi nhận một đơn hàng mới từ khách hàng <b>${shipping.name}</b>.</p>
+                
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Chi tiết đơn hàng</h3>
+                    <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id || order._id}</p>
+                    <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'HH:mm:ss DD/MM/YYYY')}</p>
+                    <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
+                </div>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin khách hàng</h3>
+                    <p style="margin: 5px 0;"><b>Họ tên:</b> ${shipping.name}</p>
+                    <p style="margin: 5px 0;"><b>Số điện thoại:</b> ${shipping.phone}</p>
+                    <p style="margin: 5px 0;"><b>Email:</b> ${shipping.email}</p>
+                    <p style="margin: 5px 0;"><b>Địa chỉ:</b> ${shipping.address}</p>
+                    <p style="margin: 5px 0;"><b>Ghi chú:</b> ${shipping.note || 'Không có'}</p>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Sản phẩm</th>
+                            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">SL</th>
+                            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tổng cộng:</td>
+                            <td style="padding: 10px; text-align: right; font-weight: bold; color: #d32f2f; font-size: 18px;">${total.toLocaleString()}₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin-order-detail/${order._id}" 
+                       style="background-color: #1976d2; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;">
+                        Xem Chi Tiết Tại Dashboard
+                    </a>
+                </div>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Hệ thống thông báo tự động SmashShop.</p>
+            </div>
+        `;
+        await sendmail(email, emailContent, "Thông báo đơn hàng mới - SmashShop");
+    } catch (err) {
+        logger.error(`Failed to send email to admin ${email}: ${err.message}`);
     }
 };
 
@@ -436,7 +549,7 @@ export const updateOrderStatus = async (req, res) => {
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                         <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
                         <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> #${order.order_id || order._id}</p>
-                        <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                        <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'DD/MM/YYYY')}</p>
                         <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
                         <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
                         <p style="margin: 5px 0;"><b>Dịch vụ vận chuyển:</b> Standard Delivery</p>
@@ -492,16 +605,16 @@ export const updateOrderStatus = async (req, res) => {
                 </div>
             `;
             sendmail(order.shipping.email, emailContent, "Thông báo hủy đơn hàng - HcShop");
-        } 
+        }
         // Nếu chuyển từ Cancelled sang trạng thái khác (Processing, Succeeded, Pending) -> Trừ kho trở lại
         else if (status !== 'Cancelled' && order.status === 'Cancelled') {
             // Kiểm tra xem có đủ hàng không trước khi chuyển trạng thái
             for (const item of order.items) {
                 const product = await Product.findById(item.product._id);
                 if (!product || product.stock < item.quantity) {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: `Sản phẩm ${product?.prod_name || 'không xác định'} không đủ tồn kho để khôi phục đơn hàng.` 
+                    return res.status(400).json({
+                        success: false,
+                        message: `Sản phẩm ${product?.prod_name || 'không xác định'} không đủ tồn kho để khôi phục đơn hàng.`
                     });
                 }
             }

@@ -5,8 +5,10 @@ import crypto from 'crypto';
 import { createPaymentUrl } from '../controllers/payment.controller.js';
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
-import { sendOrderConfirmationEmail } from '../controllers/order.controller.js';
+// import { sendOrderConfirmationEmail } from '../controllers/order.controller.js';
 import { notifyAdminsOrder } from '../socket/chatSocket.js';
+import { sendOrderConfirmationEmail, sendAdminOrderNotificationEmail } from '../controllers/order.controller.js';
+
 
 const paymentRoutes = express.Router();
 
@@ -53,6 +55,8 @@ paymentRoutes.get('/vnpay_return', async (req, res) => {
                      message: `Đơn hàng thanh toán thành công: ${order.order_id || order._id}`,
                      time: new Date()
                   });
+                  sendAdminOrderNotificationEmail(order, order.shipping, order.total);
+
                }
             }
          } catch (err) {

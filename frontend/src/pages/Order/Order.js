@@ -1,6 +1,5 @@
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import dotenv from "dotenv";
 import { useState, useMemo, useEffect } from "react";
 import "./Order.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,8 +9,6 @@ import Swal from "sweetalert2";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-
-dotenv.config();
 
 const EMPTY_CART = [];
 
