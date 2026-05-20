@@ -220,7 +220,7 @@ export const createOrder = async (req, res) => {
         // Gửi email xác nhận (không await để không block response)
         // Chỉ gửi ngay cho COD. Với VNPAY sẽ gửi sau khi verify callback thành công.
         if (paymentMethod !== 'vnpay') {
-            // sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
+            sendOrderConfirmationEmail(populatedOrder, req.body.shipping, finalTotal);
             sendAdminOrderNotificationEmail(populatedOrder, req.body.shipping, finalTotal);
             // Gửi thông báo socket tới Admin
             notifyAdminsOrder({
