@@ -646,11 +646,11 @@ export const updateOrderStatus = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                     <h2 style="color: #dc3545; text-align: center;">Thông Báo Hủy Đơn Hàng</h2>
                     <p>Chào <b>${order.shipping.name}</b>,</p>
-                    <p>Đơn hàng <b>#${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</b> của bạn đã được hủy thành công trên hệ thống <b>HcShop</b>.</p>
+                    <p>Đơn hàng <b>${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</b> của bạn đã được hủy thành công trên hệ thống <b>HcShop</b>.</p>
                     
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                         <h3 style="margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Thông tin đơn hàng</h3>
-                        <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> #${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</p>
+                        <p style="margin: 5px 0;"><b>Mã đơn hàng:</b> ${order.order_id.substring(0, 8).toUpperCase() || order._id.substring(0, 8).toUpperCase()}</p>
                         <p style="margin: 5px 0;"><b>Ngày đặt:</b> ${formatVietnamTime(order.createdAt, 'DD/MM/YYYY')}</p>
                         <p style="margin: 5px 0;"><b>Phương thức thanh toán:</b> ${order.paymentmethod === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua VNPAY'}</p>
                         <p style="margin: 5px 0;"><b>Phương thức giao nhận:</b> ${order.shipping.shipmethod || 'Giao hàng tận nơi'}</p>
