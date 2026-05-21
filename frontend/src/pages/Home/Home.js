@@ -62,15 +62,34 @@ function Home({ isAuthenticated, setIsAuthenticated }) {
             ? products
             : products.filter((p) => p.category_id?.category_name === selectedCategory);
 
-    // Filter new products (created within the last 3 days)
-    const newProducts = products.filter(p => {
-        if (!p.create_at) return false;
-        const createAt = new Date(p.create_at);
-        const today = new Date();
-        const diffTime = Math.abs(today - createAt);
-        const diffDays = diffTime / (1000 * 60 * 60 * 24);
-        return diffDays <= 3;
-    }).sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+    // Lọc sản phẩm mới theo logic: 
+    // 1. Lấy danh sách tất cả các ngày (date) duy nhất có trong dữ liệu sản phẩm, sắp xếp giảm dần.
+    // 2. Lấy 5 mốc ngày đầu tiên.
+    // 3. Hiển thị tất cả sản phẩm thuộc về 5 mốc ngày này.
+    const getNewProducts = () => {
+        if (!products || products.length === 0) return [];
+
+        // Lấy danh sách các ngày YYYY-MM-DD duy nhất
+        const uniqueDates = Array.from(new Set(
+            products
+                .filter(p => p.create_at)
+                .map(p => new Date(p.create_at).toISOString().split('T')[0])
+        )).sort((a, b) => new Date(b) - new Date(a));
+
+        // Lấy 5 mốc ngày gần nhất
+        const top5Dates = uniqueDates.slice(0, 5);
+
+        // Lọc sản phẩm thuộc 5 mốc ngày này
+        return products
+            .filter(p => {
+                if (!p.create_at) return false;
+                const pDate = new Date(p.create_at).toISOString().split('T')[0];
+                return top5Dates.includes(pDate);
+            })
+            .sort((a, b) => new Date(b.create_at) - new Date(a.create_at));
+    };
+
+    const newProducts = getNewProducts();
 
     // Group products by category for sliders
     const productsByCategory = dbCategories.map(cat => ({
