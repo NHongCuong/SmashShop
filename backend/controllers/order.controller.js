@@ -415,7 +415,17 @@ const sendSingleAdminEmail = async (email, order, shipping, total) => {
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tổng cộng:</td>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tạm tính:</td>
+                            <td style="padding: 10px; text-align: right;">${(order.total + (order.discount_amount || 0)).toLocaleString()}₫</td>
+                        </tr>
+                        ${order.discount_amount > 0 ? `
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Giảm giá:</td>
+                            <td style="padding: 10px; text-align: right; color: #d32f2f;">-${order.discount_amount.toLocaleString()}₫</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px;">Tổng cộng:</td>
                             <td style="padding: 10px; text-align: right; font-weight: bold; color: #d32f2f; font-size: 18px;">${total.toLocaleString()}₫</td>
                         </tr>
                     </tfoot>
@@ -517,7 +527,17 @@ const sendSingleAdminCancellationEmail = async (email, order, shipping, total) =
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tổng tiền:</td>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Tạm tính:</td>
+                            <td style="padding: 10px; text-align: right;">${(order.total + (order.discount_amount || 0)).toLocaleString()}₫</td>
+                        </tr>
+                        ${order.discount_amount > 0 ? `
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Giảm giá:</td>
+                            <td style="padding: 10px; text-align: right; color: #dc3545;">-${order.discount_amount.toLocaleString()}₫</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px;">Tổng tiền:</td>
                             <td style="padding: 10px; text-align: right; font-weight: bold; color: #dc3545; font-size: 18px;">${total.toLocaleString()}₫</td>
                         </tr>
                     </tfoot>
