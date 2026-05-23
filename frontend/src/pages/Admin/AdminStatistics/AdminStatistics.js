@@ -1,4 +1,4 @@
-import { React } from 'react';
+import { React, useState } from 'react';
 import {
   faDollarSign,
   faBoxOpen,
@@ -24,7 +24,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./AdminStatistics.css";
-import { useGetStatisticsQuery } from '../../../features/statistics/statisticsApi';
+import { useGetStatisticsQuery, useSendReportMutation, useGetReportStatusQuery, useToggleReportCronMutation } from '../../../features/statistics/statisticsApi';
 import { useGetLowStockAlertsQuery } from '../../../features/services/stockApi';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -36,6 +36,38 @@ const AdminStatistics = () => {
 
   const { data, isLoading, isError } = useGetStatisticsQuery({ startDate, endDate });
   const { data: stockAlerts } = useGetLowStockAlertsQuery();
+
+  // Report hooks
+  const [sendReport, { isLoading: isSending }] = useSendReportMutation();
+  const { data: reportStatusData } = useGetReportStatusQuery();
+  const [toggleReportCron] = useToggleReportCronMutation();
+
+  const [reportMsg, setReportMsg] = useState('');
+  const [reportMsgType, setReportMsgType] = useState(''); // 'success' or 'error'
+
+  const reportStatus = reportStatusData?.status;
+
+  const handleSendReport = async () => {
+    setReportMsg('');
+    try {
+      const res = await sendReport().unwrap();
+      setReportMsg(res.message || 'Đã gửi báo cáo thành công!');
+      setReportMsgType('success');
+    } catch (err) {
+      setReportMsg(err?.data?.message || 'Lỗi khi gửi báo cáo.');
+      setReportMsgType('error');
+    }
+    setTimeout(() => setReportMsg(''), 6000);
+  };
+
+  const handleToggleCron = async () => {
+    const newActive = !reportStatus?.isActive;
+    try {
+      await toggleReportCron(newActive).unwrap();
+    } catch (err) {
+      console.error('Toggle error:', err);
+    }
+  };
 
   if (isLoading) return <p className="loading-stats">Đang tải dữ liệu thống kê...</p>;
   if (isError || !data) return <p className="error-stats">Lỗi khi tải thống kê.</p>;
@@ -91,6 +123,91 @@ const AdminStatistics = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Email Report Section */}
+      <div className="report-section">
+        <div className="report-header">
+          <div className="report-header-left">
+            <span className="report-icon">📧</span>
+            <div>
+              <h3 className="report-title">Báo cáo Dashboard qua Email</h3>
+              <p className="report-desc">Tự động gửi báo cáo tổng quan mỗi ngày lúc 11:30 AM</p>
+            </div>
+          </div>
+          <div className="report-header-right">
+            <label className="report-toggle-switch" title={reportStatus?.isActive ? 'Tắt cron job' : 'Bật cron job'}>
+              <input 
+                type="checkbox" 
+                checked={reportStatus?.isActive || false}
+                onChange={handleToggleCron}
+              />
+              <span className="report-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div className="report-body">
+          <div className="report-info-grid">
+            <div className="report-info-item">
+              <span className="report-info-label">Trạng thái</span>
+              <span className={`report-info-value report-status-badge ${reportStatus?.isActive ? 'active' : 'inactive'}`}>
+                {reportStatus?.isActive ? '🟢 Đang hoạt động' : '🔴 Đã tắt'}
+              </span>
+            </div>
+            <div className="report-info-item">
+              <span className="report-info-label">Lịch gửi</span>
+              <span className="report-info-value">
+                ⏰ {reportStatus?.nextRun || 'Mỗi ngày lúc 11:30 AM (GMT+7)'}
+              </span>
+            </div>
+            <div className="report-info-item">
+              <span className="report-info-label">Lần gửi cuối</span>
+              <span className="report-info-value">
+                📅 {reportStatus?.lastRun ? dayjs(reportStatus.lastRun).format('DD/MM/YYYY HH:mm:ss') : 'Chưa gửi lần nào'}
+              </span>
+            </div>
+            <div className="report-info-item">
+              <span className="report-info-label">Kết quả</span>
+              <span className="report-info-value">
+                {reportStatus?.lastResult || 'N/A'}
+              </span>
+            </div>
+          </div>
+
+          {reportStatus?.recipientEmails?.length > 0 && (
+            <div className="report-recipients">
+              <span className="report-info-label">Người nhận:</span>
+              <div className="report-email-tags">
+                {reportStatus.recipientEmails.map((email, i) => (
+                  <span key={i} className="report-email-tag">📩 {email}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="report-actions">
+            <button 
+              className="report-send-btn"
+              onClick={handleSendReport}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <>
+                  <span className="report-spinner"></span> Đang gửi...
+                </>
+              ) : (
+                <>📤 Gửi báo cáo ngay</>
+              )}
+            </button>
+          </div>
+
+          {reportMsg && (
+            <div className={`report-msg ${reportMsgType}`}>
+              {reportMsgType === 'success' ? '✅' : '❌'} {reportMsg}
+            </div>
+          )}
+        </div>
+      </div>
+
       <h2>Thống kê tổng quan</h2>
       <div className="stat-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', display: 'grid' }}>
         <StatCard title="Tổng Doanh thu" value={totalOverall?.revenue || 0} icon={faDollarSign} showChange={false} />

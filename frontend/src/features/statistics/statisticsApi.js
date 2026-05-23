@@ -18,7 +18,7 @@ export const statisticsApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Statistics'],
+  tagTypes: ['Statistics', 'ReportStatus'],
   endpoints: (builder) => ({
     getStatistics: builder.query({
       query: ({ startDate, endDate }) =>
@@ -63,7 +63,34 @@ export const statisticsApi = createApi({
         method: 'POST'
       })
     }),
+    // Report endpoints
+    sendReport: builder.mutation({
+      query: () => ({
+        url: 'dashboard/report/send',
+        method: 'POST'
+      }),
+      invalidatesTags: ['ReportStatus']
+    }),
+    getReportStatus: builder.query({
+      query: () => 'dashboard/report/status',
+      providesTags: ['ReportStatus']
+    }),
+    toggleReportCron: builder.mutation({
+      query: (active) => ({
+        url: 'dashboard/report/toggle',
+        method: 'POST',
+        body: { active }
+      }),
+      invalidatesTags: ['ReportStatus']
+    }),
   }),
 });
 
-export const { useGetStatisticsQuery, useTrackVisitMutation } = statisticsApi;
+export const {
+  useGetStatisticsQuery,
+  useTrackVisitMutation,
+  useSendReportMutation,
+  useGetReportStatusQuery,
+  useToggleReportCronMutation
+} = statisticsApi;
+

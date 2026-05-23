@@ -3,6 +3,11 @@ import User from '../models/user.model.js';
 import Product from '../models/product.model.js';
 import Traffic from '../models/traffic.model.js';
 import dayjs from 'dayjs';
+import {
+    sendDashboardReport,
+    getCronJobStatus,
+    toggleCronJob
+} from '../utils/cronReportJob.js';
 
 export const trackVisit = async (req, res) => {
     try {
@@ -201,5 +206,46 @@ export const dashboardStatistics = async (req, res) => {
     } catch (error) {
         console.error("Error in dashboardStatistics:", error.message);
         res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+// Gửi báo cáo ngay lập tức (manual trigger)
+export const sendReportNow = async (req, res) => {
+    try {
+        await sendDashboardReport();
+        const status = getCronJobStatus();
+        res.status(200).json({
+            success: true,
+            message: 'Đã gửi báo cáo dashboard qua email thành công!',
+            status
+        });
+    } catch (error) {
+        console.error("Error sending report:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Lấy trạng thái cron job
+export const getReportStatus = async (req, res) => {
+    try {
+        const status = getCronJobStatus();
+        res.status(200).json({ success: true, status });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Bật/tắt cron job
+export const toggleReportCron = async (req, res) => {
+    try {
+        const { active } = req.body;
+        const status = toggleCronJob(active);
+        res.status(200).json({
+            success: true,
+            message: active ? 'Đã bật cron job báo cáo' : 'Đã tắt cron job báo cáo',
+            status
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

@@ -27,6 +27,7 @@ import contactRoutes from "./routes/contact.route.js";
 import postRoutes from "./routes/post.route.js";
 import generalImageRoutes from "./routes/generalImage.route.js";
 import stockRoutes from "./routes/stock.route.js";
+import { initDashboardReportCron } from "./utils/cronReportJob.js";
 
 
 dotenv.config();
@@ -122,6 +123,9 @@ app.use('*', (req, res) => {
 });
 
 import logger from "./utils/logger.js";
+
+// Khởi tạo cron job gửi báo cáo dashboard mỗi ngày lúc 11:30 AM
+initDashboardReportCron();
 
 // Dùng httpServer thay cho app.listen để Socket.io hoạt động
 httpServer.listen(PORT, () => logger.info(`Server started at http://192.168.88.133:${PORT}`));

@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const sendmail = async (email, html, subject) => {
+const sendmail = async (email, html, subject, attachments = []) => {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -19,6 +19,7 @@ const sendmail = async (email, html, subject) => {
             to: email,
             subject: subject || "Notification from HcShop",
             html: html,
+            attachments: attachments
         });
 
         console.log("Message sent: %s", info.messageId);
