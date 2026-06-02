@@ -64,7 +64,7 @@ const AdminOrders = () => {
     const dataToExport = allOrders.map((order, index) => ({
       "STT": index + 1,
       "ID đơn hàng": order.order_id,
-      "Giá trị đơn": order.total_price ?? order.total,
+      "Giá trị đơn": Number(order.total_price ?? order.total).toLocaleString('en-US'),
       // "Khách hàng": order.user_id?.name || "Không rõ",
       "Khách hàng": order.shipping?.name || "Không rõ",
       "Email": order.shipping?.email || "",
@@ -78,7 +78,7 @@ const AdminOrders = () => {
     const totalValue = allOrders.reduce((sum, order) => sum + (order.total_price ?? order.total ?? 0), 0);
     dataToExport.push({
       "STT": "Tổng cộng",
-      "Giá trị đơn": totalValue
+      "Giá trị đơn": totalValue.toLocaleString('en-US')
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -108,7 +108,7 @@ const AdminOrders = () => {
           "Ảnh": item.product?.images?.[0]?.image?.[0] || "",
           "Tên sản phẩm": item.product?.prod_name || "",
           "Thương hiệu": item.product?.brand_id?.brand_name || "",
-          "Giảm giá": order.discount_amount || 0,
+          "Giảm giá": order.discount_amount.toLocaleString('en-US') || 0,
           "Màu sắc": item.selected_variants?.['Màu sắc'] || "",
           "Kích cỡ": item.selected_variants?.['Kích cỡ'] || "",
           "Mã voucher": order.voucher_id?.voucher_name || "",
@@ -118,14 +118,14 @@ const AdminOrders = () => {
           "Người nhận khác (Danh xưng)": order.shipping?.otherReceiver?.title || "",
           "Người nhận khác (Tên)": order.shipping?.otherReceiver?.name || "",
           "Người nhận khác (SĐT)": order.shipping?.otherReceiver?.phone || "",
-          "Đơn giá": item.price,
-          "Số lượng": item.quantity,
-          "Tạm tính": item.price * item.quantity,
+          "Đơn giá": item.price.toLocaleString('en-US'),
+          "Số lượng": Number(item.quantity).toLocaleString('en-US'),
+          "Tạm tính": Number(item.price * item.quantity).toLocaleString('en-US'),
           "Phí vận chuyển": 0,
           "Trạng thái đơn hàng": order.status,
           "Ngày đặt hàng": order.createdAt ? dayjs(order.createdAt).utc().format('DD/MM/YYYY HH:mm:ss') : "",
           "Ngày sửa": order.updatedAt ? dayjs(order.updatedAt).utc().format('DD/MM/YYYY HH:mm:ss') : "---",
-          "Tổng cộng": order.total,
+          "Tổng cộng": order.total.toLocaleString('en-US'),
         });
       });
     });
@@ -140,7 +140,7 @@ const AdminOrders = () => {
     // I will add a final row with the true total revenue calculated once per order.
     dataToExport.push({
       "STT": "Tổng doanh thu",
-      "Tổng cộng": totalRevenue
+      "Tổng cộng": totalRevenue.toLocaleString('en-US')
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -226,8 +226,8 @@ const AdminOrders = () => {
               <tr><td colSpan={9}>Đang tải...</td></tr>
             ) : (
               orders.map((order, idx) => (
-                <tr 
-                  key={order._id} 
+                <tr
+                  key={order._id}
                   onClick={() => navigate(`/admin/orders/${order._id}`)}
                   className={highlightId === (order.order_id || order._id) ? 'highlight-row' : ''}
                 >

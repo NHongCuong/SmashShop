@@ -130,13 +130,13 @@ const AdminStatistics = () => {
             <span className="report-icon">📧</span>
             <div>
               <h3 className="report-title">Báo cáo Dashboard qua Email</h3>
-              <p className="report-desc">Tự động gửi báo cáo tổng quan mỗi ngày lúc 11:30 AM</p>
+              <p className="report-desc">Tự động gửi báo cáo tổng quan mỗi ngày lúc 19:30 PM</p>
             </div>
           </div>
           <div className="report-header-right">
             <label className="report-toggle-switch" title={reportStatus?.isActive ? 'Tắt cron job' : 'Bật cron job'}>
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={reportStatus?.isActive || false}
                 onChange={handleToggleCron}
               />
@@ -185,7 +185,7 @@ const AdminStatistics = () => {
           )}
 
           <div className="report-actions">
-            <button 
+            <button
               className="report-send-btn"
               onClick={handleSendReport}
               disabled={isSending}
@@ -217,7 +217,7 @@ const AdminStatistics = () => {
         <StatCard title="Gía trị đơn TB (AOV)" value={Math.round(totalOverall?.aov || 0)} icon={faCreditCard} showChange={false} />
         <StatCard title="Tỷ lệ chuyển đổi" value={`${conversionRate || 0}%`} icon={faPercentage} showChange={false} />
         <StatCard title="Tổng lượt truy cập" value={totalOverall?.visits || 0} icon={faGlobe} showChange={false} />
-        
+
         <div className="stat-card alert-card" onClick={() => navigate('/admin/stock')} style={{ cursor: 'pointer', background: (stockAlerts?.count > 0 ? '#fff3e0' : '#e8f5e9') }}>
           <div className="stat-left">
             <div className="stat-title">Sắp hết hàng</div>
@@ -257,15 +257,15 @@ const AdminStatistics = () => {
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={allProductsRevenue} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              angle={-45} 
-              textAnchor="end" 
-              interval={0} 
+            <XAxis
+              dataKey="name"
+              angle={-45}
+              textAnchor="end"
+              interval={0}
               tick={{ fontSize: 10 }}
               height={80}
             />
-            <YAxis tickFormatter={(val) => (val >= 1000000 ? `${val/1000000}tr` : val.toLocaleString())} />
+            <YAxis tickFormatter={(val) => (val >= 1000000 ? `${val / 1000000}tr` : val.toLocaleString())} />
             <Tooltip content={<CustomProductTooltip />} />
             <Bar dataKey="yearRevenue" fill="#1cc88a" name="Doanh thu năm" radius={[4, 4, 0, 0]} />
           </BarChart>

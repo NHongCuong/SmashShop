@@ -76,12 +76,12 @@ export default function AdminProducts() {
       "product-url": product.product_url || "",
       "Danh mục": product.category_id?.category_name || "",
       "Thương hiệu": product.brand_id?.brand_name || "",
-      "Giá": product.price,
+      "Giá": product.price.toLocaleString('en-US'),
       "Ngày tạo": product.create_at ? dayjs(product.create_at).utc().format('DD/MM/YYYY HH:mm:ss') : "",
       "Ngày sửa": product.update_at ? dayjs(product.update_at).utc().format('DD/MM/YYYY HH:mm:ss') : "",
       "Số lượng trong kho": product.stock,
       "Đã bán": product.quantity_sold,
-      "Giảm giá": product.discount || 0,
+      "Giảm giá": product.discount.toLocaleString('en-US') || 0,
       "Loại": product.type_id?.type_name || "",
       "Mã voucher": product.voucher_id?.voucher_name || "",
       "Màu sắc": product.colors?.map(c => c.color).join(', ') || "",
@@ -93,7 +93,7 @@ export default function AdminProducts() {
     const totalPrice = allProductsData.reduce((sum, product) => sum + (product.price || 0), 0);
     dataToExport.push({
       "STT": "Tổng cộng",
-      "Giá": totalPrice
+      "Giá": totalPrice.toLocaleString('en-US')
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);

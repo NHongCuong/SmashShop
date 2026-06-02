@@ -411,19 +411,19 @@ async function generateExcelBuffer() {
                     "Địa chỉ": order.shipping?.address || "",
                     "Tên sản phẩm": item.product?.prod_name || "",
                     "Thương hiệu": item.product?.brand_id?.brand_name || "",
-                    "Giảm giá": order.discount_amount || 0,
+                    "Giảm giá": Number(order.discount_amount || 0).toLocaleString('en-US'),
                     "Màu sắc": item.selected_variants?.['Màu sắc'] || "",
                     "Kích cỡ": item.selected_variants?.['Kích cỡ'] || "",
-                    "Mã voucher": order.voucher_id || "", // Nếu có voucher template thì lấy name
+                    "Mã voucher": order.voucher_id || "",
                     "Ghi chú": order.shipping?.note || "",
                     "Phương thức nhận": order.shipping?.shipmethod || "",
                     "PT Thanh toán": order.paymentmethod || "",
-                    "Đơn giá": item.price,
-                    "Số lượng": item.quantity,
-                    "Tạm tính": item.price * item.quantity,
+                    "Đơn giá": Number(item.price).toLocaleString('en-US'),
+                    "Số lượng": Number(item.quantity).toLocaleString('en-US'),
+                    "Tạm tính": Number(item.price * item.quantity).toLocaleString('en-US'),
                     "Trạng thái đơn hàng": order.status,
                     "Ngày đặt hàng": dayjs(order.createdAt).format('DD/MM/YYYY'),
-                    "Tổng cộng đơn": order.total,
+                    "Tổng cộng đơn": Number(order.total).toLocaleString('en-US'),
                 });
             });
         });
@@ -517,7 +517,7 @@ async function sendDashboardReport() {
 }
 
 /**
- * Initialize the cron job to run at 19:00 PM (Vietnam time = UTC+7, so 4:30 UTC)
+ * Initialize the cron job to run at 11:30 AM (Vietnam time = UTC+7, so 4:30 UTC)
  */
 let cronTask = null;
 

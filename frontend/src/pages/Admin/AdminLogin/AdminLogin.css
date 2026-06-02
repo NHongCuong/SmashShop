@@ -1,77 +1,124 @@
-
-.ad-auth-container {
-    background-color: #fff;
-    padding: 40px;
-    margin: 100px auto;
-    width: 100%;
-    max-width: 400px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  
-  .login-container {
+.login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    
-  }
-  .ad-title {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 24px;
-    color:#eac427;
-    font-weight: bold;
-  }
-  
-  .ad-form {
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-overlay {
+    position: absolute;
+    top: 10;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.25);
+    /* Lớp phủ rất nhẹ để giữ độ tương phản cho form */
+    backdrop-filter: none;
+    /* Loại bỏ blur để ảnh nền sắc nét hoàn toàn */
+    z-index: 1;
+}
+
+.ad-auth-container {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 50px 40px;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.ad-auth-container:hover {
+    transform: translateY(-5px);
+}
+
+.ad-logo-placeholder {
+    margin-bottom: 10px;
+}
+
+.ad-title {
+    color: #eac427;
+    margin-bottom: 5px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+}
+
+.ad-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    margin-bottom: 35px;
+    font-weight: 300;
+}
+
+.ad-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-  }
-  
-  .ad-input {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    gap: 20px;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.ad-input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
     font-size: 16px;
-    background-color: #f9f9f9;
-    outline: none;
-  }
-  
-  .ad-input:focus {
-    border-color: #eac427;
-    background-color: #fff;
-  }
-  
-  .ad-button {
-    background-color: #eac427;
+    background: rgba(255, 255, 255, 0.05);
     color: #fff;
-    padding: 12px 15px;
+    outline: none;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.ad-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.ad-input:focus {
+    border-color: #eac427;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(234, 196, 39, 0.15);
+}
+
+.ad-button {
+    background: linear-gradient(135deg, #eac427 0%, #d4ac23 100%);
+    color: #000;
+    padding: 15px;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .ad-button:hover {
-    background-color: #d4ac23;
-  }
-  
-  .ad-footer {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .ad-link {
-    color: #007bff;
-    text-decoration: none;
-  }
-  
-  .ad-link:hover {
-    text-decoration: underline;
-  }
-  
+    transition: all 0.3s;
+    margin-top: 10px;
+    box-shadow: 0 10px 15px -3px rgba(234, 196, 39, 0.3);
+}
+
+.ad-button:hover {
+    background: linear-gradient(135deg, #f5d13b 0%, #eac427 100%);
+    transform: scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(234, 196, 39, 0.4);
+}
+
+.ad-button:active {
+    transform: scale(0.98);
+}
+
+.ad-footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+}

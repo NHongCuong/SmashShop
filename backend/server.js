@@ -50,7 +50,8 @@ const io = new Server(httpServer, {
             "http://192.168.88.133:30002",
             "https://192.168.88.133",
             "http://localhost:3000",
-            "http://192.168.88.1:3000"
+            "http://192.168.88.1:3000",
+            "https://192.168.1.188:3000"
         ],
         methods: ["GET", "POST", "PATCH"],
         credentials: true
@@ -87,9 +88,10 @@ app.use(cors({
     origin: [
         "https://192.168.88.133:30443",
         "http://192.168.88.133:30002",
-        "https://192.168.88.133",
+        "https://192.168.88.133:3000",
         "http://localhost:3000",
-        "http://192.168.88.1:3000"
+        "http://192.168.88.1:3000",
+        "http://192.168.1.188:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,

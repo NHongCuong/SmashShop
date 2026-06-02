@@ -91,13 +91,13 @@ const AdminOrderDetail = () => {
           "Người nhận khác (Danh xưng)": order.shipping?.otherReceiver?.title || "",
           "Người nhận khác (Tên)": order.shipping?.otherReceiver?.name || "",
           "Người nhận khác (SĐT)": order.shipping?.otherReceiver?.phone || "",
-          "Đơn giá": item.price,
-          "Số lượng": item.quantity,
-          "Tạm tính": item.price * item.quantity,
+          "Đơn giá": item.price.toLocaleString('en-US'),
+          "Số lượng": Number(item.quantity).toLocaleString('en-US'),
+          "Tạm tính": Number(item.price * item.quantity).toLocaleString('en-US'),
           "Phí vận chuyển": 0,
           "Trạng thái đơn hàng": order.status,
           "Ngày đặt hàng": new Date(order.createdAt).toLocaleDateString(),
-          "Tổng cộng": order.total,
+          "Tổng cộng": order.total.toLocaleString('en-US'),
         });
       });
     });
@@ -105,7 +105,7 @@ const AdminOrderDetail = () => {
     const totalRevenue = allOrders.reduce((sum, order) => sum + (order.total || 0), 0);
     dataToExport.push({
       "STT": "Tổng doanh thu",
-      "Tổng cộng": totalRevenue
+      "Tổng cộng": totalRevenue.toLocaleString('en-US')
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
