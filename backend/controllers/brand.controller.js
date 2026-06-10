@@ -1,4 +1,5 @@
 import Brand from "../models/brand.model.js";
+import Product from "../models/product.model.js";
 import * as XLSX from 'xlsx';
 import { getVietnamTime } from "../utils/dayjs.js";
 
@@ -97,11 +98,24 @@ export const updateBrand = async (req, res) => {
 export const deleteBrand = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Kiểm tra xem có sản phẩm nào đang hoạt động thuộc thương hiệu này không
+        const productCount = await Product.countDocuments({ brand_id: id, is_active: true });
+        if (productCount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Không thể xóa thương hiệu này vì vẫn còn sản phẩm đang hoạt động thuộc thương hiệu. Vui lòng xóa sản phẩm trước.' 
+            });
+        }
+
         const deletedBrand = await Brand.findByIdAndDelete(id);
 
         if (!deletedBrand) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy thương hiệu' });
         }
+
+        // Cập nhật các sản phẩm đã deactive để không còn tham chiếu tới thương hiệu đã xóa
+        await Product.updateMany({ brand_id: id }, { brand_id: null });
 
         res.status(200).json({ success: true, message: 'Đã xóa thương hiệu thành công' });
     } catch (e) {

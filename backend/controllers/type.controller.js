@@ -1,4 +1,5 @@
 import Type from "../models/type.model.js";
+import Product from "../models/product.model.js";
 import * as XLSX from 'xlsx';
 import { getVietnamTime } from "../utils/dayjs.js";
 
@@ -97,11 +98,24 @@ export const updateType = async (req, res) => {
 export const deleteType = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Kiểm tra xem có sản phẩm nào đang hoạt động thuộc phân loại này không
+        const productCount = await Product.countDocuments({ type_id: id, is_active: true });
+        if (productCount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Không thể xóa phân loại này vì vẫn còn sản phẩm đang hoạt động thuộc phân loại. Vui lòng xóa sản phẩm trước.' 
+            });
+        }
+
         const deletedType = await Type.findByIdAndDelete(id);
 
         if (!deletedType) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy phân loại' });
         }
+
+        // Cập nhật các sản phẩm đã deactive để không còn tham chiếu tới phân loại đã xóa
+        await Product.updateMany({ type_id: id }, { type_id: null });
 
         res.status(200).json({ success: true, message: 'Đã xóa phân loại thành công' });
     } catch (e) {

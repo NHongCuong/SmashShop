@@ -1,4 +1,5 @@
 import Category from "../models/category.model.js";
+import Product from "../models/product.model.js";
 import { getNextSequenceValue } from "../models/counter.model.js";
 import * as XLSX from 'xlsx';
 import { getVietnamTime } from "../utils/dayjs.js";
@@ -103,11 +104,24 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Kiểm tra xem có sản phẩm nào đang hoạt động thuộc danh mục này không
+        const productCount = await Product.countDocuments({ category_id: id, is_active: true });
+        if (productCount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Không thể xóa danh mục này vì vẫn còn sản phẩm đang hoạt động thuộc danh mục. Vui lòng xóa sản phẩm trước.' 
+            });
+        }
+
         const deletedCategory = await Category.findByIdAndDelete(id);
 
         if (!deletedCategory) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy danh mục' });
         }
+
+        // Cập nhật các sản phẩm đã deactive (đã xóa mềm) để không còn tham chiếu tới danh mục đã xóa
+        await Product.updateMany({ category_id: id }, { category_id: null });
 
         res.status(200).json({ success: true, message: 'Đã xóa danh mục thành công' });
     } catch (e) {

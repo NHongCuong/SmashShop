@@ -547,7 +547,7 @@ export default function Order() {
             </div>
             <div className="policy-checkbox" style={{ marginTop: '15px' }}>
               <label>
-                <input type="checkbox" defaultChecked /> Tôi đồng ý với <a href="#">Chính Sách Bảo Mật Thông Tin Khách Hàng</a> của HcShop
+                <input type="checkbox" defaultChecked /> Tôi đồng ý với <a href="#!">Chính Sách Bảo Mật Thông Tin Khách Hàng</a> của HcShop
               </label>
             </div>
           </div>
