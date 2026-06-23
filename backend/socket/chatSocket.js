@@ -200,18 +200,45 @@ export default function initChatSocket(io) {
                 const isAnyAdminOnline = Array.from(onlineUsers.values()).some(u => u.userInfo.role === 'admin');
 
                 if (!isAnyAdminOnline) {
-                    // Gửi email thông báo cho Admin nếu offline
-                    const adminEmail = process.env.EMAIL; // Gửi tới email hệ thống hoặc email admin cụ thể
-                    const subject = `[HcShop] Tin nhắn mới từ khách hàng ${fromName}`;
-                    const html = `
-                        <h2>Bạn có tin nhắn mới từ khách hàng ${fromName}</h2>
-                        <p><strong>Nội dung:</strong> ${message}</p>
-                        <p>Vui lòng đăng nhập vào hệ thống Admin Dashboard để trả lời khách hàng.</p>
-                        <hr/>
-                        <p><i>Hệ thống thông báo tự động HcShop</i></p>
-                    `;
+                    // Gửi email thông báo cho tất cả Admin nếu offline
+                    (async () => {
+                        try {
+                            const admins = await User.find({ role: 'admin' }, 'email');
+                            const subject = `[HcShop] Tin nhắn mới từ khách hàng ${fromName}`;
+                            const html = `
+                                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                                    <h2 style="color: #1976d2;">Bạn có tin nhắn mới từ khách hàng ${fromName}</h2>
+                                    <p><strong>Nội dung:</strong> ${message}</p>
+                                    <p>Vui lòng đăng nhập vào hệ thống Admin Dashboard để trả lời khách hàng.</p>
+                                    <div style="margin-top: 20px; text-align: center;">
+                                        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin-chat" 
+                                           style="background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                                            Vào phòng Chat
+                                        </a>
+                                    </div>
+                                    <hr style="margin-top: 30px;"/>
+                                    <p style="font-size: 12px; color: #888; text-align: center;"><i>Hệ thống thông báo tự động HcShop</i></p>
+                                </div>
+                            `;
 
-                    sendmail(adminEmail, html).catch(err => console.error("Lỗi gửi email thông báo chat cho admin:", err));
+                            if (!admins || admins.length === 0) {
+                                const fallbackEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
+                                if (fallbackEmail) {
+                                    await sendmail(fallbackEmail, html, subject);
+                                }
+                            } else {
+                                const emailPromises = admins.map(admin => {
+                                    if (admin.email) {
+                                        return sendmail(admin.email, html, subject);
+                                    }
+                                    return Promise.resolve();
+                                });
+                                await Promise.all(emailPromises);
+                            }
+                        } catch (err) {
+                            console.error("Lỗi gửi email thông báo chat cho các admin:", err);
+                        }
+                    })();
                 }
             }
         });
