@@ -6,11 +6,12 @@ import {isAdmin} from "../middleware/auth.js";
 
 const orderRoutes = express.Router();
 
-// Route public lấy thông tin hóa đơn (Không cần đăng nhập, phục vụ click từ email)
-orderRoutes.get('/public/invoice/:id', fetchPublicOrderInvoice);
-
 // Middleware kiểm tra các route bên dưới
 orderRoutes.use(authMiddleware);      
+
+// Route lấy thông tin hóa đơn (Yêu cầu đăng nhập, phục vụ click từ email)
+orderRoutes.get('/public/invoice/:id', fetchPublicOrderInvoice);
+
 // Tạo đơn hàng
 orderRoutes.post('/',createOrder)
 // Fetch lịch sử mua hàng

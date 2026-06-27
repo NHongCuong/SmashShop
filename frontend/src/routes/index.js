@@ -67,7 +67,14 @@ const pages = [
     { path: routes.cart, Component: Cart },
     { path: routes.order, Component: Order },
     { path: routes.orderSuccess, Component: OrderSuccess },
-    { path: routes.orderInvoice, Component: OrderInvoice },
+    {
+        path: routes.orderInvoice,
+        Component: () => (
+            <RequireUserAuth>
+                <OrderInvoice />
+            </RequireUserAuth>
+        )
+    },
     { path: routes.paymentSuccess, Component: PaymentSuccess },
     { path: `${routes.products}/:category`, Component: Products },
     {

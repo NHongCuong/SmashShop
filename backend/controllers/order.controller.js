@@ -1115,6 +1115,12 @@ export const fetchPublicOrderInvoice = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
+        // Kiểm tra quyền: Chỉ Admin hoặc chủ đơn hàng mới được xem hóa đơn
+        const orderUserId = order.user_id?._id ? order.user_id._id.toString() : order.user_id?.toString();
+        if (req.user.role !== 'admin' && orderUserId !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: "Bạn không có quyền xem hóa đơn này." });
+        }
+
         res.status(200).json({ success: true, data: order });
     } catch (e) {
         logger.error("Error fetching public order invoice: " + e.message);
